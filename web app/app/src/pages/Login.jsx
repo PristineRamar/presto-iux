@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import TextField from '@mui/material/TextField';
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/login.css";
@@ -47,8 +47,8 @@ export default function Login() {
       console.log("password: " + password);
       // const { data } = await axios.post(loginRoute, {username, password,});
 
-      // let response = await fetch("http://localhost:1514/login", {
-      let response = await fetch("http://secure.pristineinfotech.com:1514/login", {
+      let response = await fetch("http://localhost:1514/login", {
+      // let response = await fetch("http://secure.pristineinfotech.com:1514/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

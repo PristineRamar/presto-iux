@@ -83,60 +83,60 @@ app.post("/", verifyToken, async (req, res) => {
   console.log(userDetails, "userDetails");
 
   //REST API call
-  try {
-    const response = await fetch("http://20.228.231.91:8000/query", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-       body: JSON.stringify({ 
-        userid: userDetails, 
-        prompt: message, }),
-    });
+//   try {
+//     const response = await fetch("http://20.228.231.91:8000/query", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//        body: JSON.stringify({ 
+//         userid: userDetails, 
+//         prompt: message, }),
+//     });
   
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log("response: ", responseData.result);
-        res.json({
-          message: responseData.result,
-        });
-      } else {
-        response.console.error();
-        console.log("response not received");
-        const response = {
-          result: {
-            summary: "Retry with a different question",
-          },
-        };
-        console.log(response.result);
-        res.json({ message: response.result });
-      }
-    } catch (error) {
-      console.error("Error occurred during fetch:", error);
-      const response = {
-        result: {
-          summary: "Error occurred during fetch, please retry",
-        },
-      };
-      console.log(response.result);
-      res.json({ message: response.result });
-    }
-});
-
-// const response = {
-//   result: {
-//     meta_data: {
-//               locations: ["ZP00620"],
-//               products: ["UPPER RESPIRATORY"],
-//               timeframe: "05/07/2023 - 06/24/2023",
-//             },
-//     summary: "Today we access IUX though a separate URL. However, we can have a link or an option to access IUX on price review and category analysis screen. While there are certain actions like overriding prices, updating cost, and updating recommendation that can be performed by interacting through IUX. /n Pradeep and team are working on it. On the other hand generic info queries, kvi analysis can be performed through dialogues though CA. Dan and Priyanka are working on these cases. So the IUX link can be enabled in these 2 modules to start with."
-//   },
-// };
-// res.json({
-//   message: response.result });
-
+//       if (response.ok) {
+//         const responseData = await response.json();
+//         console.log("response: ", responseData.result);
+//         res.json({
+//           message: responseData.result,
+//         });
+//       } else {
+//         response.console.error();
+//         console.log("response not received");
+//         const response = {
+//           result: {
+//             summary: "Retry with a different question",
+//           },
+//         };
+//         console.log(response.result);
+//         res.json({ message: response.result });
+//       }
+//     } catch (error) {
+//       console.error("Error occurred during fetch:", error);
+//       const response = {
+//         result: {
+//           summary: "Error occurred during fetch, please retry",
+//         },
+//       };
+//       console.log(response.result);
+//       res.json({ message: response.result });
+//     }
 // });
+
+const response = {
+  result: {
+    meta_data: {
+              locations: ["ZP00620"],
+              products: ["UPPER RESPIRATORY"],
+              timeframe: "05/07/2023 - 06/24/2023",
+            },
+    summary: "Today we access IUX though a separate URL. However, we can have a link or an option to access IUX on price review and category analysis screen. While there are certain actions like overriding prices, updating cost, and updating recommendation that can be performed by interacting through IUX. /n Pradeep and team are working on it. On the other hand generic info queries, kvi analysis can be performed through dialogues though CA. Dan and Priyanka are working on these cases. So the IUX link can be enabled in these 2 modules to start with."
+  },
+};
+res.json({
+  message: response.result });
+
+});
 
 //******************************************************************* */
 // app.js
