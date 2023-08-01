@@ -1,0 +1,1 @@
+libs - This folder contains facades for the various different libraries you use in your project.  These are specially third party libraries. For Example: fetch.js,  axios.js

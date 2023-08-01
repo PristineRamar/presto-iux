@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>User Profile</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static',filename='styles/profile.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="profile">
+        <img
+          src="https://assets.codepen.io/5453939/internal/avatars/users/default.png?format=auto&version=1638034680&width=300&height=300"
+          alt="Profile Picture"
+        />
+        <h2>John Doe</h2>
+        <h3>Title</h3>
+      </div>
+
+      <div class="options">
+        <a href="#" class="chat-option"><i class="fas fa-comments"></i>Chat</a>
+        <a href="#" class="logout-option"
+          ><i class="fas fa-sign-out-alt"></i>Log Out</a
+        >
+      </div>
+
+      <div class="list-container">
+        <ul class="item-list">
+          <li>
+            <span class="description">Item Description 1</span>
+            <span class="category">Category 1</span>
+            <span class="date">Date 1</span>
+          </li>
+          <li>
+            <span class="description">Item Description 2</span>
+            <span class="category">Category 2</span>
+            <span class="date">Date 2</span>
+          </li>
+          <li>
+            <span class="description">Item Description 3</span>
+            <span class="category">Category 3</span>
+            <span class="date">Date 3</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

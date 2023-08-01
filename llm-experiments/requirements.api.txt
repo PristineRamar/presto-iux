@@ -1,0 +1,9 @@
+huggingface-hub
+langchain
+openai
+pandas
+unstructured
+pdf2image
+pytesseract
+chromadb
+tiktoken

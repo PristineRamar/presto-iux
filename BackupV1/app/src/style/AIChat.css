@@ -1,0 +1,253 @@
+.chat-input-holder {
+  text-align: left;
+  font: normal normal normal 16px/19px Rubik;
+  letter-spacing: 0.48px;
+  color: #131314;
+  opacity: 1;
+  padding: 8px;
+  position: fixed;
+  bottom: 0px;
+  width: 80%;
+  padding-left: 40px;
+  display: flex;
+}
+
+.flash-refresh {
+  height: 40px;
+  width: 40px;
+  padding-top: 5px;
+  /* padding-left: 10px; */
+  /* background: #F7F7F7; */
+  opacity: 1;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.flash-refresh .svg-container {
+  background-color: #f2f2f2;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.flash-refresh .svg-container svg {
+  fill: #1389fd;
+  transition: fill 0.3s ease;
+}
+
+.flash-refresh .svg-container:hover {
+  background-color: #1389fd;
+}
+
+.flash-refresh .svg-container:hover svg {
+  fill: white;
+}
+
+/* .flash-refresh span:hover {
+  cursor: pointer; 
+} */
+
+.flash-refresh.send {
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding-top: 15px;
+  padding-left: 10px;
+}
+
+
+.flash-refresh.send span:hover {
+  color: #1389fd; /* Change the color to your desired color */
+  cursor: pointer; /* Add a pointer cursor on hover */
+}
+
+/* RB *//* Hide scrollbar for Chrome, Safari and Opera */
+::-webkit-scrollbar {
+  width: 10px; /* Set the width of the scrollbar */
+}
+
+.chat-input {
+  width: 100%;
+  padding-left: 5px;
+}
+
+.chat-input-textarea {
+  text-align: left;
+  font: normal normal normal 16px/19px Rubik;
+  width: 100%;
+  padding: 15px;
+  letter-spacing: 0.48px;
+  color: #131314;
+  opacity: 1;
+  outline: black;
+  overflow-y: hidden;
+  background: #ffffff 0% 0% no-repeat padding-box;
+  box-shadow: 0px 3px 6px #cce1f7;
+  border: 0.5px solid #cce1f7;
+  border-radius: 28px;
+}
+
+.chat-message {
+  width: 1320px;
+}
+
+.chat-message-withsidebar{
+  width: 100%;
+}
+
+.chat-message.chatgpt {
+  width: 1320px;
+  /* background-color: rgba(79, 77, 77, 0.1); */
+  background: #cce1f7 0% 0% no-repeat padding-box;
+  box-shadow: 0px 3px 6px #00000029;
+  border-radius: 6px 6px 6px 6px;
+  opacity: 1;
+}
+
+.chat-message-allign {
+  /* max-width: 480px; */
+  margin-right: auto;
+  margin-left: auto;
+  display: flex;
+  padding: 12px;
+  padding-left: 40px;
+  /* padding-right: 240px; */
+}
+
+.metadata {
+  padding-left: 90px;
+  padding-right: 20px;
+  font-size: smaller;
+}
+
+.chat-log {
+  height: 670px; /* RB */
+  padding-bottom: 20px;
+  width: 90%;
+  overflow: auto; /* RB */
+  padding-left: 20px; /*Bha*/
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.chat-container {
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  padding-left: 10px;
+}
+
+.avatar {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  /* background-color: yellow; */
+  padding-top: 10px;
+  padding-left: 10px;
+  display: flex;
+}
+
+.avatar.chatgpt {
+  /* .chatgpt{ */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  /* background-color: #010849; */
+  display: flex;
+  padding-left: 0px;
+  padding-top: 3px;
+}
+
+.message {
+  color: black;
+  padding-top: 10px;
+  padding-left: 14px;
+  padding-right: 20px;
+}
+
+.loader {
+  padding-left: 90px;
+  /* Add any additional styles as needed */
+}
+
+@media only screen and (max-width: 480px) {
+  .page{
+    height: 100vh;
+  }
+
+  .chat-message.chatgpt{
+    width: fit-content
+  }
+	
+  .chat-message{
+    width: fit-content;
+  }
+
+
+  .chat-message-allign{
+    padding-left: 5px;
+    padding-bottom: 2px;
+    padding-top: 1px;
+  }
+
+  .metadata{
+    padding-left: 50px
+  }
+
+  .chat-container{
+    padding-top: 5px;
+    padding-left: 0px;
+    /* padding-bottom: 20%; */
+  }
+
+  .chat-input-holder{
+    padding-left: 0px;
+    padding-right: 15px;
+    padding-top: 0px;
+    padding-bottom: inherit;
+    width: -webkit-fill-available;
+ }
+
+ .flash-refresh.send{
+  padding-left: 0px;
+  padding-top: 8px;
+
+ }
+
+ .chat-input{
+  width: 75%;
+ }
+
+ .side{
+  width: 35%;
+  padding: 2rem 0rem 0rem 0rem;
+ }
+}
+
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+  
+	
+  .chat-message-allign{
+    padding-left: 5px;
+    padding-bottom: 2px;
+    padding-top: 1px;
+  }
+
+  .metadata{
+    padding-left: 50px
+  }
+
+  .chat-container{
+    padding-top: 5px;
+    padding-left: 0px
+  }
+
+  .chat-input-holder{
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0px;
+    width: -webkit-fill-available;
+  }
+}

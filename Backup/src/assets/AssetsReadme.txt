@@ -1,0 +1,1 @@
+assets - contain top-level CSS, images, and font files

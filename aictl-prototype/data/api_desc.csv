@@ -1,0 +1,62 @@
+ApiId,Name,Description,Arguments,Usage,Returns
+api01,Movement,"Returns movement, sales, and margin for the product, timeframe, and location specificied, aggregated to the desired level.","[optional] product_name/product_id/product_level, [optional] location_name/location_id/location_level, quarter/[start_date|end_date]/year/week","1. movement, sales, margin = movement_api(product_name='Home Decor', location_id = 101, location_level = 6, quarter= 3)","movement, sales, margin"
+api01,,,,"2. movement, sales, margin = movement_api(product_id= 12769, location_name='Wisconsin', cal-year='last 1')",
+api01,,,,"3. movement, sales, margin = movement_api(product_id=''"", location_name='Wisconsin', cal-year='last 1')",
+api01,,,,"4. movement, sales, margin = movement_api(product_id= 1229, location_name="""", cal-year='last 1')",
+api01,,,,"5. movement, sales, margin = movement_api(item_list= [129, 19893], location_name="""", period='last 2', cal_type=""P"")",
+api02,Promotion,"Returns a list of items that have a particular type of promotion that may appear anywhere on the ad, given a location, and a future time frame in weeks.","location_name/location_id/location_level, week, type, [optional] product_cateogry/product_level, [optional] page_no/ad_position","1. items = promo_api(product_category='Vitamins', product_level = 4, location_id = 33, location_level = 6, week='next 1', type='BOGO', page_no='1'}",items
+api02,,,,"2. items = promo_api(product_category='Home Improvement', product_level = 4, location_id = 380, location_level = 6, week='current', type='BOGO Free'}",
+api02,,,,"3. items = promo_api(product_category='Vitamins', product_level = 4, location_id ="""", week=""next 1"", type='BOGO', page_no=1}",
+api02,,,,"4. items = promo_api(product_category="""", location_id = 80, location_level = 6, week='next 1', type='BOGO Free'}",
+api02,,,,"5. items = promo_api(item_list= [1236, 4589,5589], location_id = 200, location_level = 6, week='next 1', type='Standard'}",
+,,,,"6. items = promo_api(product_category='Vitamins', product_level = 4, location_id ="""", period='last 2', cal_type=""P"", type='BOGO', page_no=1}",
+api03,Price,"Returns item level price details (reg price, reg qty) pertaining to items in the given product group, location, and timeframe.","[optional] product_cateogry/product_level, 
+ [optional] location_name/location_id/location_level,
+ quarter/[start_date|end_date]/year/week","1. price = price_api(product_cateogry = 'Home Docor', location_id = 450, location_level = 6, week = 'last week')",price
+api03,,,,"2. price = price_api(product_cateogry = 'Stationery', location_name = 'West Base', cal-year = 'last 1')",
+api03,,,,"3. price = price_api(product_cateogry = 'Batteries', location_name = 'West Base', quarte = 1)",
+api03,,,,"4. price = price_api(product_cateogry = 'Home Docor', product_level = 4, location_id = """", week = 'last 1)",
+api03,,,,"5. price = price_api(product_cateogry = """", location_name = 'West Base', cal-year = 'last 2')",
+api03,,,,"6. price = price_api(item_list= [1126, 5569], location_name = 'West Base', cal-year = 'last 2')",
+api03,,,,"7. price = price_api(product_id = 456, location_name = 'West Base', period='last 2', cal_type=""P"")",
+api04,Cost,"Returns item level cost details (list cost) pertaining to items in the given product group, location, and timeframe.","[optional] product_cateogry/product_level, 
+ [optional] location_name/location_id/location_level,
+ quarter/[start_date|end_date]/year/week","1. cost = cost_api(product_cateogry = 'Holiday', product_level = 4, location_id = 1000, location_level = 6, week = 'next 1')",cost
+api04,,,,"2. cost = cost_api(product_cateogry= 'Basic Toys', product_level = 4, location_name = 'East Base', period = 'current', cal-type = 'w')",
+api04,,,,"3. cost = cost_api(product_cateogry = """", location_id = """", week = 'next 2')",
+api04,,,,"4. cost = cost_api(product_cateogry= 'Basic Toys', product_level = 4, location_name = """", period = 'current', cal-type = 'W')",
+api04,,,,"5. cost = cost_api(item_list= [789, 4520,4110], location_name = """", period = 'current', cal-type = 'W')",
+api04,,,,"6. cost = cost_api(product_id = 852, location_name = """", period='last 2', cal_type=""P"")",
+api05,Deal,"Returns item level deal details (deal cost) pertaining to items in the given product group, location, and timeframe.","[optional] product_cateogry/product_level, [optional]
+ location_name/location_id/location_level,
+ quarter/[start_date|end_date]/year/week","1. deal = deal_api(product_cateogry = 'Pet Care', product_level = 4, location_id = 100, location_level = 6, week = 'current')",deal
+api05,,,,"2. deal = deal_api(product_cateogry= 'GM', product_level = 4, location_name = 'East Base', quarter = 'current')",
+api05,,,,"3. deal = deal_api(item_list= [1126, 5569], location_name = 'East Base', quarter = 'current')",
+api06,AD,"Returns item level ad details (page no, block no) pertaining to items in the given product group, location, and timeframe.","[optional] product_cateogry/product_level,[optional] 
+ location_name/location_id/location_level,
+ quarter/[start_date|end_date]/year/week","1. AD = AD_api(product_cateogry = 'Bakery', product_level = 4,location_id = 44, location_level = 6, period= 'current', cal-type = 'W')",AD
+api06,,,,"2. AD = AD_api(product_cateogry= 'GM', product_level = 4, location_name = 'Manhattan', quarter = 'next 1')",
+api06,,,,"3. AD = AD_api(product_cateogry = 'Bakery', product_level = 4, location_id = """", period= 'last 1', cal-type = 'W')",
+api06,,,,"4. AD = AD_api(product_cateogry= """",product_level = """", location_name = 'Manhattan', quarter = 'next 1')",
+api06,,,,"5. AD = AD_api(item_list= [763, 321], location_id = """", period= 'last 1', cal-type = 'W')",
+api07,KVI,"Returns list of KVIs together with KVI type (Primary, Secondary, etc) for the given product group, location, and timeframe.","[optional] product_cateogry/product_level, 
+ [optional] location_name/location_id/location_level,
+ type","1. KVI = KVI_api(product_cateogry= 'GM', location_name = 'East Base', type = 'Primary')",KVI
+api07,,,,"2. KVI = KVI_api(product_cateogry= 'GM', location_id = 100, location_level = 6, type = 'Secondary')",
+api07,,,,"3. KVI = KVI_api(product_cateogry= 'GM', location_name = """", type = 'Primary')",
+api07,,,,"4. KVI = KVI_api(product_cateogry= """", location_id = 101, location_level = 6, type = 'Secondary')",
+,Calendar,Interprets and translates timeline related information in terms of our retail calendar.,,,
+,Product Group,Interprets and translates product group related information in terms of our product hierarchy.,,,
+api08,Competitor Price,"Returns item level competitor price details pertaining to items in the given product group, location, and timeframe.","[optional] product_cateogry/product_level, 
+ [optional] location_name/location_id/location_level,
+ quarter/[start_date|end_date]/year/week","1. Competitor Price = competitor_price_api(product_cateogry = 'Apparel', location_id = 41, location_level = 6, period = 'current', cal-type = 'W')",Competitor Price
+api08,,,,"2. Competitor Price = competitor_price_api(product_cateogry= 'GM', location_name = 'Wisconsin', quarter = '3')",
+api08,,,,"3. Competitor Price = competitor_price_api(product_cateogry = 'Apparel', location_id = """", period = 'current', cal-type = 'W')",
+api08,,,,"4. Competitor Price = competitor_price_api(product_cateogry= """", location_name = 'Wisconsin', quarter = 3)",
+,Location/Zone,Interprets and translates location related information in terms of our location hierarchy.,,,
+,Follow-Up Question API,Ask follow-up question to user and return response to controller,,,
+api09,Budget,"Shows sales, margin, and movement goals for given product group,
+ location, and timeframe","[optional] product_name/product_id/product_level, [optional] location_name/location_id/location_level, quarter/[start_date|end_date]/year/week","1. budget = budget_api(product_name='Home Decor', location_id = 101, location_level = 6 quarter = 'current')","movement, sales, margin"
+api09,,,,"2. budget = budget_api(product_id=12769, location_name='Wisconsin', cal-year = 'last 1')",
+api09,,,,"3. budget = budget_api(product_id=''"", location_name='Wisconsin', cal-year = 'last 1')",
+api09,,,,"4. budget = budget_api(product_id = 12769, location_name="""", cal-year = 'last 1')",

@@ -1,0 +1,1 @@
+layout - This is just a special folder for placing any layout based components. This would be things like a sidebar, navbar, container, etc. If we have less layouts, these can also be part of the component folder

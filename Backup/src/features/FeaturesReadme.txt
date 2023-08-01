@@ -1,0 +1,1 @@
+features- common features for the application. Each feature folder is similar to main src folder. Refer screenshots

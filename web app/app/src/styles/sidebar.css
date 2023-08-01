@@ -1,0 +1,135 @@
+side {
+  position: absolute;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 10%;
+  min-height: 100vh;
+  padding: 2rem 1rem 1rem 1rem;
+  transition: transform 1s;
+  top: 50px;
+  background: #010849 0% 0% no-repeat padding-box;
+  opacity: 1;
+}
+
+.sidebar {
+  transform: translateX(-100%);
+  position: fixed;
+}
+
+.side-btn {
+  position: absolute;
+  transform: translateX(38px);
+  top: -5px;
+  right: 0;
+  width: 40px;
+  height: 60px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #010849;
+  outline: none;
+  border: none;
+  font-size: 1rem;
+  padding: 5px 10px;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 0.4rem;
+}
+
+.logo {
+  display: block;
+  width: 100px;
+  margin: auto;
+  background: transparent;
+}
+
+.logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.side-link {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  text-decoration: none;
+  /* padding: 5px 1rem; */
+  border-radius: 5px;
+  margin-bottom: 5px;
+
+  color: var(--unnamed-color-ffffff);
+  text-align: left;
+  font: normal normal bold 15px/20px Rubik;
+  letter-spacing: 0px;
+  color: #ffffff;
+  opacity: 1;
+}
+
+.side-link:hover {
+  background-color: #afb4ff;
+  color: #FFFFFF;
+
+  background: transparent linear-gradient(180deg, #1BAFF8 0%, #0F56B5 100%) 0% 0% no-repeat padding-box;
+  border-radius: 2px;
+  opacity: 1;
+}
+
+.side-link span {
+  margin-left: 5px;
+}
+.spanSidebar{
+  color: #FFFFFF;
+}
+
+.side-top {
+  margin-top: 0rem;
+}
+
+.mobile-side {
+  background-color: #753ffd;
+  width: 100%;
+  height: 400px;
+  display: none;
+}
+
+.mobile-side-btn {
+  color: #fff;
+  background: transparent;
+  outline: none;
+  border: none;
+  margin: 0 10px;
+}
+
+.hide-sidebar {
+  position: fixed;
+}
+
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+  side {
+    width: 20%;
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .mobile-side {
+    align-items: center;
+  }
+
+  side{
+    width: 50%;
+  }
+
+}
+
+button {
+  background-color: transparent;
+  padding: 10px;
+  margin: 10px;
+  color: white;
+  /* border-radius: 0.4px; */
+}

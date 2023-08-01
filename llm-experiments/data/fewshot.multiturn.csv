@@ -1,0 +1,328 @@
+Conversations,Category
+"User: Show me sales and movement for Upper Respiratory for Q2.
+ AI: I need some more information to get the sales and movement for Upper Respiratory for Q2. What is the location you would like to know?
+ Thought: User needs to provide location for the Movement API
+ Observation: I need to ask the user for the location
+ User: The location is Zone 1000
+ AI: Got it. I will get the sales and movement for Upper Respiratory for Q2 in Zone 1000.
+ Thought: User provided the location for the Movement API
+ Observation: I need to call the Movement API with the provided information",Sales
+"User: Can you give me the sales figures for Beauty products?
+ Observation: User needs sales figures for Beauty products.
+ Thought: I need to know the time period and location.
+ Action: Call Follow-Up Question API with {""type"" = ""time-period""} and {""type"" = ""location""}.
+ AI: For which time period would you like to know the sales figures?
+ User: I need the sales figures for the last quarter.
+ Thought: User needs sales figures for the last quarter.
+ Action: Call Follow-Up Question API with {""type"" = ""location""}.
+ AI: For which location would you like to know the sales figures?
+ User: The location is Zone 1000.
+ Thought: User responded Zone 1000.
+ Action: Call Movement API with {""product-group"" = ""Beauty"", ""time-period"" = ""quarter"", ""metrics"" = [""sales""], ""location-name"" = ""Zone 1000""}.
+ Thought: I should use numerical format to display sales figures
+ Action: Call Display API with {""type""=""numeric"", ""data"" = movement API response}",Sales
+"User: I need to see the movement of Electronics in Zone 250.
+ Observation: User needs to know the movement of Electronics in Zone 250.
+ Thought: I need to know the time period for the movement.
+ Action: Call Follow-Up Question API with {""type"" = ""time-period""}.
+ AI: For which time period would you like to know the movement?
+ User: I need the movement for the last quarter.
+ Thought: User needs the movement for the last quarter.
+ Action: Call Movement API with {""product-group"" = ""Electronics"", ""location-name"" = ""Zone 250"", ""time-period"" = ""quarter""}.
+ Thought: I should use graphical format to display movement
+ Action: Call Display API with {""type""=""graphical"", ""data"" = movement API response}",Sales
+"User: How much revenue was generated from Home Decor in Zone 750?
+ Observation: I need to call the Movement API for Home Decor sales in Zone 750.
+ Thought: I need to know the time period.
+ Action: Call Follow-Up Question API with {""type"" = ""time-period""}.
+ AI: For which time period would you like to know?
+ User: I need the sales for the last quarter.
+ Thought: User responded last quarter.
+ Action: Call Movement API with {""product-group"" = ""Home Decor"", ""time-period"" = ""quarter"", ""location-name"" = ""Zone 750""}
+ Thought: I should use numerical format to display sales
+ Action: Call Display API with {""type""=""numeric"", ""data"" = movement API response}",Sales
+"User: I want to see the sales numbers for Outdoor Gear in Zone 900.
+ Observation: I need to get the product group, location, and time period from the user.
+ Thought: I need to ask the user for the time period.
+ AI: For which time period would you like to see the sales numbers?
+ User: I want to see the sales numbers for the second quarter.
+ Thought: User specified the time period as the second quarter.
+ Action: Call Movement API with {""product-group"" = ""Outdoor Gear"", ""location-name"" = ""Zone 900"", ""quarter"" = 2, ""metrics"" = [""sales""]}
+ Thought: I should use numerical format to display sales
+ Action: Call Display API with {""type""=""numeric"", ""data"" = movement API response}",Sales
+"User: Please give me the sales performance of Pet Supplies for Q2 and Q3 of last year.
+ Observation: I need to call the Movement API for Pet Supplies sales performance for Quarter 2 and Quarter 3 of last year.
+ Thought: I need the location, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""location""}.
+ AI: For which location would you like to know?
+ User: The location is Zone 1000
+ Thought: User responded Zone 1000
+ Action: Call Movement API with {""product-group"" = ""Pet Supplies"", ""time-period"" = [""Q2"", ""Q3""], ""year"" = ""last year"", ""metrics"" = [""sales""], ""location-name"" = ""Zone 1000""}
+ Thought: I should use numerical format to display sales
+ Action: Call Display API with {""type""=""numeric"", ""data"" = movement API response}",Sales
+"User: What are the sales targets for Snacks in Zone 35 for the next quarter?
+ AI: What is the product group for Snacks?
+ User: Snacks
+ AI: What is the location for Zone 35?
+ AI: What is the time period for the next quarter?
+ User: Quarter
+ Thought: User specified product group, location and time period.
+ Action: Call Budget API with {""product-group"" = ""Snacks"", ""location-name"" = ""Zone 35"", ""time-period"" = ""Quarter""}
+ AI: I need to call the Budget API for Snacks in Zone 35 for the next quarter. Are you also interested in the forecast for the same?",Budget Forecast
+"User: Can you tell me the budget goals for Frozen Foods?
+ AI: Sure, I can help you with that. What is the location you would like to know about?
+ User: The location is Zone 1000.
+ Thought: I need to know the time period.
+ AI: What time period would you like to know about?
+ User: I need the budget goals for the entire year.
+ Thought: I have all the information I need.
+ Action: Call Budget API with {""product-name"" = ""Frozen Foods"", ""time-period"" = ""year"", ""location-name"" = ""Zone 1000""}
+ AI: I have the budget goals for Frozen Foods in Zone 1000 for the entire year. Would you like me to display the results?",Budget Forecast
+"User: What is the projected revenue for Beverages in Zone 20 for the next six months?
+ Action: Call Budget API with {""product-name"" = ""Beverages"", ""time-period"" = ""next six months"", ""location-name"" = ""Zone 20""}
+ Action: Call Forecast API with {""product-name"" = ""Beverages"", ""time-period"" = ""next six months"", ""location-name"" = ""Zone 20""}
+ Action: Call Display API with {""type"" = [""table"", ""text""], data = [Budget API Response + Forecast API]}",Budget Forecast
+"User: What are the financial goals for Meat and Poultry?
+ AI: What is the location and time period you would like to get the budget and forecast for?
+ User: The location is Zone 1000 and I need the budget and forecast for the upcoming year.
+ Thought: User specified the location and time period.
+ Action: Call Budget API with {""product-name"" = ""Meat and Poultry"", ""time-period"" = ""year"", ""location-name"" = ""Zone 1000""}
+ Action: Call Forecast API with {""product-name"" = ""Meat and Poultry"", ""time-period"" = ""year"", ""location-name"" = ""Zone 1000""}
+ Action: Call Display API with {""type"" = [""table"", ""text""], data = [Budget API Response + Forecast API response, ""We are projected to meet the sales and movement goals, but fall short on margin.""]}""",Budget Forecast
+"User: Can you provide me with the budget projections for Produce in Zone 450 for the next quarter?
+ Thought: User is looking for budget projections for the next quarter.
+ Thought: User provided product group and location.
+ Action: Call Budget API with {""product-group"" = ""Produce"", ""time-period"" = ""next quarter"", ""location-name"" = ""Zone 450""}.",Budget Forecast
+"User: What are the Secondary KVIs for Health and Wellness in Zone 15?
+ AI: I understand you need a list of Secondary KVIs for Health and Wellness in Zone 15. 
+ Action: Call the KVI API with {""product-name"" = ""Health and Wellness"", ""location-name"" = ""Zone 15"", type = ""Secondary""}
+ Action: Call the Display API with {""type"" = ""list"", data = KVI Response}",KVI
+"User: Give me the Primary KVIs for Baby Products in Zone 20.
+ Observation: I need to call KVI API for Baby Products in Zone 20 Primary KVIs and display list to user.
+ Action: Call KVI API with {""product-name"" = ""Baby Products"", ""location-name"" = ""Zone 20"", type = ""Primary""}
+ Action: Call Display API with {""type"" = ""list"", data = KVI Response}""",KVI
+"User: Can you give me a list of Secondary KVIs for Pet Care in Zone 710?
+ Observation: I need to call KVI API for Zone 710 Secondary KVIs and display list to user.
+ Action: Call KVI API with {""product-name"" = ""Pet Care"", ""location-name"" = ""Zone 710"", type = ""Secondary""}
+ Action: Call Display API with {""type"" = ""list"", data = KVI Response}""",KVI
+"User: What are the Primary KVIs for Beauty and Cosmetics in Zone 450?
+ Action: Call KVI API with the following parameters: {""product-name"" = ""Beauty and Cosmetics"", ""location-name"" = ""Zone 450"", type = ""Primary""}
+ Action: Call Display API with {""type"" = ""list"", data = KVI Response}",KVI
+"User: What are the products that have had a price change in the last two weeks for Snacks in Zone 15?
+ Observation: User specified product name, location, and time frame.
+ Thought: I need to call Cost API with the given parameters.
+ Action: Call Cost API with {""product-name"" = ""Snacks"", ""location"" = ""Zone 15"", week = ""last 2"", change = ""Y""}",Price Change
+"User: Can you give me a list of all items with a cost change in the last month for Beauty and Cosmetics in Zone 35?
+ Observation: User specified product group, location, and time frame.
+ Thought: I need to call Cost API with the given parameters.
+ Action: Call Cost API with {""product-name"" = ""Beauty and Cosmetics"", ""location"" = ""Zone 35"", ""week"" = ""last 4"", ""change"" = ""Y""}
+ Action: Call Display API with {""type"" = ""list"", data = Cost API Response}",Price Change
+"User: Show me the products with a price change in the last week for Beverages in Zone 20.
+ Observation: I need to call Cost API for the last week, filter for items that underwent a change, and then display the list to user.
+ Action: Call Cost API with {""product-name"" = ""Beverages"", ""location"" = ""Zone 20"", week = ""last 1"", change = ""Y""}
+ Action: Call Display API with {""type"" = ""list"", data = Cost API Response}",Price Change
+"User: What are the items with a cost change in the last three weeks for Toys and Games in Zone 450?
+ Observation: User specified product name, location and type.
+ Thought: I need to call Cost API with the given parameters.
+ Action: Call Cost API with {""product-name"" = ""Toys and Games"", ""location"" = ""Zone 450"", ""week"" = ""last 3"", ""change"" = ""Y""}",Price Change
+"User: Can you provide me with a list of all products with a price change in the last four weeks for Frozen Foods in Zone 35?
+ Observation: User provided product name, location, and type.
+ Thought: I need to call Cost API with the provided information.
+ Action: Call Cost API with {""product-name"" = ""Frozen Foods"", ""location"" = ""Zone 35"", ""week"" = ""last 4"", ""change"" = ""Y""}
+ AI: Sure, I'm retrieving the list of products with a price change in the last four weeks for Frozen Foods in Zone 35. Please wait a moment.
+ Action: Call Display API with {""type"" = ""list"", data = Cost API Response}",Price Change
+"User: Show me all items with a cost change in the last two weeks for Home Appliances in Zone 880.
+ Observation: I need to call Cost API for the last two weeks, filter for items that underwent a change, and then display the list to user.
+ Thought: I need the product group, location and type.
+ Action: Call Cost API with {""product-name"" = ""Home Appliances"", ""location"" = ""Zone 880"", week = ""last 2"", change = ""Y""}
+ Action: Call Display API with {""type"" = ""list"", data = Cost API Response}",Price Change
+"User: What are the products that have had a price change in the last week for Meat and Poultry in Zone 450?
+ Observation: User specified product group, location and time frame.
+ Thought: I need to call Cost API with the given parameters.
+ Action: Call Cost API with {""product-name"" = ""Meat and Poultry"", ""location"" = ""Zone 450"", ""week"" = ""last 1"", ""change"" = ""Y""}",Price Change
+"User: Provide me with a list of all items with a cost change in the last month for Personal Care in Zone 15.
+ Observation: I need to call Cost API for the last four weeks, filter for items that underwent a change, and then display the list to user.
+ Thought: I need the product group, location, and type.
+ Action: Call Cost API with {""product-name"" = ""Personal Care"", ""location"" = ""Zone 15"", week = ""last 4"", change = ""Y""}
+ Action: Call Display API with {""type"" = ""list"", data = Cost API Response}",Price Change
+"User: Show me the products with a price change in the last three weeks for Office Supplies in Zone 690.
+ Observation: I need to call Cost API for the last four weeks, filter for items that underwent a change, and then display the list to user.
+ Thought: I need the product group, location and type.
+ Action: Call Cost API with {""product-name"" = ""Office Supplies"", ""location"" = ""Zone 690"", week = ""last 4"", change = ""Y""}
+ Action: Call Display API with {""type"" = ""list"", data = Cost API Response}",Price Change
+"User: Can you show me the YoY change in sales of Beauty and Cosmetics?
+ AI: Sure, which location are you interested in?
+ User: Zone 200
+ Observation: I need to get sales for Beauty and Cosmetics at Zone 200 for this year and last year using Movement API, and display both to user.
+ Action: Call Movement API with {""product-name"" = ""Beauty and Cosmetics"", ""location-name"" = ""Zone 200"", year = ""last 1"", ""location-aggregate-level"" = ""week""}
+ Action: Call Movement API with {""product-name"" = ""Beauty and Cosmetics"", ""location-name"" = ""Zone 200"", year = ""current"", ""location-aggregate-level"" = ""week""}
+ Action: Call Display API with {""type"" = ""line graph"", ""data"" = [Movement API Response 1, Movement API Response 2]}",Sales Comparison
+"User: Provide me with a comparison of Snacks and Confectionery sales for Zone 150 over the last two years.
+ AI: Sure, I can do that. I need to get sales for Snacks and Confectionery at Zone 150 for the last two years using Movement API, and display both to user.
+ Action: Call Movement API with {""product-name"" = ""Snacks and Confectionery"", ""location-name"" = ""Zone 150"", year = ""last 2"", ""location-aggregate-level"" = ""week""}
+ Action: Call Movement API with {""product-name"" = ""Snacks and Confectionery"", ""location-name"" = ""Zone 150"", year = ""current"", ""location-aggregate-level"" = ""week""}
+ Action: Call Display API with {""type"" = ""line graph"", ""data"" = [Movement API Response 1, Movement API Response 2]}",Sales Comparison
+"User: Provide me with the YoY change in sales for Dairy products.
+ AI: Which location are you interested in?
+ User: Zone 200
+ Observation: I need to get sales for Dairy products at Zone 200 for this year and last year using Movement API, and display both to user.
+ Action: Call Movement API with {""product-name"" = ""Dairy"", ""location-name"" = ""Zone 200"", year = ""last 1"", ""location-aggregate-level"" = ""week""}
+ Action: Call Movement API with {""product-name"" = ""Dairy"", ""location-name"" = ""Zone 200"", year = ""current"", ""location-aggregate-level"" = ""week""}
+ Action: Call Display API with {""type"" = ""line graph"", ""data"" = [Movement API Response 1, Movement API Response 2]}",Sales Comparison
+"User: Give me a comparison of sales for Zone 650 this quarter versus the same quarter two years ago.
+ AI: Sure, I can provide you with a comparison of sales for Zone 650 this quarter versus the same quarter two years ago. What product are you interested in?
+ User: Snacks and Confectionery.
+ AI: Got it. I need to get sales for Snacks and Confectionery at Zone 650 for this quarter and the same quarter two years ago using Movement API, and display both to user.
+ Action: Call Movement API with {""product-name"" = ""Snacks and Confectionery"", ""location-name"" = ""Zone 650"", year = ""last 2"", ""location-aggregate-level"" = ""quarter""}
+ Action: Call Movement API with {""product-name"" = ""Snacks and Confectionery"", ""location-name"" = ""Zone 650"", year = ""current"", ""location-aggregate-level"" = ""quarter""}
+ Action: Call Display API with {""type"" = ""line graph"", ""data"" = [Movement API Response 1, Movement API Response 2]}",Sales Comparison
+"User: Provide me with a year-to-year comparison of sales for Snacks and Confectionery.
+ AI: Sure, which location are you interested in?
+ User: Zone 150
+ Observation: I need to get sales for Snacks and Confectionery at Zone 150 for this year and last year using Movement API, and display both to user.
+ Action: Call Movement API with {""product-name"" = ""Snacks and Confectionery"", ""location-name"" = ""Zone 150"", year = ""last 1"", ""location-aggregate-level"" = ""week""}
+ Action: Call Movement API with {""product-name"" = ""Snacks and Confectionery"", ""location-name"" = ""Zone 150"", year = ""current"", ""location-aggregate-level"" = ""week""}
+ Action: Call Display API with {""type"" = ""line graph"", ""data"" = [Movement API Response 1, Movement API Response 2]}",Sales Comparison
+"User: Can you give me a list of upcoming items with a BOGO offer? Which of these items are on page 1 of the ad in Zone 1000?
+ Observation: Need to use Promo API to find all items on BOGO during the coming week, filter for those on page 1 of the ad, and display list to user.
+ Thought: I need the product group, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""product""}.
+ AI: What product group would you like to know about?
+ User: Groceries
+ Thought: User responded Groceries.
+ Action: Call Promo API with {""product-name"" = ""Groceries"", ""location-name"" = ""Zone 1000"", ""week"" = ""next 1"", ""type"" = ""BOGO"", ""page-no"" = 1}
+ Action Call Display API with {""type"" = ""list"", ""data"" = Promo API Response}",Promo
+"User: Which products are planned to have a Buy One Get One Half Off offer in the next week?
+ Observation: Need to use Promo API to find all items with BOGO offer during the coming week.
+ Thought: I need the product group, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""product""}.
+ AI: What product would you like to know about?
+ User: Vitamins
+ Thought: User responded Vitamins.
+ Thought: I need the location, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""location""}.
+ AI: What location would you like to know about?
+ User: Zone 33
+ Thought: User responded Zone 33.
+ Action: Call Promo API with {""product-name"" = ""Vitamins"", ""location-name"" = ""Zone 33"", ""week"" = ""next 1"", ""type"" = ""BOGO""}
+ Action Call Display API with {""type"" = ""list"", ""data"" = Promo API Response}",Promo
+"User: What are the upcoming products with a BOGO Free offer? Which of these products are available in Zone 500?
+ Observation: Need to use Promo API to find all items on BOGO during the coming week, filter for those in Zone 500, and display list to user.
+ Thought: I need the week, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""week""}.
+ AI: Which week would you like to know about?
+ User: Next week
+ Thought: User responded Next week.
+ Thought: I need the page number, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""page-no""}.
+ AI: Which page number would you like to know about?
+ User: Page 1
+ Thought: User responded Page 1.
+ Action: Call Promo API with {""product-name"" = """", ""location-name"" = ""Zone 500"", ""week"" = ""next 1"", ""type"" = ""BOGO"", ""page-no"" = 1}
+ Action Call Display API with {""type"" = ""list"", ""data"" = Promo API Response}",Promo
+"User: Can you provide me with a list of products planned to be on sale next week? Which of these items are in the Home category?
+ Observation: Need to use Promo API to find all items on sale during the coming week, filter for those in the Home category, and display list to user.
+ Thought: I need the page number, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""page-no""}.
+ AI: What page number would you like to view?
+ User: Page 1
+ Thought: User responded Page 1.
+ Action: Call Promo API with {""category"" = ""Home"", ""week"" = ""next 1"", ""type"" = ""sale"", ""page-no"" = 1}
+ Action Call Display API with {""type"" = ""list"", ""data"" = Promo API Response}",Promo
+"Observation: Need to use Promo API to find all items on sale during the coming week, filter for those on the back page of the ad, and display list to user.
+ Thought: I need the product group, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""product""}.
+ AI: What type of product are you looking for?
+ User: Electronics
+ Thought: User responded Electronics.
+ Thought: I need the location, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""location""}.
+ AI: What location are you interested in?
+ User: Zone 33
+ Thought: User responded Zone 33.
+ Action: Call Promo API with {""product-name"" = ""Electronics"", ""location-name"" = ""Zone 33"", ""week"" = ""next 1"", ""type"" = ""sale"", ""page-no"" = 2}
+ Action Call Display API with {""type"" = ""list"", ""data"" = Promo API Response}",Promo
+"User: Show me the KVIs with scheduled price changes for Zone 200 in the next 3 weeks.
+ Thought: I need to call the KVI API, then take the list of KVIs and call the Price API for the next 3 weeks, then filter for those items which have a price change during that time, then display the results to the user.
+ Action: Call KVI API with {""product-name"" = ""Zone 200""}
+ AI: What location do you want to search for?
+ User: Midwest
+ Thought: User responded Midwest.
+ Action: Call Price API with {""item-list"" = KVI API Response, ""location-name"" = ""Midwest"", week = ""next 3"", change = ""Y""}
+ Action: Call Display API with {type = ""list"", data = Price API Response}",KVI Price Change
+"User: Give me the details of the KVIs in Home Essentials that have scheduled price changes in the next 4 weeks.
+ Thought: I need to call the KVI API, then take the list of KVIs and call the Price API for the next 4 weeks, then filter for those items which have a price change during that time, then display the results to the user.
+ Thought: I need the location, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""location""}.
+ AI: What location do you want to search for?
+ User: Midwest
+ Thought: User responded Midwest.
+ Action: Call KVI API with {""product-name"" = ""Home Essentials"", ""location-name"" = ""Midwest""}
+ Action: Call Price API with {""item-list"" = KVI API Response, ""location-name"" = ""Midwest"", week = ""next 4"", change = ""Y""}
+ Action: Call Display API with {type = ""list"", data = Price API Response}",KVI Price Change
+"User: What are the KVIs for Baby Care products which have a price change scheduled in the coming 2 weeks?
+ Thought: I need to call the KVI API, then take the list of KVIs and call the Price API for the next 2 weeks, then filter for those items which have a price change during that time, then display the results to the user.
+ Action: Call KVI API with {""product-name"" = ""Baby Care""}
+ AI: What location do you want to check?
+ User: Midwest
+ Thought: User responded Midwest.
+ Action: Call Price API with {""item-list"" = KVI API Response, ""location-name"" = ""Midwest"", week = ""next 2"", change = ""Y""}
+ Action: Call Display API with {type = ""list"", data = Price API Response}",KVI Price Change
+"User: What are the most effective promotions for the Beauty category in the last 3 months?
+ Thought: I need to call Promo Analysis API for the given item, filter for the top three most effective promotions, and display results to the user.
+ Thought: I need to call Promo Analysis API for the given item, filter for the top three most effective promotions, and display results to the user.
+ Action: Call Promo Analysis API with {""product-name"" = ""Beauty products"", ""top"" = 3}
+ Action: Call Display API with {""type"" = ""table"", ""data"" = Promo Analysis API Response}",Effective Promotions
+"User: Give me the top two promotions for Zone 500 Beverages in the last week.
+ Thought: I need to call Promo Analysis API for the given item, filter for the top two most effective promotions, and display results to the user.
+ Action: Ask user for product name and top parameter.
+ AI: What is the product name and how many promotions do you want to see?
+ User: The product name is Zone 500 Beverages and I want to see the top two promotions.
+ Thought: I have all the information I need to call Promo Analysis API.
+ Action: Call Promo Analysis API with {""product-name"" = ""Zone 500 Beverages"", ""top"" = 2}
+ Action: Call Display API with {""type"" = ""table"", ""data"" = Promo Analysis API Response}",Effective Promotions
+"User: Which are the most successful promotions for the Electronics category in Q2?
+ Thought: I need to call Promo Analysis API for the given item, filter for the top three most effective promotions, and display results to the user.
+ AI: Sure, I can help you with that. Could you please provide me with the product name for the Electronics category?
+ User: The product name is Electronics.
+ Thought: I have all the information I need to call Promo Analysis API.
+ Action: Call Promo Analysis API with {""product-name"" = ""Electronics"", ""top"" = 3}
+ Action: Call Display API with {""type"" = ""table"", ""data"" = Promo Analysis API Response}",Effective Promotions
+"User: Give me the top two promotions for the Snacks category in the current week.
+ Thought: I need to call Promo Analysis API for the given item, filter for the top two most effective promotions, and display results to the user.
+ AI: Sure, I need the product name for the Snacks category. Can you provide that?
+ User: The product name is Snacks.
+ Thought: I have all the information I need to call Promo Analysis API.
+ Action: Call Promo Analysis API with {""product-name"" = ""Snacks"", ""top"" = 2}
+ Action: Call Display API with {""type"" = ""table"", ""data"" = Promo Analysis API Response",Effective Promotions
+"User: Which promotions have shown the best results for the Cleaning Supplies category in the last 2 months?
+ Thought: I need to call Promo Analysis API for the given item, filter for the top three most effective promotions, and display results to the user.
+ AI: To get the most effective promotions for Cleaning Supplies in the last 2 months, I need to know the top number of promotions you would like to see. How many would you like?
+ User: Show me the top five.
+ Thought: I need to call Promo Analysis API for the given item, filter for the top five most effective promotions, and display results to the user.
+ Action: Call Promo Analysis API with {""product-name"" = ""Cleaning Supplies"", ""top"" = 5}
+ Action: Call Display API with {""type"" = ""table"", ""data"" = Promo Analysis API Response",Effective Promotions
+"User: How does our current price position in Fresh Produce compare to Costco?
+ Thought: I need to call the Price Index API for Fresh Produce and Costco and then display the result to the user.
+ Thought: I need the location, but user did not specify it.
+ Action: Call Follow-Up Question API with {""type"" = ""location""}.
+ AI: For which location?
+ User: Los Angeles
+ Thought: User responded Los Angeles.
+ Action: Call Price Index API with {""product-name"" = ""Fresh Produce"", ""location-name"" = ""Los Angeles"", ""competitor-name"" = ""Costco""}
+ Action: Call Display API with {""type""=""numeric"", ""data"" = Price Index API Response}",Price Comparison
+"User: Is our price for Avocados competitive in the West Coast region compared to Safeway?
+ Thought: I need to call the Price Index API for Avocados, West Coast, and Safeway.
+ Action: Call Price Index API with {""product-name"" = ""Avocados"", ""location-name"" = ""West Coast"", ""competitor-name"" = ""Safeway""}
+ Action: Call Display API with {""type""=""numeric"", ""data"" = Price Index API Response}",Price Comparison
+"Thought: I need to call the Price Index API for Diapers, our store, and Publix.
+ Action: Call Follow-Up Question API with {""type"" = ""location""}.
+ AI: What location are you interested in?
+ User: Florida
+ Thought: User responded Florida.
+ Action: Call Price Index API with {""product-name"" = ""Diapers"", ""location-name"" = ""Florida"", ""competitor-name"" = ""Publix""}
+ Action: Call Display API with {""type""=""numeric"", ""data"" = Price Index API Response}",Price Comparison
+"User: Compare our price position for Toys and Games with Toys R Us in Zone 42.
+ Thought: I need to call the Price Index API for Toys and Games, Toys R Us, and Zone 42.
+ Action: Call Price Index API with {""product-name"" = ""Toys and Games"", ""location-name"" = ""Zone 42"", ""competitor-name"" = ""Toys R Us""}
+ AI: Got it. I'm now comparing our price position for Toys and Games with Toys R Us in Zone 42. Please wait while I process the data.",Price Comparison

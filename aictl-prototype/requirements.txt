@@ -1,0 +1,21 @@
+# Flask dependencies
+flask
+flask-cors
+# AI requirements
+huggingface-hub
+langchain
+openai
+pandas
+unstructured
+pdf2image
+pytesseract
+chromadb
+tiktoken
+# Microsoft graph api
+Flask-Session
+werkzeug
+requests
+identity
+python-dotenv<0.22
+# excel adapter
+openpyxl

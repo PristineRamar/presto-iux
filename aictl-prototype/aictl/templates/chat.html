@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AICTL Prototype</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/chatbot.css') }}" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+</head>
+
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="avatar">
+        <p>AI</p>
+      </div>
+      <div class="header-name">
+        <h1 class="header-name">AICTL Prototype</h1>
+      </div>
+
+    </div>
+    <div class="chat-body" id="chat-body">
+      <!-- <div class="chat-message incoming">
+          <p>Hello! How can I assist you today?</p>
+        </div> -->
+    </div>
+    <div class="chat-footer">
+      <input type="text" id="message-input" placeholder="Type your message" autofocus />
+      <button id="send-button">
+        <i class="fa fa-paper-plane" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <script src="{{url_for('static', filename='uuid.js')}}"></script>
+  <script src="{{url_for('static', filename='codestyle.js')}}"></script>
+  <script src="{{url_for('static', filename='greetings.js')}}"></script>
+  <script src="{{url_for('static', filename='chatactions.js')}}"></script>
+  <script type="text/javascript">
+    var dataText = `{{data | tojson | safe}}`;
+    var dataParsed = JSON.parse(dataText);
+    renderConversation(dataParsed.messages, dataParsed.conversationId);
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,137 @@
+Movement/Sales
+====
+
+Q: Can you provide me with the sales data for Toys and Games in Zone 800 for the last six months?
+Call Movement API with {"product-name" = "Toys and Games", "quarter" = "last six months", "metrics" = ["sales"], "location-name" = "Zone 800"}
+
+Q: Please give me the sales performance of Pet Supplies in Zone 150 for Q2 and Q3 of last year.
+Call Movement API with {"product-name" = "Pet Supplies", "quarter" = ["Q2", "Q3"], "metrics" = ["sales"], "location-name" = "Zone 150"}
+
+Q: What were the quarterly sales figures for Sports Equipment in Zone 400?
+Call Movement API with {"product-name" = "Sports Equipment", "quarter" = "quarterly", "metrics" = ["sales"], "location-name" = "Zone 400"}
+
+Promotions Percent
+====
+
+Q: What percentage of our Produce sales in Zone 20 are from promotions for the next six months?
+Call Movement API with {"product-name" = "Produce", "location-name" = "Zone 20", week = "next 6 months", metrics = ["sales"]} and Call Movement API with {"product-name" = "Produce", "location-name" = "Zone 20", week = "next 6 months", metrics = ["sales"], "promo" = "Y"} and Call Calculator API with {"operation" = "division", "data" = [Movement API Response 2, Movement API Response 1], "format" = "percent"}
+
+Q: Can you provide me with the percentage of sales from promotions for Bakery products for the first half of the year in Zone 1?
+Call Movement API with {"product-name" = "Bakery", "location-name" = "Zone 1", "start-date" = "01-01-YYYY", "end-date" = "06-30-YYYY", metrics = ["sales"]} and Call Movement API with {"product-name" = "Bakery", "location-name" = "Zone 1", "start-date" = "01-01-YYYY", "end-date" = "06-30-YYYY", metrics = ["sales"], "promo" = "Y"} and Call Calculator API with {"operation" = "division", "data" = [Movement API Response 2, Movement API Response 1], "format" = "percent"}
+
+Q: How much of our sales for Canned Goods in Zone 50 are from promotions in the current quarter?
+Call Movement API with {"product-name" = "Canned Goods", "location-name" = "Zone 50", week = "current quarter", metrics = ["sales"]} and Call Movement API with {"product-name" = "Canned Goods", "location-name" = "Zone 50", week = "current quarter", metrics = ["sales"], "promo" = "Y"} and Call Calculator API with {"operation" = "division", "data" = [Movement API Response 2, Movement API Response 1], "format" = "percent"}
+
+KVI
+====
+
+Q: Can you provide me with a list of Top KVIs for Home Appliances in Zone 260?
+Call KVI API with {"product-name" = "Home Appliances", "location-name" = "Zone 260", type = "Primary"}
+
+Q: What are the Secondary KVIs for Health and Wellness in Zone 15?
+Call KVI API with {"product-name" = "Health and Wellness", "location-name" = "Zone 15", type = "Secondary"}
+
+Q: What are the Secondary KVIs for Office Supplies in Zone 690?
+Call KVI API with {"product-name" = "Office Supplies", "location-name" = "Zone 690", type = "Secondary"}
+
+Email
+====
+
+Q: Share this report with Alex through email.
+Call Email API with {"recipient" = "Alex", data = Current Screen}
+
+Q: Forward this report to Sarah.
+Call Email API with {"recipient" = "Sarah", data = Current Screen}
+
+Budget/Forecast
+====
+
+Q: What is the expected revenue for Seafood in the current quarter across all locations?
+Call Budget API with {"product-name" = "Seafood", "quarter" = "current", "location-name" = "all"} and Call Forecast API with {"product-name" = "Seafood", "quarter" = "current", "location-name" = "all"}
+
+Q: Can you give me an update on the revenue projections for Dairy in Zone 880 for the next three months?
+Call Budget API with {"product-name" = "Dairy", "quarter" = "next-3-months", "location-name" = "Zone 880"} and Call Forecast API with {"product-name" = "Dairy", "quarter" = "next-3-months", "location-name" = "Zone 880"}
+
+Q: What are the sales targets for Snacks in Zone 35 for the next quarter?
+Call Budget API with {"product-name" = "Snacks", "quarter" = "next", "location-name" = "Zone 35"} and Call Forecast API with {"product-name" = "Snacks", "quarter" = "next", "location-name" = "Zone 35"}
+
+Competitor Comparison
+====
+
+Q: Is our price for Avocados competitive in the West Coast region compared to Safeway?
+Call Price Index API with {"product-name" = "Avacados", "location-name" = "West Coast", "competitor-name" = "Safeway"}
+
+Q: What is the price difference between our store and Publix for Diapers in the midwest?
+Call Price Index API with {"product-name" = "Diapers", "location-name" = "Midwest", "competitor-name" = "Publix"}
+
+Price Change
+====
+
+Q: Provide me with a list of all items with a cost change in the last month for Personal Care in Zone 15.
+Call Cost API with {"product-name" = "Personal Care", "location-name" = "Zone 15", week = "last month", change = "Y"}
+
+Q: Can you provide me with a list of all products with a price change in the last four weeks for Frozen Foods in Zone 35?
+Call Price API with {"product-name" = "Frozen Foods", "location-name" = "Zone 35", week = "last 4", change = "Y"}
+
+Q: What are the items with a cost change in the last five days for Canned Goods in Zone 260?
+Call Cost API with {"product-name" = "Canned Goods", "location-name" = "Zone 260", week = "last 5 days", change = "Y"}
+
+Sales Comparison
+====
+
+Q: Give me a comparison of Eye/Ear Care sales for Zone 1000 this year versus last year.
+Call Movement API with {"product-name" = "Eye/Ear Care", "location-name" = "Zone 1000", year = "last 1", "location-aggregate-level" = "week"} and Call Movement API with {"product-name" = "Eye/Ear Care", "location-name" = "Zone 1000", year = "current", "location-aggregate-level" = "week"}
+
+Q: Can you show me the YoY change in sales for Zone 500 Beauty and Cosmetics?
+Call Movement API with {"product-name" = "Beauty and Cosmetics", "location-name" = "Zone 500", year = "last 1", "location-aggregate-level" = "year"} and Call Movement API with {"product-name" = "Beauty and Cosmetics", "location-name" = "Zone 500", year = "current", "location-aggregate-level" = "year"} and Call Calculator API with {"operation" = "percentage change", "data" = [Movement API Response 2, Movement API Response 1], "format" = "percent"}
+
+Q: Provide me with a comparison of Snacks and Confectionery sales for Zone 150 over the last two years.
+Call Movement API with {"product-name" = "Snacks and Confectionery", "location-name" = "Zone 150", year = "last 2", "location-aggregate-level" = "week"} and Call Movement API with {"product-name" = "Snacks and Confectionery", "location-name" = "Zone 150", year = "current", "location-aggregate-level" = "week"}
+
+KVI / Price Change
+====
+
+Q: Show me the list of KVIs in Snacks category with scheduled price changes for Zone 336 in the next 4 weeks.
+Call KVI API with {"product-name" = "Snacks", "location-name" = "Zone 336"} and Call Price API with {"item-list" = KVI API Response, "location-name" = "Zone 336", week = "next 4", change = "Y"}
+
+Q: Show me the KVIs with scheduled price changes for Zone 200 in the next 3 weeks.
+Call KVI API with {"product-name" = "Center Store", "location-name" = "Zone 200"} and Call Price API with {"item-list" = KVI API Response, "location-name" = "Zone 200", week = "next 3", change = "Y"}
+
+Navigation
+====
+
+Q: Can you direct me to the screen where I can review and approve prices?
+Call Navigation API with {"screen-name" = "Price Review & Approval"}
+
+Q: Navigate me to the price review and approval page.
+Call Navigation API with {"screen-name" = "Price Review & Approval"}
+
+Promotion Analysis
+====
+
+Q: Give me the top two promotions for Zone 500 Beverages in the last week.
+Call Promo Analysis API with {"product-name" = "Beverages", "top" = 2, "last" = 1, "aggregate_by" = "week", "location" = "Zone 500" }
+
+Q: What are the most effective promotions for the Beauty category in the last 3 months in Zone 733?
+Call Promo Analysis API with {"product-name" = "Beauty", "top" = 3, "last" = 3, "aggregate_by" = "month", "location" = "Zone 733" }
+
+Promotions
+====
+
+Q: Which products are planned to have a BOGO 50% off offer in the next week in the Baby Care category? Are any of these products available in Zone 820?
+Call Promo API with {"product-name" = "Baby Care", "location-name" = "Zone 820", "week" = "upcoming", "type" = "BOGO 50% off"}
+
+Q: What are the upcoming products with a Buy 3 Get 1 Free offer in the Pet Supplies category? Which of these products are in Zone 710?
+Call Promo API with {"product-name" = "Pet Supplies", "location-name" = "Zone 710", "week" = "next few days", "type" = "Buy 3 Get 1 Free"}
+
+Q: What are the upcoming products with a BOGO Free offer in the Health and Wellness category? Which of these products are available in Zone 520?
+Call Promo API with {"product-name" = "Health and Wellness", "location-name" = "Zone 520", "week" = "upcoming", "type" = "BOGO Free"}
+
+Export
+====
+
+Q: Save this report in an Excel format.
+Call Export API with {"type" = "Excel", data = Current Screen}
+
+Q: Export this report to a CSV file.
+Call Export API with {"type" = "csv", data = Current Screen}
