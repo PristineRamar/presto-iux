@@ -17,7 +17,7 @@ app.use(cors());
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 
 const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h",});
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
 };
 
 const generateRefreshToken = (user) => {
