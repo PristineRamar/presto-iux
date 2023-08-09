@@ -47,8 +47,8 @@ export default function Login() {
       console.log("password: " + password);
       // const { data } = await axios.post(loginRoute, {username, password,});
 
-      let response = await fetch("http://localhost:1514/login", {
-      // let response = await fetch("http://secure.pristineinfotech.com:1514/login", {
+      // let response = await fetch("http://localhost:1514/login", {
+      let response = await fetch("http://secure.pristineinfotech.com:1514/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -66,11 +66,11 @@ export default function Login() {
     } else {
    
     const jsonData = await response.json();
-    console.log("jsonData: ", jsonData);
+    // console.log("jsonData: ", jsonData);
 
     if (Array.isArray(jsonData) && jsonData.length === 0) {
       setData(null); // If empty, set data to null
-      console.log('jsonData is empty');
+      // console.log('jsonData is empty');
       toast.error("Pass correct details/ Inactive User", toastOptions);
     } else {
       console.log('jsonData is not empty');
@@ -89,6 +89,7 @@ export default function Login() {
       console.log('status is true', data[0].USER_ID);
       localStorage.setItem("user",JSON.stringify(data[0]));
       localStorage.setItem("auth",JSON.stringify(data[1]));
+      localStorage.setItem("refreshToken",JSON.stringify(data[2]));
       navigateToAiChat(data[0].USER_ID);
     }
   }, [data, status]);

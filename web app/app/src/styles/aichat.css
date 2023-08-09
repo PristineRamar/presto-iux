@@ -70,9 +70,13 @@
 }
 
 .flash-refresh.send span:hover {
-  padding-left: 10px; 
+  padding-left:4px; 
 }
 
+.send-span{
+  padding-left: 3px;
+  padding-top: 5px;
+}
 /* RB *//* Hide scrollbar for Chrome, Safari and Opera */
 ::-webkit-scrollbar {
   width: 10px; /* Set the width of the scrollbar */
@@ -81,6 +85,27 @@
 .chat-input {
   width: 100%;
   padding-left: 5px;
+  position: relative;
+}
+
+.microphone-icon{
+  position: absolute;
+  /* bottom: 16px;  */
+  right: 5px; 
+  font-size: 1.5rem;
+  font-weight: bold;
+  width: 30px;
+  height: 30px;
+  color: #1389fd;
+  border-radius: 50%;
+  background-color:#f2f2f2;
+  padding: 0px;
+  transition: fill 0.2s ease;
+}
+
+.microphone-icon.active{
+  color: #f2f2f2;
+  background-color: #1389fd;
 }
 
 .chat-input-holder-with-sidebar{
@@ -243,6 +268,7 @@
 
  .chat-input{
   width: 75%;
+  position: relative;
  }
 
  .side{
@@ -287,4 +313,5 @@
   .chat-message{
     width: 100%;
   }
+  
 }

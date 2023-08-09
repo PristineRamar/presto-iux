@@ -15,7 +15,15 @@ const ChatMessage = ({ message, metadata, chatType, visible }) => {
       parsedMessage  = JSON.parse(message.message); 
 
       if(chatType !== "table"){
-        updatedOptions = { ...parsedMessage.options };
+        for (let key in parsedMessage.options.xaxis) {
+          // console.log("key", parsedMessage.options.xaxis[key]);
+          updatedOptions = {
+              xaxis: {
+                categories: parsedMessage.options.xaxis[key]
+              }
+            };
+      }
+        // updatedOptions = { ...parsedMessage.options };
         updatedOptions.chart = {
           id: "basic-bar",
           zoom: { enabled: false },
@@ -25,11 +33,15 @@ const ChatMessage = ({ message, metadata, chatType, visible }) => {
         };
         updatedOptions.colors = ["#E91E63", "#FF9800", "#064687"];
       }
+
+      // console.log("parsedMessage.series", parsedMessage.series);
+      // console.log("parsedMessage.options", parsedMessage.options);
+      
     }
 
   const renderList = (items) => (
     <ul className="text-container" style={{ listStyleType: "none" }}>
-      {items.slice(0, 7).map((item, index) => (
+      {items.slice(0, 15).map((item, index) => (
         <li key={index}>{item}</li>
       ))}
     </ul>
@@ -149,28 +161,51 @@ const ChatMessage = ({ message, metadata, chatType, visible }) => {
             </svg>
           )}
         </div>
-        <div className="message" >
+        <div className="message">
           {chatType === "array" ? (
             renderList(message.message.split(","))
           ) : chatType === "newLine" ? (
             renderList(message.message.split("\n"))
-          ) : (chatType === "line" || chatType === "bar") ? (
-            <Chart options={updatedOptions} series={parsedMessage.series} type={chatType} width= "100%" height="300px"/>
-          )  : (chatType === "table") ? (
+          ) : chatType === "line" || chatType === "bar" ? (
+            <Chart
+              options={updatedOptions}
+              series={parsedMessage.series}
+              type={chatType}
+              width="100%"
+              height="300px"
+            />
+          ) : chatType === "table" ? (
             <div className="table-container">
-            {Object.keys(parsedMessage).map((tableName, index) => (
-              <Table data={parsedMessage[tableName]}/>
-              ))}
+              {console.log("table", parsedMessage.tableData1)}
+              {/* {Object.keys(parsedMessage.tableData1).map((tableName, index) => ( */}
+                <Table data={parsedMessage.tableData1} />
+              {/* ))} */}
             </div>
           ) : (
-            <p className={!visible ? "text-container" : "text-container-with-sidebar"}>{message.message}</p>
+            <p
+              className={
+                !visible ? "text-container" : "text-container-with-sidebar"
+              }
+            >
+              {message.message}
+            </p>
           )}
         </div>
       </div>
       {message.user === "gpt" && metadata && (
         <div className="metadata">
-          <p>Location: {metadata.locations}</p>
-          <p>Product: {metadata.products}</p>
+          {/* <p>Location: {metadata.locations}</p> */}
+          {Array.isArray(metadata.locations) ? (
+            <p>Location: {metadata.locations.join(", ")}</p>
+          ) : (
+            <p>Location: {metadata.locations}</p>
+          )}
+          {/* <p>Product: {metadata.products}</p> */}
+          {Array.isArray(metadata.products) ? (
+            <p>Product: {metadata.products.join(", ")}</p>
+          ) : (
+            <p>Product: {metadata.products}</p>
+          )}
           <p>Timeframe: {metadata.timeframe}</p>
         </div>
       )}
