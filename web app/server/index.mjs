@@ -8,12 +8,22 @@ import jwt from "jsonwebtoken";
 //move this as config
 const port = 1514;
 const app = express();
+let refreshTokens = [];
 config();
 
 app.use(express.json());
 app.use(cors());
 
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+
+const generateAccessToken = (user) => {
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
+};
+
+const generateRefreshToken = (user) => {
+  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
+};
+
 
 async function fun() {
   let connection;
@@ -40,10 +50,14 @@ async function fun() {
       const sqlQuery = `SELECT * FROM user_details where user_id= :username and password= :password`;
       const binds = { username, password };
       const result = await connection.execute(sqlQuery, binds, {});
+      // console.log("result.rows[0]: ", result.rows[0]);
       if (result.rows.length > 0) {
         console.log("status:", 200);
-        const auth = jwt.sign(result.rows[0], process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h",});
+        const auth = generateAccessToken(result.rows[0]);
+        const refreshToken = generateRefreshToken(result.rows[0]);
+        refreshTokens.push(refreshToken);
         result.rows = [...result.rows, { auth }];
+        result.rows = [...result.rows, { refreshToken }];
         res.status(200).json(result.rows);
       }
     });
@@ -59,15 +73,18 @@ const server = app.listen(port, () => {
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  // console.log("verifyToken", authHeader);
+  // console.log("authHeader", authHeader);
   if (authHeader) {
     const token = authHeader.split(" ")[1];
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) {
+        console.log("verify token err");
         return res.status(403).json("Token is not valid!");
       }
-
       req.user = user;
+      // console.log("req.user", req.user);
       next();
     });
   } else {
@@ -75,16 +92,47 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+
+app.post("/refresh", async (req, res) => {
+  // console.log("refreshTokens", refreshTokens);
+  const refreshToken = req.headers.authorization;
+  const refreshHeader = refreshToken.split(" ")[1];
+  // console.log("refreshHeader", refreshHeader);
+
+  //send error if there is no token or it's invalid
+  if (!refreshHeader){
+    return res.status(401).json("You are not authenticated!");}
+  if (!refreshTokens.includes(refreshHeader)) {
+    console.log("refresh token not found afaew");
+    return res.status(403).json("Refresh token is not valid!");
+  }
+      jwt.verify(refreshHeader, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+        // console.log("user", user);  
+    err && console.log(err);
+    refreshTokens = refreshTokens.filter((token) => token !== refreshHeader);
+
+    const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
+
+    refreshTokens.push(newRefreshToken);
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
+  });
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.post("/", verifyToken, async (req, res) => {
   const { userDetails, message } = req.body;
   console.log(message, "message");
-  console.log(userDetails, "userDetails");
+  // console.log(userDetails, "userDetails");
 
   //REST API call
   try {
-    const response = await fetch("http://20.228.231.91:8000/query", {
+    const response = await fetch("http://20.228.231.91:9000/query", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -96,7 +144,14 @@ app.post("/", verifyToken, async (req, res) => {
   
       if (response.ok) {
         const responseData = await response.json();
-        console.log("response: ", responseData.result);
+        console.log("response1: ", responseData.result);
+		 if(responseData.result.summary.includes("\"")){
+			console.log("includes");
+			const summaryObject = JSON.parse(responseData.result.summary);
+			responseData.result.summary = summaryObject;
+			console.log("responseData.result.summary", responseData.result.summary);
+		}
+
         res.json({
           message: responseData.result,
         });
@@ -119,47 +174,51 @@ app.post("/", verifyToken, async (req, res) => {
         },
       };
       console.log(response.result);
+      if(response.result.summary.includes("\"")){
+        console.log("includes");
+        const summaryObject = JSON.parse(response.result.summary);
+        response.result.summary = summaryObject;
+        console.log("response.result.summary", response.result.summary);
+      }
+      else {
+        console.log("not includes");
+      }
       res.json({ message: response.result });
     }
 });
 
 // const response = {
 //   result: {
-//     meta_data: {
-//               locations: ["ZP00620"],
-//               products: ["UPPER RESPIRATORY"],
-//               timeframe: "05/07/2023 - 06/24/2023",
-//             },
-//     summary: "Today we access IUX though a separate URL. However, we can have a link or an option to access IUX on price review and category analysis screen. While there are certain actions like overriding prices, updating cost, and updating recommendation that can be performed by interacting through IUX. /n Pradeep and team are working on it. On the other hand generic info queries, kvi analysis can be performed through dialogues though CA. Dan and Priyanka are working on these cases. So the IUX link can be enabled in these 2 modules to start with."
-//   },
+//    "meta_data": {
+//             "locations": [
+//                 "CHAIN"
+//             ],
+//             "products": [
+//                 "F-SARGENTO STRING CHS 9OZ 4575",
+//                 "F-SARGENTO STICKS 6516",
+//                 "F-SARGENTO SLICES 1304",
+//                 "F-SARGENTO SHRED 8OZ  53",
+//                 "F-Cabot cuts 7oz",
+//                 "F-Cabot Cottage Cheese 16oz",
+//                 "F-CABOT SOUR CREAM 16OZ",
+//                 "F-CABOT SLICES 1299",
+//                 "F-CABOT SHREDS 8OZ 208"
+//             ],
+//             "timeframe": "04/02/2023 - 07/01/2023"
+//         },
+//         "summary": "This is test"  },
 // };
+
+// if(response.result.summary.includes("\"")){
+//   console.log("includes");
+//   const summaryObject = JSON.parse(response.result.summary);
+//   response.result.summary = summaryObject;
+//   console.log("response.result.summary", response.result.summary);
+// }
+// else {
+//   console.log("not includes");
+// }
+
 // res.json({
 //   message: response.result });
-
-// });
-
-//******************************************************************* */
-// app.js
-// import express from "express";
-// import cors from "cors";
-// import bodyParser from "body-parser";
-// import {loginHandler, verifyToken } from "./auth.mjs";
-// import {queryHandler} from "./query.mjs";
-
-// const port = 1514;
-// const app = express();
-// // const { loginHandler, verifyToken } = pkg;
-// // const { queryHandler } = chatpkg;
-
-// app.use(express.json());
-// app.use(cors());
-
-// app.post("/login", loginHandler);
-// app.post("/", verifyToken, queryHandler);
-
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
-
-// const server = app.listen(port, () => {
-//   console.log(`Example app listening at http://localhost:${port}`);
 // });

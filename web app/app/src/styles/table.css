@@ -3,28 +3,54 @@ thead {color:blue;}
 tbody {color:rgb(6, 6, 26);}
 tfoot {color:red;}
 
-table, th, td {
+/* table, th, td {
   border: 0.5px solid black;
+} */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
 }
 
 th{
+  text-align: center;
+  font-weight: 500;
+}
+
+td{
   text-align: left;
 }
-td, th{
-  padding: 3px;
+th, td {
+  border: 1px solid #ccc;
+  padding: 2px;
+  /* text-align: left; */
+  /* white-space: nowrap; prevent wrapping by default */
+  overflow: hidden;
+  /* text-overflow: ellipsis; show ellipsis (...) for overflowing text */
+}
+
+td.wrap-text {
+  white-space: normal; /* allow wrapping for specific cells */
+  overflow: auto;
+  word-wrap: break-word;
+}
+
+td.center-align{
+  text-align: center;
 }
 
 .table-border{
-  padding-left: 10px;
-  padding-top: 10px;
-  align-items: flex-start;
+  /* padding-left: 10px; */
+  /* padding-top: 10px; */
+  border: 1px solid #ccc;
+  /* align-items: flex-start; */
 }
 
 .table-container{
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
-  width: 1300px;
+  width: 1000px;
 }
 
 .text-container{
