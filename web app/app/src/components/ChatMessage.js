@@ -24,7 +24,7 @@ const ChatMessage = ({ message, metadata, chatType, visible }) => {
         updatedOptions.chart = {
           id: "basic-bar",
           zoom: { enabled: false },
-          toolbar: { show: false },
+          // toolbar: { show: false },
         };
         updatedOptions.dataLabels = {
           enabled: false,
