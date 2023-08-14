@@ -23,7 +23,6 @@ function App() {
   useEffect(() => {
     console.log("isLogin: ", isLogin);
     if (!isLogin) {
-      // Redirect to login page
       navigate('/login');
     }
   }, [isLogin]);
@@ -34,7 +33,6 @@ function App() {
       <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
       {console.log("isLogin: ", isLogin)}
-      {/* {isLogin ?  */}
       <Route
         path="/aichat"
         element={
@@ -48,28 +46,7 @@ function App() {
           </div>
         }
       /> 
-      {/* : navigate("/login")}  */}
     </Routes>
-
-    // <React.Fragment>
-    //   	<div className="App" style={{ display: "flex", height: "100vh"}}>
-    // 		<Navbar/>
-    // 		<Sidebar className="sideCSS" visible={ sideNavVisible } show={ showSidebar }/>
-    // 		<Routes>
-    // 			<Route path="/" element={<Navigate to="/aichat" />} />
-    // 			<Route path='/aichat' element={
-    // 				<div className={!sideNavVisible ? "page" : "page page-with-sidenavbar"}>
-    // 					<AIChat/>
-    // 				</div>
-    // 			} />
-    // 			{/* <Route path='/pins' element={
-    // 				<div className={!sideNavVisible ? "page" : "page page-with-sidenavbar"}>
-    // 					<h1>pins</h1>
-    // 				</div>
-    // 			}/> */}
-    // 		</Routes>
-    // 	</div>
-    // </React.Fragment>
   );
 }
 

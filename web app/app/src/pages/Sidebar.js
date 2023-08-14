@@ -1,7 +1,8 @@
 import React from 'react';
 import {
 	FaBars,
-	FaPlus
+	FaPlus,
+	FaMapPin
 } from 'react-icons/fa';
 import { NavLink } from "react-router-dom";
 import "../styles/sidebar.css";
@@ -37,10 +38,10 @@ function Sidebar({visible, show}) {
 							<FaPlus size={ICON_SIZE} />
 							<span className='spanSidebar'>New Chat</span>
 						</NavLink>
-						{/* <NavLink to="/pins" className="side-link">
-							<FaMapPin size={ICON_SIZE} />
-							<span>Pins </span>
-						</NavLink> */}
+						<NavLink to="/aichatv2" className="side-link">
+							{/* <FaMapPin size={ICON_SIZE} /> */}
+							<span>AIChatv2</span>
+						</NavLink>
 					</div>
 				</div>
 			</side>

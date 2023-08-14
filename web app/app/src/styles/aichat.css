@@ -152,7 +152,7 @@
   width: auto;
   /* background-color: rgba(79, 77, 77, 0.1); */
   background: #cce1f7 0% 0% no-repeat padding-box;
-  box-shadow: 0px 3px 6px #00000029;
+  box-shadow: 0px 3px 6px #340b7c8e;
   border-radius: 6px 6px 6px 6px;
   opacity: 1;
 }
@@ -175,13 +175,14 @@
 }
 
 .chat-log {
-  height: 670px; /* RB */
+  height: 430px; /* RB */
   padding-bottom: 20px;
   width: 90%;
-  overflow: auto; /* RB */
+  overflow-x: hidden;
+  overflow-y: auto; /* RB */
   padding-left: 20px; /*Bha*/
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: thin;  /* IE and Edge */
+  scrollbar-width: thin;  /* Firefox */
 }
 
 .chat-container {
@@ -190,7 +191,8 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
+  overflow: auto;
   padding-left: 30px;
 }
 
@@ -228,9 +230,27 @@
   /* Add any additional styles as needed */
 }
 
+::-webkit-scrollbar {
+  width: 5px; /* Set the width of the scrollbar */
+  height: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scrollbar thumb */
+  border-radius: 5px; /* Round corners */
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent; /* Color of the scrollbar track */
+}
+
 @media only screen and (max-width: 480px) {
   .page{
     height: 100vh;
+  }
+
+  .chat-log {
+    overflow-x: scroll;
   }
 
   .chat-message.chatgpt{
@@ -283,7 +303,10 @@
 
 @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
   
-	
+	.chat-log {
+    height: 500px; /* RB */
+    overflow-x: scroll;
+  }
   .chat-message-allign{
     padding-left: 5px;
     padding-bottom: 2px;

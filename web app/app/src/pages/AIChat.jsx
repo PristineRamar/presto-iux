@@ -57,7 +57,6 @@ const AIChat = (props) => {
           }
         });
       });
-
       // Observe the messageEl.current element
     observer.observe(messageEl.current, { childList: true });
     }
@@ -93,7 +92,7 @@ const AIChat = (props) => {
 
     const refreshToken = async () => {
       try {
-        const res = await fetch("http://localhost:1514/refresh", {
+        const res = await fetch("https://localhost:1514/refresh", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -130,8 +129,9 @@ const AIChat = (props) => {
     };
 
     trackPromise(
-      // fetchWithTokenRefresh("http://localhost:1514/", {
-       fetch("http://secure.pristineinfotech.com:1514/", {
+      fetchWithTokenRefresh("http://localhost:1514/", {
+      // fetch("http://secure.pristineinfotech.com:1514/", {
+      //  fetch("https://secure1.pristineinfotech.com:1514/", {
         
         method: "POST",
         headers: {
@@ -211,6 +211,7 @@ const AIChat = (props) => {
 // }
 
 const handleChange = (e) => {
+  console.log('handleChange', e.target.value);
   setInput(e.target.value);
 };
 
@@ -250,22 +251,6 @@ recognition.onresult = (event) => {
 
   clearTimeout(recognitionTimeout); // Clear the timeout so we don't end up with multiple timeouts running at the same time
   // Check for a pause in the speech
-  // if (interimTranscript.endsWith('.') || interimTranscript.endsWith('?') || interimTranscript.endsWith('!')) {
-  //   console.log('Detected a pause in the sentence. Stopping the recording.');
-  //   setTranscript('');
-  //   recognition.stop();
-  //   // recognition.addEventListener("end", () => { console.log("Speech recognition service disconnected"); }); 
-  // }
-  // else {
-  //   // Set a timeout to stop the recognition after 10 seconds of no input
-  //   recognitionTimeout = setTimeout(() => {
-  //     console.log('No input detected for 600 mseconds. Stopping the recording.');
-  //     // setTranscript('');
-  //     recognition.stop();
-  //     recognition.addEventListener("end", () => { console.log("Speech recognition service disconnected"); }); 
-  //   }, 600); // 600 milliseconds
-  // }
-
   if (isChromeBrowser()) {
     recognitionTimeout = setTimeout(() => {
       console.log('No input detected for 600 mseconds. Stopping the recording.');
@@ -330,9 +315,7 @@ const handleIconClick = () => {
           <div className="chat-input">
             <TextareaAutosize className="chat-input-textarea" style={{ width: "100%" }} 
              placeholder="Ask Presto" 
-            //  value={transcript ? transcript : input} onChange={handleChange}
-            //  value={input} onChange={handleChange}
-             value={listening ? transcript : input} onChange={handleChange}
+             value={listening ? transcript : input} onChange={e => setInput(e.target.value)}
              onKeyDown={handleKeyDown} maxRows={5}/>
             <button className={`microphone-icon ${isActive ? 'active' : ''}`}>
               <FontAwesomeIcon icon={faMicrophone}  onClick={handleIconClick}/>
@@ -340,7 +323,9 @@ const handleIconClick = () => {
           </div>
           <div className="flash-refresh send">
             <span className="send-span" onClick={handleSubmit}>
-              <svg className="send-svg-container" xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 30 30" fill="none" class="h-4 w-4 m-1 md:m-0" stroke-width="2">
+              <svg className="send-svg-container" xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 30 30" fill="none" 
+              // class="h-4 w-4 m-1 md:m-0" stroke-width="2"
+              >
                 <path d="M.5 1.163A1 1 0 0 1 1.97.28l12.868 6.837a1 1 0 0 1 0 1.766L1.969 15.72A1 1 0 0 1 .5 14.836V10.33a1 1 0 0 1 .816-.983L8.5 8 1.316 6.653A1 1 0 0 1 .5 5.67V1.163Z" fill="currentColor"></path>
               </svg>
             </span>
