@@ -61,9 +61,9 @@ const RenderRow = (props) => {
         const isNumber = true
         const hasDecimalPart = columnValue % 1 !== 0;
         if (hasDecimalPart) {
-          if (key.includes('Income')) {
+          if (key.includes('Income') || key.includes('Movement')) {
             cellContent = '$' + columnValue.toFixed(0); // Display up to 2 decimal places
-            cellContent = numeral(columnValue).format('$0,0.');
+            cellContent = numeral(columnValue).format('$0,0');
           }
           else if ((key.includes('Sales')) || (key.includes('Cost') || (key.includes('Price'))))
           {
@@ -72,6 +72,14 @@ const RenderRow = (props) => {
           } else 
             cellContent = columnValue.toFixed(2); // Display up to 2 decimal places
         } else {
+          if (key.includes('Income') || key.includes('Movement')) {
+            cellContent = '$' + columnValue.toFixed(0); // Display up to 2 decimal places
+            cellContent = numeral(columnValue).format('$0,0');
+          } else if ((key.includes('Sales')) || (key.includes('Cost') || (key.includes('Price'))))
+          {
+            cellContent = '$' + columnValue.toFixed(2); // Display up to 2 decimal places
+            cellContent = numeral(columnValue).format('$0,0');
+          }else 
             cellContent = columnValue.toString(); // Convert to string without decimal places
         }
 
