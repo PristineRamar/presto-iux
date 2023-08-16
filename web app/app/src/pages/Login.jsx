@@ -47,8 +47,8 @@ export default function Login() {
       console.log("password: " + password);
       // const { data } = await axios.post(loginRoute, {username, password,});
 
-      let response = await fetch("http://localhost:1514/login", {
-        // let response = await fetch("http://secure.pristineinfotech.com:1514/login", {
+      // let response = await fetch("http://localhost:1514/login", {
+        let response = await fetch("http://secure.pristineinfotech.com:1514/login", {
       // let response = await fetch("https://secure1.pristineinfotech.com:1514/login", {
       method: "POST",
       headers: {

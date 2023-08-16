@@ -1,4 +1,4 @@
-import React from "react";
+import React, {memo} from "react";
 import { FaUser } from "react-icons/fa";
 import Chart from "react-apexcharts";
 import Table from "./Table";
@@ -6,7 +6,7 @@ import "../styles/table.css";
 
 const ICON_SIZE = 20;
 
-const ChatMessage = ({ message, metadata, chatType, visible }) => {
+const ChatMessage = memo(({ message, metadata, chatType, visible }) => {
    let parsedMessage;
    let updatedOptions;
   if(chatType === "line" || chatType === "bar" || chatType === "table")
@@ -36,7 +36,7 @@ const ChatMessage = ({ message, metadata, chatType, visible }) => {
 
   const renderList = (items) => (
     <ul className="text-container" style={{ listStyleType: "none" }}>
-      {items.slice(0, 15).map((item, index) => (
+      {items.map((item, index) => (
         <li key={index}>{item}</li>
       ))}
     </ul>
@@ -165,8 +165,6 @@ const ChatMessage = ({ message, metadata, chatType, visible }) => {
             />
           ) : chatType === "table" ? (
             <div className="table-container">
-              {/* {console.log("table", parsedMessage.tableData1)} */}
-              {/* {Object.keys(parsedMessage.tableData1).map((tableName, index) => ( */}
                 <Table data={parsedMessage.tableData1} />
               {/* ))} */}
             </div>
@@ -176,13 +174,11 @@ const ChatMessage = ({ message, metadata, chatType, visible }) => {
       </div>
       {message.user === "gpt" && metadata && (
         <div className="metadata">
-          {/* <p>Location: {metadata.locations}</p> */}
           {Array.isArray(metadata.locations) ? (
             <p>Location: {metadata.locations.join(", ")}</p>
           ) : (
             <p>Location: {metadata.locations}</p>
           )}
-          {/* <p>Product: {metadata.products}</p> */}
           {Array.isArray(metadata.products) ? (
             <p>Product: {metadata.products.join(", ")}</p>
           ) : (
@@ -193,6 +189,6 @@ const ChatMessage = ({ message, metadata, chatType, visible }) => {
       )}
     </div>
   );
-};
+});
 
 export default ChatMessage;

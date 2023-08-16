@@ -51,26 +51,6 @@ export default class Table extends React.Component {
     }
 }
 
-// const RenderRow = (props) =>{
-//   return props.keys.map((key, index)=>{
-//     return <td key={props.data[key]}>{props.data[key]}</td>
-//   })
-// }
-
-// const RenderRow = (props) => {
-//   return props.keys.map((key, index) => {
-//     const shouldWrapText = props.columnsWithTextWrap.includes(key);
-//       return (
-//           <td
-//               key={props.data[key]}
-//               className={shouldWrapText ? 'wrap-text' : ''}
-//           >
-//               {props.data[key]}
-//           </td>
-//       );
-//   });
-// }
-
 const RenderRow = (props) => {
   return props.keys.map((key, index) => {
       const columnValue = props.data[key];

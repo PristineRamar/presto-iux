@@ -129,8 +129,8 @@ const AIChat = (props) => {
     };
 
     trackPromise(
-      fetchWithTokenRefresh("http://localhost:1514/", {
-      // fetch("http://secure.pristineinfotech.com:1514/", {
+      // fetchWithTokenRefresh("http://localhost:1514/", {
+      fetch("http://secure.pristineinfotech.com:1514/", {
       //  fetch("https://secure1.pristineinfotech.com:1514/", {
         
         method: "POST",
@@ -211,7 +211,7 @@ const AIChat = (props) => {
 // }
 
 const handleChange = (e) => {
-  console.log('handleChange', e.target.value);
+  // console.log('handleChange', e.target.value);
   setInput(e.target.value);
 };
 
@@ -315,7 +315,7 @@ const handleIconClick = () => {
           <div className="chat-input">
             <TextareaAutosize className="chat-input-textarea" style={{ width: "100%" }} 
              placeholder="Ask Presto" 
-             value={listening ? transcript : input} onChange={e => setInput(e.target.value)}
+             value={listening ? transcript : input} onChange={handleChange}
              onKeyDown={handleKeyDown} maxRows={5}/>
             <button className={`microphone-icon ${isActive ? 'active' : ''}`}>
               <FontAwesomeIcon icon={faMicrophone}  onClick={handleIconClick}/>

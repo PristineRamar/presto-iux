@@ -17,7 +17,7 @@ app.use(cors());
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 
 const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "5h"});
 };
 
 const generateRefreshToken = (user) => {
@@ -144,12 +144,12 @@ app.post("/", verifyToken, async (req, res) => {
   
       if (response.ok) {
         const responseData = await response.json();
-        console.log("response1: ", responseData.result);
+        //console.log("response1: ", responseData.result);
 		 if(responseData.result.summary.includes("\"")){
-			console.log("includes");
+			console.log("includes backslash quotes");
 			const summaryObject = JSON.parse(responseData.result.summary);
 			responseData.result.summary = summaryObject;
-			console.log("responseData.result.summary", responseData.result.summary);
+			//console.log("responseData.result.summary", responseData.result.summary);
 		}
 
         res.json({
@@ -189,24 +189,14 @@ app.post("/", verifyToken, async (req, res) => {
 
 // const response = {
 //   result: {
-//    "meta_data": {
-//             "locations": [
-//                 "CHAIN"
-//             ],
-//             "products": [
-//                 "F-SARGENTO STRING CHS 9OZ 4575",
-//                 "F-SARGENTO STICKS 6516",
-//                 "F-SARGENTO SLICES 1304",
-//                 "F-SARGENTO SHRED 8OZ  53",
-//                 "F-Cabot cuts 7oz",
-//                 "F-Cabot Cottage Cheese 16oz",
-//                 "F-CABOT SOUR CREAM 16OZ",
-//                 "F-CABOT SLICES 1299",
-//                 "F-CABOT SHREDS 8OZ 208"
-//             ],
-//             "timeframe": "04/02/2023 - 07/01/2023"
-//         },
-//         "summary": "This is test"  },
+//     meta_data: {
+//               locations: ["ZP00620"],
+//               products: ["UPPER RESPIRATORY"],
+//               timeframe: "05/07/2023 - 06/24/2023",
+//             },
+//     // summary: "{\"type\": \"line\", \"options\": {\"xaxis\": {\"week_no\": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]}}, \"series\": [{\"name\": \"sales_ORAL_CARE\", \"data\": [2373267.8, 2276919.85, 2350743.63, 2863008.67, 2491493.24, 2264929.74, 2348696.18, 2299328.83, 2503066.91, 2394915.11, 2333580.02, 2301788.26, 2099186.87]}, {\"name\": \"sales_UPPER_RESPIRATORY\", \"data\": [7184488.59, 6985239.88, 7228506.78, 8377580.98, 7228508.86, 7495379.11, 7772710.8, 7323039.22, 7057381.43, 7347956.34, 7284803.96, 6683877.27, 5534293.1]}]}"
+//     summary:"THIs is the summary",
+//   },
 // };
 
 // if(response.result.summary.includes("\"")){
