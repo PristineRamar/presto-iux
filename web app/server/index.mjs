@@ -17,7 +17,7 @@ app.use(cors());
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 
 const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "5h"});
 };
 
 const generateRefreshToken = (user) => {
@@ -144,12 +144,12 @@ app.post("/", verifyToken, async (req, res) => {
   
       if (response.ok) {
         const responseData = await response.json();
-        console.log("response1: ", responseData.result);
+        //console.log("response1: ", responseData.result);
 		 if(responseData.result.summary.includes("\"")){
-			console.log("includes");
+			console.log("includes backslash quotes");
 			const summaryObject = JSON.parse(responseData.result.summary);
 			responseData.result.summary = summaryObject;
-			console.log("responseData.result.summary", responseData.result.summary);
+			//console.log("responseData.result.summary", responseData.result.summary);
 		}
 
         res.json({
@@ -189,31 +189,20 @@ app.post("/", verifyToken, async (req, res) => {
 
 // const response = {
 //   result: {
-//    "meta_data": {
-//             "locations": [
-//                 "CHAIN"
-//             ],
-//             "products": [
-//                 "F-SARGENTO STRING CHS 9OZ 4575",
-//                 "F-SARGENTO STICKS 6516",
-//                 "F-SARGENTO SLICES 1304",
-//                 "F-SARGENTO SHRED 8OZ  53",
-//                 "F-Cabot cuts 7oz",
-//                 "F-Cabot Cottage Cheese 16oz",
-//                 "F-CABOT SOUR CREAM 16OZ",
-//                 "F-CABOT SLICES 1299",
-//                 "F-CABOT SHREDS 8OZ 208"
-//             ],
-//             "timeframe": "04/02/2023 - 07/01/2023"
-//         },
-//         "summary": "This is test"  },
+//     meta_data: {
+//               locations: ["ZP00620"],
+//               products: ["UPPER RESPIRATORY"],
+//               timeframe: "05/07/2023 - 06/24/2023",
+//             },
+//     summary: "This is test response"
+//   },
 // };
 
 // if(response.result.summary.includes("\"")){
 //   console.log("includes");
 //   const summaryObject = JSON.parse(response.result.summary);
 //   response.result.summary = summaryObject;
-//   console.log("response.result.summary", response.result.summary);
+//   // console.log("response.result.summary", response.result.summary);
 // }
 // else {
 //   console.log("not includes");

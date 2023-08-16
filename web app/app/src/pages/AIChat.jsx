@@ -57,7 +57,6 @@ const AIChat = (props) => {
           }
         });
       });
-      // Observe the messageEl.current element
     observer.observe(messageEl.current, { childList: true });
     }
   }, [])
@@ -123,10 +122,38 @@ const AIChat = (props) => {
         console.log("refresh token: " + data.refreshToken);
         options.headers["Authorization"] = `Bearer ${data.refreshToken}`;
       }
-      // console.log("options after processing: " + options.headers["Authorization"]);
       console.log(url);
       return fetch(url, options);
     };
+
+    const handleMessageResponse = (data) => {
+      const responseType = data.message.summary.type;
+      console.log("responseType: " + responseType);
+
+      let responseSummary;
+      if(responseType === "line" || responseType === "bar" || responseType === "table"){
+        responseSummary = JSON.stringify(data.message.summary)
+      } else responseSummary = data.message.summary;
+
+      const responseMetadata = data.message.meta_data;
+
+      if(responseType === "line" || responseType === "bar" || responseType === "table"){
+        console.log("chatLog is a chart");
+        setChatLog([...chatLogNew,
+          {user: "gpt",message: `${responseSummary}`,metadata: responseMetadata,chatType: responseType,},]);
+      }
+      else if (Array.isArray(responseSummary)) {
+        setChatLog([...chatLogNew,
+          {user: "gpt",message: `${responseSummary.slice(0, 7)}`,metadata: responseMetadata,chatType: "array",},]);
+      } else if (typeof responseSummary === "string") {
+        const hasNewLine = responseSummary.includes("\n");
+        setChatLog([...chatLogNew,
+          {user: "gpt", message: `${responseSummary}`, metadata: responseMetadata, chatType: hasNewLine ? "newLine" : "string",},
+        ]);
+      } else {
+        console.log("chatLog is neither an array nor a string");
+      }
+    }
 
     trackPromise(
       fetchWithTokenRefresh("http://localhost:1514/", {
@@ -143,43 +170,10 @@ const AIChat = (props) => {
           message: input,
         }),
       })
-        // .then((response) => {return new Promise((resolve) => {setTimeout(() => {resolve(response.json());}, 2000);});})
         .then((response) => {
           return new Promise((resolve) => {resolve(response.json());});})
-        .then((data) => {
-    // const data = await response.json();
-    // console.log("data type: " + data);
-    const responseType = data.message.summary.type;
-    // const responseType = data.message.type;
-    console.log("responseType: " + responseType);
-
-    let responseSummary;
-    if(responseType === "line" || responseType === "bar" || responseType === "table"){
-      responseSummary = JSON.stringify(data.message.summary)
-    } else responseSummary = data.message.summary;
-
-    const responseMetadata = data.message.meta_data;
-    
-    // console.log("responseType: " + responseType);
-    // console.log("responseSummary: " + responseSummary);
-
-    if(responseType === "line" || responseType === "bar" || responseType === "table"){
-      console.log("chatLog is a chart");
-      setChatLog([...chatLogNew,
-        {user: "gpt",message: `${responseSummary}`,metadata: responseMetadata,chatType: responseType,},]);
-    }
-    else if (Array.isArray(responseSummary)) {
-      setChatLog([...chatLogNew,
-        {user: "gpt",message: `${responseSummary.slice(0, 7)}`,metadata: responseMetadata,chatType: "array",},]);
-    } else if (typeof responseSummary === "string") {
-      const hasNewLine = responseSummary.includes("\n");
-      setChatLog([...chatLogNew,
-        {user: "gpt", message: `${responseSummary}`, metadata: responseMetadata, chatType: hasNewLine ? "newLine" : "string",},
-      ]);
-    } else {
-      console.log("chatLog is neither an array nor a string");
-    }
-  }))
+        .then((data) => handleMessageResponse(data)
+  ))
 }
 
   function clearChat() {
@@ -211,7 +205,7 @@ const AIChat = (props) => {
 // }
 
 const handleChange = (e) => {
-  console.log('handleChange', e.target.value);
+  // console.log('handleChange', e.target.value);
   setInput(e.target.value);
 };
 
@@ -243,6 +237,10 @@ function isChromeBrowser() {
   return /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 }
 
+function isSafariBrowser() {
+  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+}
+
 let recognitionTimeout;
 recognition.onresult = (event) => {
   // console.log('Speech recognition result.');
@@ -257,7 +255,15 @@ recognition.onresult = (event) => {
       recognition.stop();
       recognition.addEventListener("end", () => { console.log("Speech recognition service disconnected"); }); 
     }, 600);
-  } else {
+  } 
+  if (isSafariBrowser()){
+    recognitionTimeout = setTimeout(() => {
+      console.log('No input detected for 1000 mseconds. Stopping the recording.');
+      recognition.stop();
+      recognition.addEventListener("end", () => { console.log("Speech recognition service disconnected"); }); 
+    }, 1000);
+  }
+  else {
     if (interimTranscript.endsWith('.') || interimTranscript.endsWith('?') || interimTranscript.endsWith('!')) {
         console.log('Detected a pause in the sentence. Stopping the recording.');
         setTranscript('');
@@ -315,7 +321,7 @@ const handleIconClick = () => {
           <div className="chat-input">
             <TextareaAutosize className="chat-input-textarea" style={{ width: "100%" }} 
              placeholder="Ask Presto" 
-             value={listening ? transcript : input} onChange={e => setInput(e.target.value)}
+             value={listening ? transcript : input} onChange={handleChange}
              onKeyDown={handleKeyDown} maxRows={5}/>
             <button className={`microphone-icon ${isActive ? 'active' : ''}`}>
               <FontAwesomeIcon icon={faMicrophone}  onClick={handleIconClick}/>
