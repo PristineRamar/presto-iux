@@ -156,8 +156,8 @@ const AIChat = (props) => {
     }
 
     trackPromise(
-      // fetchWithTokenRefresh("http://localhost:1514/", {
-      fetch("http://secure.pristineinfotech.com:1514/", {
+      fetchWithTokenRefresh("http://localhost:1514/", {
+      // fetch("http://secure.pristineinfotech.com:1514/", {
       //  fetch("https://secure1.pristineinfotech.com:1514/", {
         
         method: "POST",
