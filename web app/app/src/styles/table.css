@@ -61,6 +61,11 @@ td.center-align{
   width: 1000px;
 }
 
+@media (resolution: 1.5dppx) {
+  .text-container{
+    width: 950px;
+  }
+}
 @media (max-width: 768px) {
   .table-container{
     width: 100%;

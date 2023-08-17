@@ -144,13 +144,13 @@ app.post("/", verifyToken, async (req, res) => {
   
       if (response.ok) {
         const responseData = await response.json();
-        //console.log("response1: ", responseData.result);
-		 if(responseData.result.summary.includes("\"")){
-			console.log("includes backslash quotes");
-			const summaryObject = JSON.parse(responseData.result.summary);
-			responseData.result.summary = summaryObject;
-			//console.log("responseData.result.summary", responseData.result.summary);
-		}
+        console.log("response1: ", responseData.result);
+		//  if(responseData.result.summary.includes("\"")){
+		// 	console.log("includes backslash quotes");
+		// 	const summaryObject = JSON.parse(responseData.result.summary);
+		// 	responseData.result.summary = summaryObject;
+		// 	//console.log("responseData.result.summary", responseData.result.summary);
+		// }
 
         res.json({
           message: responseData.result,
@@ -189,24 +189,8 @@ app.post("/", verifyToken, async (req, res) => {
 
 // const response = {
 //   result: {
-//     meta_data: {
-//               locations: ["ZP00620"],
-//               products: ["UPPER RESPIRATORY"],
-//               timeframe: "05/07/2023 - 06/24/2023",
-//             },
-//     summary: "This is test response"
-//   },
+//     "summary": {"type": "table", "tableData1": [{"Cluster": 1, "Store Count": 4, "Store Names": "Grand Union-Warrensburg, Grand Union-Peru, Grand Union-Saranac Lake, Grand Union-Rome", "Avg. Distance In Miles": 1.5, "Median Income": 47533.82, "Urbanicity (Mode)": "Rural"}, {"Cluster": 2, "Store Count": 4, "Store Names": "Grand Union-Rutland, Grand Union-Sherrill, Grand Union-Owego, Grand Union-Cooperstown", "Avg. Distance In Miles": 2.5, "Median Income": 54767.31, "Urbanicity (Mode)": "Rural"}, {"Cluster": 3, "Store Count": 3, "Store Names": "Grand Union-Watertown, Grand Union-Cortland, Grand Union-Norwich", "Avg. Distance In Miles": 1.9, "Median Income": 59363.08, "Urbanicity (Mode)": "Suburban"}], "message": "You can download the complete data from this location E:/Users/Chavi/cluster_data.csv"} },
 // };
-
-// if(response.result.summary.includes("\"")){
-//   console.log("includes");
-//   const summaryObject = JSON.parse(response.result.summary);
-//   response.result.summary = summaryObject;
-//   // console.log("response.result.summary", response.result.summary);
-// }
-// else {
-//   console.log("not includes");
-// }
 
 // res.json({
 //   message: response.result });

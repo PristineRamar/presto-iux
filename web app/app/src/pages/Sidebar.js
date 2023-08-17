@@ -38,10 +38,6 @@ function Sidebar({visible, show}) {
 							<FaPlus size={ICON_SIZE} />
 							<span className='spanSidebar'>New Chat</span>
 						</NavLink>
-						<NavLink to="/aichatv2" className="side-link">
-							{/* <FaMapPin size={ICON_SIZE} /> */}
-							<span>AIChatv2</span>
-						</NavLink>
 					</div>
 				</div>
 			</side>

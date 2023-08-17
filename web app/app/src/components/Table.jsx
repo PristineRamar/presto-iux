@@ -18,7 +18,6 @@ export default class Table extends React.Component {
     getHeader = function(){
       var keys = this.getKeys();
       return keys.map((key, index)=>{
-        // return <th key={key}>{key.toUpperCase()}</th>
         return <th key={key}>{key}</th>
       })
     }
@@ -34,7 +33,7 @@ export default class Table extends React.Component {
     }
     
     render() {
-      const columnsWithTextWrap = ['Store Names', 'Store Count']; // Add the column names that should have text wrapping
+      const columnsWithTextWrap = []; // Add the column names that should have text wrapping
         return (
           <div className='table-border'>
             <table>
@@ -61,31 +60,36 @@ const RenderRow = (props) => {
         const isNumber = true
         const hasDecimalPart = columnValue % 1 !== 0;
         if (hasDecimalPart) {
-          if (key.includes('Income') || key.includes('Movement')) {
+          if (key.includes('Income') || (key.includes('Sales') || key.includes('Margin'))) {
             cellContent = '$' + columnValue.toFixed(0); // Display up to 2 decimal places
             cellContent = numeral(columnValue).format('$0,0');
           }
-          else if ((key.includes('Sales')) || (key.includes('Cost') || (key.includes('Price'))))
+          else if ((key.includes('Cost') || (key.includes('Price'))))
           {
             cellContent = '$' + columnValue.toFixed(2); // Display up to 2 decimal places
             cellContent = numeral(columnValue).format('$0,0.00');
           } else 
             cellContent = columnValue.toFixed(2); // Display up to 2 decimal places
         } else {
-          if (key.includes('Income') || key.includes('Movement')) {
+          if (key.includes('Income') || (key.includes('Sales') || key.includes('Margin'))) {
             cellContent = '$' + columnValue.toFixed(0); // Display up to 2 decimal places
             cellContent = numeral(columnValue).format('$0,0');
-          } else if ((key.includes('Sales')) || (key.includes('Cost') || (key.includes('Price'))))
+          }
+          else if ((key.includes('Cost') || (key.includes('Price'))))
           {
             cellContent = '$' + columnValue.toFixed(2); // Display up to 2 decimal places
             cellContent = numeral(columnValue).format('$0,0');
-          }else 
-            cellContent = columnValue.toString(); // Convert to string without decimal places
+          } 
+          else if(!key.includes('Year')){              
+            cellContent = numeral(columnValue).format('0,0');
+          }
+          else {
+            cellContent = columnValue.toString();
+          }
         }
 
         return (
           <td
-              // key={props.data[key]}
               key={`row-${props.index}-col-${key}`}
               className={`${shouldWrapText ? 'wrap-text' : ''} ${isNumber ? 'center-align' : ''}`}
           >
@@ -93,7 +97,6 @@ const RenderRow = (props) => {
           </td>
       );
       } else {
-          // cellContent = columnValue;
           return (
             <td
                 key={props.data[key]}
