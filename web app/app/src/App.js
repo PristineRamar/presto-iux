@@ -14,12 +14,14 @@ function App() {
 
   useEffect(() => {
     const auth = localStorage.getItem("user");
-    console.log("auth: ", auth);
+    // console.log("auth: ", auth);
     if (auth) {
       setIsLogin(true);
     }
   }, []);
 
+
+  //This code is the culprit for login page flashing on refresh
   useEffect(() => {
     console.log("isLogin: ", isLogin);
     if (!isLogin) {
