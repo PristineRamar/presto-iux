@@ -175,7 +175,7 @@
 }
 
 .chat-log {
-  height: 430px; /* RB */
+  height: 550px; /* RB */
   padding-bottom: 20px;
   width: 90%;
   overflow-x: hidden;
@@ -242,6 +242,15 @@
 
 ::-webkit-scrollbar-track {
   background-color: transparent; /* Color of the scrollbar track */
+}
+
+@media (resolution: 1.5dppx) {
+  .chat-log {
+    height: 430px;
+    /* width: auto; */
+  }
+
+  
 }
 
 @media only screen and (max-width: 480px) {
