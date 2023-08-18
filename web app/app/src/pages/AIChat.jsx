@@ -14,7 +14,7 @@ import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
 const AIChat = (props) => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const userId = params.get('userId') || null;
+  // const userId = params.get('userId') || null;
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
@@ -80,8 +80,9 @@ const AIChat = (props) => {
     setSelectedMessageIndex(-1);
 
     //need to only send userid
-    const userDetails = userId;
     const token = JSON.parse(localStorage.getItem("auth"));
+    const decodedToken = jwt_decode(token.auth);
+    const userDetails = decodedToken.USER_ID;
     const refreshTokenlocal = JSON.parse(localStorage.getItem("refreshToken"));
     // console.log("token: " + token.auth);
 
@@ -115,7 +116,6 @@ const AIChat = (props) => {
     const fetchWithTokenRefresh = async (url, options) => {
       // url = url || "http://localhost:1514/refresh";
       const currentDate = new Date();
-      const decodedToken = jwt_decode(token.auth);
       if (decodedToken.exp * 1000 < currentDate.getTime()) {
         const data = await refreshToken();
         console.log("access token: " + data.accessToken);
