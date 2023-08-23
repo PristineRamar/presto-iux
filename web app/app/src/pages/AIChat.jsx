@@ -4,16 +4,23 @@ import ChatMessage from "../components/ChatMessage";
 import { usePromiseTracker, trackPromise } from "react-promise-tracker";
 import TextareaAutosize from 'react-textarea-autosize';
 import LoadingSpinner from "../components/LoadingSpinner";
-import {useLocation} from "react-router-dom";
-import axios from "axios";
+// import {useLocation} from "react-router-dom";
+import {useNavigate } from "react-router-dom";
+// import axios from "axios";
 import jwt_decode from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
+import { v4 as uuidv4 } from 'uuid';
 // import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
+const generateSessionId = () => {
+  return uuidv4();
+};
+
 const AIChat = (props) => {
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
+  // const location = useLocation();
+  const navigate = useNavigate ();
+  // const params = new URLSearchParams(location.search);
   // const userId = params.get('userId') || null;
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -39,6 +46,14 @@ const AIChat = (props) => {
   const inputRef = useRef(null);
   const { promiseInProgress } = usePromiseTracker();
   const messageEl = useRef(null);
+  const [sessionId, setSessionId] = useState("");
+
+  useEffect(() => {
+    // Generate a new session ID on login or window refresh
+    const newSessionId = generateSessionId();
+    setSessionId(newSessionId);
+    console.log('Generated Session ID:', sessionId);
+  }, []);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -68,7 +83,25 @@ const AIChat = (props) => {
       setTranscript('');
     }
   }, [transcript, listening]);
-  
+
+  useEffect(() => {
+    const authData = localStorage.getItem('auth');
+    if (!authData) {
+      navigate('/login'); // Replace '/login' with the actual login route
+    } 
+    else {
+      const decodedToken = jwt_decode(JSON.parse(authData).auth);
+      const currentDate = new Date();
+      
+      if (decodedToken.exp * 1000 < currentDate.getTime()) {
+        console.log("use effect for authicate check");
+        // Clear local storage and navigate to the login page
+        localStorage.removeItem('auth');
+        localStorage.removeItem('refreshToken');
+        navigate('/login'); // Replace '/login' with the actual login route
+      }
+    }
+  }, [input, navigate]);
 
   async function handleSubmit(e) {
     let chatLogNew = [
@@ -92,7 +125,7 @@ const AIChat = (props) => {
 
     const refreshToken = async () => {
       try {
-        const res = await fetch("https://localhost:1514/refresh", {
+        const res = await fetch("http://localhost:1514/refresh", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -100,8 +133,8 @@ const AIChat = (props) => {
           },
         });
         const data = await res.json();
-        console.log("data acess token: " + data.accessToken);
-        console.log("data refresh token: " + data.refreshToken);
+        // console.log("data acess token: " + data.accessToken);
+        // console.log("data refresh token: " + data.refreshToken);
         setUser({
           ...user,
           accessToken: data.accessToken,
@@ -114,16 +147,28 @@ const AIChat = (props) => {
     };
 
     const fetchWithTokenRefresh = async (url, options) => {
-      // url = url || "http://localhost:1514/refresh";
       const currentDate = new Date();
       if (decodedToken.exp * 1000 < currentDate.getTime()) {
         const data = await refreshToken();
-        console.log("access token: " + data.accessToken);
-        console.log("refresh token: " + data.refreshToken);
+        console.log("access token: " );
+        console.log("refresh token: " );
         options.headers["Authorization"] = `Bearer ${data.refreshToken}`;
       }
       console.log(url);
-      return fetch(url, options);
+      return fetch(url, options)
+      .then((response) => {
+        if (response.status === 403) {
+          // Unauthorized access (authentication failure)
+          localStorage.removeItem('auth'); // Clear authentication data
+          localStorage.removeItem('refreshToken'); // Clear refresh token
+          navigate('/login'); // Navigate to the login page
+        }
+        return response;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        throw error;
+      });
     };
 
     const handleMessageResponse = (data) => {
@@ -156,8 +201,15 @@ const AIChat = (props) => {
     }
 
     trackPromise(
+      //local testing URL
       fetchWithTokenRefresh("http://localhost:1514/", {
-      // fetch("http://secure.pristineinfotech.com:1514/", {
+      //dev testing URL
+      // fetch("http://secure.pristineinfotech.com:4026/", {
+      //Synthectic data testing URL
+      //fetch("http://secure.pristineinfotech.com:1514/", {
+      //C&S testing URL
+      // fetch("http://secure.pristineinfotech.com:4028/", {
+      //let response 
       //  fetch("https://secure1.pristineinfotech.com:1514/", {
         
         method: "POST",
@@ -168,6 +220,7 @@ const AIChat = (props) => {
         body: JSON.stringify({
           userDetails: userDetails,
           message: input,
+          sessionId: sessionId,
         }),
       })
         .then((response) => {
