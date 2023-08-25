@@ -31,13 +31,13 @@ async function fun() {
 
   //move this as config
   try {
-      connection = await oracledb.getConnection({
+    connection = await oracledb.getConnection({
       user: "DEV_FOODLION",
       password: "F#oDLioN#DEV",
       connectString: "secure.pristineinfotech.com:3541/DEVFL",
     });
 	
-	  //connection = await oracledb.getConnection({
+	//connection = await oracledb.getConnection({
     //  user: "DEV_HANNAFORD",
     //  password: "H#AFord#DEV",
     //  connectString: "secure.pristineinfotech.com:3540/DEVHF",
@@ -162,41 +162,70 @@ app.post("/", verifyToken, async (req, res) => {
           connectString: "secure.pristineinfotech.com:3541/DEVFL",
         });
 
-        console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId, " :: "
-        , responseData.result.summary, " :: ", responseData.result.meta_data);
+        console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId );
+        //, " :: ", responseData.result.summary, " :: ", responseData.result.meta_data);
+	
+		if(responseData.result.summary)
+        {
+          const sql = `
+            INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP)
+            VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP)
+          `;
 
-        const sql = `
-        INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID,USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP)
-        VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP)
-      `;
-
-      const binds = {
-        id: sessionId,
-        conversationId: conversationId,
-        sender: userDetails,
-        message:message,
-        api_response: JSON.stringify(removeTypeProperty(responseData.result.summary)),
-        response_type: responseData.result.summary.type || null,
-      };
-
-      if (responseData.result.meta_data) {
-        binds.metaData = JSON.stringify(responseData.result.meta_data);
-    }
-
-      function removeTypeProperty(obj) {
-        if (obj && typeof obj === 'object') {
-            const { type, ...rest } = obj;
-            return rest;
+          const binds = {
+            id: sessionId,
+            conversationId: conversationId,
+            sender: userDetails,
+            message:message,
+            api_response: JSON.stringify(removeTypeProperty(responseData.result.summary)),
+            response_type: responseData.result.summary.type || null,
+          };
+    
+          if (responseData.result.meta_data) {
+            binds.metaData = JSON.stringify(responseData.result.meta_data);
         }
-        return obj;
-    }
+    
+          function removeTypeProperty(obj) {
+            if (obj && typeof obj === 'object') {
+                const { type, ...rest } = obj;
+                return rest;
+            }
+            return obj;
+        }
+    
+			//console.log("summary sql", sql);
+          const result = await connection.execute(sql, binds, { autoCommit: true });
+            connection.release();
+        
+            res.json({
+              message: responseData.result,
+            });
+        }
+        else if(responseData.result.error_code){
+		      console.log("error test");
+          const sql = `
+            INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message,  TIMESTAMP, ERROR_CODE, ERROR_MESSAGE, ERROR_DETAIL)
+            VALUES (:id, :conversationId, :sender, :message, CURRENT_TIMESTAMP, :error_code, :error_message, :detail)
+          `;
 
-      const result = await connection.execute(sql, binds, { autoCommit: true });
-        connection.release();
-		
-        res.json({
-          message: responseData.result,
-        });
+        const binds = {
+          id: sessionId,
+          conversationId: conversationId,
+          sender: userDetails,
+          message:message,
+          error_code: responseData.result.error_code,
+          error_message: responseData.result.error_message,
+          detail: responseData.result.detail,
+        };
+
+		//console.log("completeSql", sql);
+		      const result = await connection.execute(sql, binds, { autoCommit: true });
+         connection.release();
+
+		res.json({
+		message: responseData.result });
+      }
+	  
       } else {
         response.console.error();
         console.log("response not received");
@@ -229,16 +258,11 @@ app.post("/", verifyToken, async (req, res) => {
     }
 });
 
-// const response = {
+// const responseData = {
 //   result: {
-//     "meta_data": {
-//       "locations": "Global Zone",
-//       "products": "HAIR CARE",
-//       "timeframe": "2023-05-17 - 2023-08-16"
-//   },
-//     // summary: {"type": "table"} 
-//     "summary": {"type": "table", "tableData1": [{"Cluster": 1, "Store Count": 4, "Store Names": "Grand Union-Warrensburg, Grand Union-Peru, Grand Union-Saranac Lake, Grand Union-Rome", "Avg. Distance In Miles": 1.5, "Median Income": 47533.82, "Urbanicity (Mode)": "Rural"}, {"Cluster": 2, "Store Count": 4, "Store Names": "Grand Union-Rutland, Grand Union-Sherrill, Grand Union-Owego, Grand Union-Cooperstown", "Avg. Distance In Miles": 2.5, "Median Income": 54767.31, "Urbanicity (Mode)": "Rural"}, {"Cluster": 3, "Store Count": 3, "Store Names": "Grand Union-Watertown, Grand Union-Cortland, Grand Union-Norwich", "Avg. Distance In Miles": 1.9, "Median Income": 59363.08, "Urbanicity (Mode)": "Suburban"}], "message": "You can download the complete data from this location E:/Users/Chavi/cluster_data.csv"}
-//     // summary: 'Hello! How are you?',
+//     error_code:"parsing",
+//     error_message:"We had trouble identifying the product(s) you mentioned. Can you try rephrasing?",
+//     detail:"Got an error from DATA API"
 //   }
 // };
 
@@ -251,38 +275,65 @@ app.post("/", verifyToken, async (req, res) => {
 //           connectString: "secure.pristineinfotech.com:3541/DEVFL",
 //         });
 
-//         console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId, " :: "
-//         , removeTypeProperty(response.result.summary), " :: ", response.result.meta_data);
+//         console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId);
+//         // , removeTypeProperty(response.result.summary), " :: ", response.result.meta_data);
+//         // const completeSQl;
+//         if(responseData.result.summary)
+//         {
+//           const sql = `
+//             INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP)
+//             VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP)
+//           `;
 
-//         const sql = `
-//         INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID,USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP)
-//         VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP)
-//       `;
-
-//       const binds = {
-//         id: sessionId,
-//         conversationId: conversationId,
-//         sender: userDetails,
-//         message:message,
-//         api_response: JSON.stringify(removeTypeProperty(response.result.summary)),
-//         response_type: response.result.summary.type || null,
-//       };
-
-//       if (response.result.meta_data) {
-//         binds.metaData = JSON.stringify(response.result.meta_data);
-//     }
-
-//       function removeTypeProperty(obj) {
-//         if (obj && typeof obj === 'object') {
-//             const { type, ...rest } = obj;
-//             return rest;
+//           const binds = {
+//             id: sessionId,
+//             conversationId: conversationId,
+//             sender: userDetails,
+//             message:message,
+//             api_response: JSON.stringify(removeTypeProperty(responseData.result.summary)),
+//             response_type: responseData.result.summary.type || null,
+//           };
+    
+//           if (responseData.result.meta_data) {
+//             binds.metaData = JSON.stringify(responseData.result.meta_data);
 //         }
-//         return obj;
-//     }
+    
+//           function removeTypeProperty(obj) {
+//             if (obj && typeof obj === 'object') {
+//                 const { type, ...rest } = obj;
+//                 return rest;
+//             }
+//             return obj;
+//         }
+    
+//           const result = await connection.execute(sql, binds, { autoCommit: true });
+//             connection.release();
+        
+//             res.json({
+//               message: responseData.result,
+//             });
+//         }
+//         else if(responseData.result.error_code){
+//           const sql = `
+//             INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message,  TIMESTAMP, ERROR_CODE, ERROR_MESSAGE, ERROR_DETAIL)
+//             VALUES (:id, :conversationId, :sender, :message, CURRENT_TIMESTAMP, :error_code, :error_message, :detail)
+//           `;
 
+//         const binds = {
+//           id: sessionId,
+//           conversationId: conversationId,
+//           sender: userDetails,
+//           message:message,
+//           error_code: responseData.result.error_code,
+//           error_message: responseData.result.error_message,
+//           detail: responseData.result.detail,
+//         };
+
+//   //     console.log("completeSql", completeSql);
 //       const result = await connection.execute(sql, binds, { autoCommit: true });
 //         connection.release();
 
-// res.json({
-//   message: response.result });
+//   res.json({
+//     message: responseData.result });
+//       }
 // });

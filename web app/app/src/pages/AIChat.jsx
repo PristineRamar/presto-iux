@@ -52,7 +52,7 @@ const AIChat = (props) => {
     // Generate a new session ID on login or window refresh
     const newSessionId = generateSessionId();
     setSessionId(newSessionId);
-    console.log('Generated Session ID:', sessionId);
+    // console.log('Generated Session ID:', sessionId);
   }, []);
 
   useEffect(() => {
@@ -172,13 +172,20 @@ const AIChat = (props) => {
     };
 
     const handleMessageResponse = (data) => {
-      const responseType = data.message.summary.type;
-      console.log("responseType: " + responseType);
+      console.log("data: " + JSON.stringify(data));
+      let responseType ;
+      if(data.message.summary)
+        responseType = data.message.summary.type;
+      const errorMessage = data.message.error_message;
+      console.log("responseType: " + errorMessage);
 
       let responseSummary;
       if(responseType === "line" || responseType === "bar" || responseType === "table"){
         responseSummary = JSON.stringify(data.message.summary)
-      } else responseSummary = data.message.summary;
+      } else if(data.message.error_message){
+        responseSummary = errorMessage;
+      }
+      else responseSummary = data.message.summary;
 
       const responseMetadata = data.message.meta_data;
 
@@ -202,13 +209,13 @@ const AIChat = (props) => {
 
     trackPromise(
       //local testing URL
-      fetchWithTokenRefresh("http://localhost:1514/", {
+      // fetchWithTokenRefresh("http://localhost:1514/", {
       //dev testing URL
       // fetch("http://secure.pristineinfotech.com:4026/", {
       //Synthectic data testing URL
-      //fetch("http://secure.pristineinfotech.com:1514/", {
+      // fetch("http://secure.pristineinfotech.com:1514/", {
       //C&S testing URL
-      // fetch("http://secure.pristineinfotech.com:4028/", {
+      fetch("http://secure.pristineinfotech.com:4028/", {
       //let response 
       //  fetch("https://secure1.pristineinfotech.com:1514/", {
         
@@ -224,6 +231,7 @@ const AIChat = (props) => {
         }),
       })
         .then((response) => {
+          // {console.log("response: " + response.json())}
           return new Promise((resolve) => {resolve(response.json());});})
         .then((data) => handleMessageResponse(data)
   ))
