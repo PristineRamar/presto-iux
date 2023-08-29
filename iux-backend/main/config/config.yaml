@@ -1,0 +1,27 @@
+agent:
+    llm_model: gpt-3.5-turbo-0613
+    #llm-model: gpt-4-0613
+    api_url: http://localhost:8002/
+    user_id: ejack
+    port: 8002
+
+database:
+    username: READONLY_RA
+    password: 'RE1#AD2#RA3'
+    dbname: secure9.pristineinfotech.com:7784/RiteAid
+
+general:
+    client_name: "RA"
+    data_url: 'http://secure1.pristineinfotech.com:7200/presto-data-services'
+    chain_id: 52
+    global_zone_id: 483
+    all_prod_id: 9491
+    n_responses: 1
+    cache: False
+    port: 8002
+    log_filename: 'RA_DEV'
+    
+open-ai:
+    open_ai_key: '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'
+   
+    
