@@ -1,0 +1,7 @@
+scipy
+tenacity
+tiktoken
+termcolor 
+openai
+requests
+langchain
