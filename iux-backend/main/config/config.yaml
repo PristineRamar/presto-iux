@@ -24,4 +24,5 @@ general:
 open-ai:
     open_ai_key: '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'
    
-    
+kvi:
+    kvi_url: 'http://127.0.0.1:6999/'    
