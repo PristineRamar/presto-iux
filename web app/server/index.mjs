@@ -139,6 +139,8 @@ app.post("/", verifyToken, async (req, res) => {
  
   //REST API call
   try {
+    const conversationId = uuidv4();
+
     const response = await fetch("http://20.228.231.91:9002/query", {
       method: "POST",
       headers: {
@@ -146,22 +148,29 @@ app.post("/", verifyToken, async (req, res) => {
       },
        body: JSON.stringify({ 
         userid: userDetails, 
-        prompt: message, }),
+        prompt: message, 
+        sessionid: sessionId,
+        conversationid: conversationId,
+      }),
     });
   
       if (response.ok) {
         const responseData = await response.json();
-        console.log("response1: ", responseData);
+		    console.log("response1: ", responseData);
 		
-		const conversationId = uuidv4();
-        // const sessionId = uuidv4();
-
+    //    res.json({
+    //      message: responseData.result,
+    //    });
+		
+		
+		// const conversationId = uuidv4();
+	
         const connection = await oracledb.getConnection({
           user: "DEV_FOODLION",
           password: "F#oDLioN#DEV",
           connectString: "secure.pristineinfotech.com:3541/DEVFL",
         });
-
+	
         console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId );
         //, " :: ", responseData.result.summary, " :: ", responseData.result.meta_data);
 	
@@ -171,15 +180,21 @@ app.post("/", verifyToken, async (req, res) => {
             INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP)
             VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP)
           `;
-
+	
           const binds = {
             id: sessionId,
             conversationId: conversationId,
             sender: userDetails,
             message:message,
             api_response: JSON.stringify(removeTypeProperty(responseData.result.summary)),
-            response_type: responseData.result.summary.type || null,
+             response_type: null,
+              metaData: null,
           };
+    
+	
+		if(responseData.result.summary.type){
+           binds.response_type = responseData.result.summary.type;
+        }
     
           if (responseData.result.meta_data) {
             binds.metaData = JSON.stringify(responseData.result.meta_data);
@@ -193,7 +208,6 @@ app.post("/", verifyToken, async (req, res) => {
             return obj;
         }
     
-			//console.log("summary sql", sql);
           const result = await connection.execute(sql, binds, { autoCommit: true });
             connection.release();
         
@@ -201,13 +215,13 @@ app.post("/", verifyToken, async (req, res) => {
               message: responseData.result,
             });
         }
-        else if(responseData.result.error_code){
-		      console.log("error test");
+       else if(responseData.result.error_code){
+		console.log("error test");
           const sql = `
             INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message,  TIMESTAMP, ERROR_CODE, ERROR_MESSAGE, ERROR_DETAIL)
             VALUES (:id, :conversationId, :sender, :message, CURRENT_TIMESTAMP, :error_code, :error_message, :detail)
           `;
-
+	
         const binds = {
           id: sessionId,
           conversationId: conversationId,
@@ -217,15 +231,13 @@ app.post("/", verifyToken, async (req, res) => {
           error_message: responseData.result.error_message,
           detail: responseData.result.detail,
         };
-
-		//console.log("completeSql", sql);
-		      const result = await connection.execute(sql, binds, { autoCommit: true });
+	
+		 const result = await connection.execute(sql, binds, { autoCommit: true });
          connection.release();
-
+	
 		res.json({
 		message: responseData.result });
       }
-	  
       } else {
         response.console.error();
         console.log("response not received");
@@ -258,11 +270,14 @@ app.post("/", verifyToken, async (req, res) => {
     }
 });
 
+
 // const responseData = {
 //   result: {
-//     error_code:"parsing",
-//     error_message:"We had trouble identifying the product(s) you mentioned. Can you try rephrasing?",
-//     detail:"Got an error from DATA API"
+//     // error_code:"parsing",
+//     // error_message:"We had trouble identifying the product(s) you mentioned. Can you try rephrasing?",
+//     // detail:"Got an error from DATA API",
+//     // "summary": {"type": "table", "tableData1": [{"Cluster": 1, "Store Count": 4, "Store Names": "Grand Union-Warrensburg, Grand Union-Peru, Grand Union-Saranac Lake, Grand Union-Rome", "Avg. Distance In Miles": 1.5, "Median Income": 47533.82, "Urbanicity (Mode)": "Rural"}, {"Cluster": 2, "Store Count": 4, "Store Names": "Grand Union-Rutland, Grand Union-Sherrill, Grand Union-Owego, Grand Union-Cooperstown", "Avg. Distance In Miles": 2.5, "Median Income": 54767.31, "Urbanicity (Mode)": "Rural"}, {"Cluster": 3, "Store Count": 3, "Store Names": "Grand Union-Watertown, Grand Union-Cortland, Grand Union-Norwich", "Avg. Distance In Miles": 1.9, "Median Income": 59363.08, "Urbanicity (Mode)": "Suburban"}], "message": "You can download the complete data from this location E:/Users/Chavi/cluster_data.csv"}
+//     "summary": "There are 1,428 Walgreens stores within 3 miles of a Rite Aid store"
 //   }
 // };
 
@@ -275,43 +290,49 @@ app.post("/", verifyToken, async (req, res) => {
 //           connectString: "secure.pristineinfotech.com:3541/DEVFL",
 //         });
 
-//         console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId);
-//         // , removeTypeProperty(response.result.summary), " :: ", response.result.meta_data);
+//         console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId , "::", responseData.result.summary.type);
+        
 //         // const completeSQl;
 //         if(responseData.result.summary)
 //         {
-//           const sql = `
-//             INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP)
-//             VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP)
-//           `;
+//             const sql = `
+//               INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP)
+//               VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP)
+//             `;
 
-//           const binds = {
-//             id: sessionId,
-//             conversationId: conversationId,
-//             sender: userDetails,
-//             message:message,
-//             api_response: JSON.stringify(removeTypeProperty(responseData.result.summary)),
-//             response_type: responseData.result.summary.type || null,
-//           };
-    
-//           if (responseData.result.meta_data) {
-//             binds.metaData = JSON.stringify(responseData.result.meta_data);
-//         }
-    
-//           function removeTypeProperty(obj) {
-//             if (obj && typeof obj === 'object') {
-//                 const { type, ...rest } = obj;
-//                 return rest;
+//             const binds = {
+//               id: sessionId,
+//               conversationId: conversationId,
+//               sender: userDetails,
+//               message:message,
+//               api_response: JSON.stringify(removeTypeProperty(responseData.result.summary)),
+//               response_type: null,
+//               metaData: null,
+//             };
+
+//             if(responseData.result.summary.type){
+//               binds.response_type = responseData.result.summary.type;
 //             }
-//             return obj;
-//         }
-    
-//           const result = await connection.execute(sql, binds, { autoCommit: true });
-//             connection.release();
-        
-//             res.json({
-//               message: responseData.result,
-//             });
+      
+//             if (responseData.result.meta_data) {
+//               binds.metaData = JSON.stringify(responseData.result.meta_data);
+//             }
+      
+//             function removeTypeProperty(obj) {
+//               if (obj && typeof obj === 'object') {
+//                   const { type, ...rest } = obj;
+//                   return rest;
+//               }
+//               return obj;
+//             }
+            
+      
+//             const result = await connection.execute(sql, binds, { autoCommit: true });
+//               connection.release();
+          
+//               res.json({
+//                 message: responseData.result,
+//               });
 //         }
 //         else if(responseData.result.error_code){
 //           const sql = `
