@@ -3,36 +3,14 @@ import { FaUser } from "react-icons/fa";
 import Chart from "react-apexcharts";
 import Table from "./Table";
 import "../styles/table.css";
+import ChartParser from "./ChartParser";
 
 const ICON_SIZE = 20;
 
 const ChatMessage = memo(({ message, metadata, chatType, visible }) => {
-   let parsedMessage;
-   let updatedOptions;
-  if(chatType === "line" || chatType === "bar" || chatType === "table")
-    { 
-      parsedMessage  = JSON.parse(message.message); 
+  console.log("chatType", chatType);
 
-      if(chatType !== "table"){
-        for (let key in parsedMessage.options.xaxis) {
-          updatedOptions = {
-              xaxis: {
-                categories: parsedMessage.options.xaxis[key]
-              }
-            };
-      }
-        updatedOptions.chart = {
-          id: "basic-bar",
-          zoom: { enabled: false },
-          // toolbar: { show: false },
-        };
-        updatedOptions.dataLabels = {
-          enabled: false,
-        };
-        updatedOptions.colors = ["#E91E63", "#FF9800", "#064687", "#340b7c89","#09b40989", "#b409a389"];
-        
-      }
-    }
+  const { updatedOptions, parsedMessage } = ChartParser({ message: message.message, chatType }); // Call ChartParser to get options and series
 
   const renderList = (items) => (
     <ul className="text-container" style={{ listStyleType: "none" }}>
@@ -155,7 +133,7 @@ const ChatMessage = memo(({ message, metadata, chatType, visible }) => {
             renderList(message.message.split(","))
           ) : chatType === "newLine" ? (
             renderList(message.message.split("\n"))
-          ) : chatType === "line" || chatType === "bar" ? (
+          ) : chatType === "line" || chatType === "bar" || chatType === "pie" ? (
             <Chart
               options={updatedOptions}
               series={parsedMessage.series}

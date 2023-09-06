@@ -272,12 +272,45 @@ app.post("/", verifyToken, async (req, res) => {
 
 
 // const responseData = {
+  // result: {
+  //   // error_code:"parsing",
+  //   // error_message:"We had trouble identifying the product(s) you mentioned. Can you try rephrasing?",
+  //   // detail:"Got an error from DATA API",
+  //   // "summary": {"type": "table", "tableData1": [{"Cluster": 1, "Store Count": 4, "Store Names": "Grand Union-Warrensburg, Grand Union-Peru, Grand Union-Saranac Lake, Grand Union-Rome", "Avg. Distance In Miles": 1.5, "Median Income": 47533.82, "Urbanicity (Mode)": "Rural"}, {"Cluster": 2, "Store Count": 4, "Store Names": "Grand Union-Rutland, Grand Union-Sherrill, Grand Union-Owego, Grand Union-Cooperstown", "Avg. Distance In Miles": 2.5, "Median Income": 54767.31, "Urbanicity (Mode)": "Rural"}, {"Cluster": 3, "Store Count": 3, "Store Names": "Grand Union-Watertown, Grand Union-Cortland, Grand Union-Norwich", "Avg. Distance In Miles": 1.9, "Median Income": 59363.08, "Urbanicity (Mode)": "Suburban"}], "message": "You can download the complete data from this location E:/Users/Chavi/cluster_data.csv"}
+  //   "summary": "There are 1,428 Walgreens stores within 3 miles of a Rite Aid store"
+  // }
+
 //   result: {
-//     // error_code:"parsing",
-//     // error_message:"We had trouble identifying the product(s) you mentioned. Can you try rephrasing?",
-//     // detail:"Got an error from DATA API",
-//     // "summary": {"type": "table", "tableData1": [{"Cluster": 1, "Store Count": 4, "Store Names": "Grand Union-Warrensburg, Grand Union-Peru, Grand Union-Saranac Lake, Grand Union-Rome", "Avg. Distance In Miles": 1.5, "Median Income": 47533.82, "Urbanicity (Mode)": "Rural"}, {"Cluster": 2, "Store Count": 4, "Store Names": "Grand Union-Rutland, Grand Union-Sherrill, Grand Union-Owego, Grand Union-Cooperstown", "Avg. Distance In Miles": 2.5, "Median Income": 54767.31, "Urbanicity (Mode)": "Rural"}, {"Cluster": 3, "Store Count": 3, "Store Names": "Grand Union-Watertown, Grand Union-Cortland, Grand Union-Norwich", "Avg. Distance In Miles": 1.9, "Median Income": 59363.08, "Urbanicity (Mode)": "Suburban"}], "message": "You can download the complete data from this location E:/Users/Chavi/cluster_data.csv"}
-//     "summary": "There are 1,428 Walgreens stores within 3 miles of a Rite Aid store"
+//     "summary": {
+//         "type": "pie",
+//         "options": {
+//           // "title":{ "text":"Student PieChart"} , 
+//           // "noData":{"text":"Empty Data"},                        
+//           "labels":['Hindi', 'Math', 'English', 'Science','SocialScience']
+//       },
+//       "series": [65, 76, 85, 65, 64] 
+//     }
+// }
+
+// result: {
+//       "summary": {
+//           "type": "bar",
+//           "options": {
+//             "xaxis": {
+//                 "LOCATION_NAME": ["E - RA - CVS WAG - BA - HCI","E - RA - CVS WAG - BA - LCI","E - RA - CVS WAG - LPS -","E - RA - CVS WAG - MPS - HCI","E - RA - CVS WAG - MPS - LCI","E - RA - NO DRUG - BA -","E - RA - NO DRUG - LPS -","E - RA - NO DRUG - MPS -","E - RA - WAG - BA -","E - RA - WAG - MPS -","M - RA - CVS WAG - BA - HCI","M - RA - CVS WAG - BA - LCI","M - RA - CVS WAG - MPS - HCI","M - RA - CVS WAG - MPS - LCI","M - RA - NO DRUG - BA -","M - RA - NO DRUG - MPS - LCI","M - RA - WAG - MPS -","MANHATTAN","ONLINE STORE","SMALL FORMAT STORES","W - BR - CVS WAG -  -","W - BR - WAG -  -","W - RA - CVS WAG - BA - HCI","W - RA - CVS WAG - BA - LCI","W - RA - CVS WAG - LPS -","W - RA - CVS WAG - MPS - HCI","W - RA - CVS WAG - MPS - LCI","W - RA - NO DRUG - BA -","W - RA - NO DRUG - LPS -","W - RA - NO DRUG - MPS -","W - RA - WAG - BA -"]
+//             }
+//         },
+//         "series": [
+//             {
+//                 "name": "Price Index",
+//                 "data": [109.14,98.88,101.79,95.83,96.08,103.69,102.54,99.04,100.63,95.26,96.05,98.95,95.85,95.52,104.46,103.2,96.79,96.34,169.74,97.72,92.9,92.73,97.15,98.84,105.64,100.34,96.46,102.97,103.33,101.68,99.28]
+//             },
+//             {
+//               "name": "Price column",
+//               "data": [10.14,9.88,10.79,9.83,9.08,10.69,10.54,9.04,10.63,9.26,9.05,9.95,9.85,9.52,10.46,10.2,7,9.34,16.74,9.72,9.9,9.73,9.15,9.84,15.64,10.34,9.46,10.97,10.33,11.68,9.28]
+//           }
+//         ]
+//       }
 //   }
 // };
 
