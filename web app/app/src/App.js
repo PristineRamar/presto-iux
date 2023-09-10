@@ -5,6 +5,7 @@ import "./styles/index.css";
 import AIChat from "./pages/AIChat";
 import Navbar from "./pages/Navbar";
 import LoginPage from "./pages/Login";
+import PrestoPage from "./pages/PrestoPage";
 
 
 function App() {
@@ -22,18 +23,19 @@ function App() {
 
 
   //This code is the culprit for login page flashing on refresh
-  useEffect(() => {
-    console.log("isLogin: ", isLogin);
-    if (!isLogin) {
-      navigate('/login');
-    }
-  }, [isLogin]);
+  // useEffect(() => {
+  //   console.log("isLogin: ", isLogin);
+  //   if (!isLogin) {
+  //     navigate('/login');
+  //   }
+  // }, [isLogin]);
 
 
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/presto" element={<PrestoPage />} />
       {console.log("isLogin: ", isLogin)}
       <Route
         path="/aichat"

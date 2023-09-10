@@ -3,35 +3,74 @@ import React from "react";
 import "../styles/table.css";
 
 const ChartParser = ({ message, chatType }) => {
+    console.log("chatType", chatType);
   let parsedMessage;
   let updatedOptions;
-  let series
-
-
-  if (chatType === "line" || chatType === "bar" || chatType === "table" || chatType === "pie") {
+  
+  if (chatType === "line" || chatType === "bar" || chatType === "table" || chatType === "pie" ) {
     parsedMessage = JSON.parse(message);
 
     if (chatType !== "table") {
-        if(parsedMessage.options.xaxis){
-            for (let key in parsedMessage.options.xaxis) {
-                      updatedOptions = {
-                          xaxis: {
-                            categories: parsedMessage.options.xaxis[key]
-                          }
-                        };
-                  }
+      if (parsedMessage.options.xaxis) {
+        for (let key in parsedMessage.options.xaxis) {
+          const numLabels = parsedMessage.options.xaxis[key].length;
+          const fontSize = "15px";
+          // numLabels > 50 ? "7px" : "12px";
+          updatedOptions = {
+            xaxis: {
+              categories: parsedMessage.options.xaxis[key],
+              // tickPlacement: 'on',
+              tickAmount: numLabels,
+              labels: {
+                maxHeight: 200, 
+                offsetX: 10,
+                // trim: true, // Enable label trimming
+                // formatter: function (val) {
+                //   console.log("val", val);
+                //   console.log("val.length", val.length);
+                //   // Customize the label formatting and truncation as needed
+                // const maxLength = 15; // Maximum length of the label
+                //   console.log("maxLength", val.length > maxLength ? val.slice(0, maxLength) + "..." : maxLength);
+                // return val.length > maxLength ? val.slice(0, maxLength) + "..." : val;},
+                style: {
+                  fontSize: fontSize,
+                  fontWeight: "bold",
+                },
+                // maxHeight: "100px",
+              },
+            },
+            yaxis: {
+              labels: {
+                // offsetX: -15,
+                style: {
+                  fontSize: fontSize,
+                  fontWeight: "bold",
+                },
+              },
+            },
+          };
         }
-      else updatedOptions = parsedMessage.options;
-      
+      } else updatedOptions = parsedMessage.options;
+
       updatedOptions.chart = {
         id: "basic-bar",
         zoom: { enabled: false },
         toolbar: { show: true },
       };
       updatedOptions.dataLabels = {
-        enabled: false,
+        enabled: true,
+        formatter: function (val) {
+          // Customize the formatting of data labels as needed
+          return val.toFixed(0); // Format the value to display two decimal places
+        },
+        style: {
+          fontSize: "15px", 
+          fontWeight: "bold",
+          colors: ["#121212"], // Set the color of data labels here
+        },
       };
-      updatedOptions.colors = ["#E91E63","#FF9800","#064687","#340b7c89","#09b40989","#b409a389",];
+      updatedOptions.colors = ["#1389fd","#FF9800","#064687","#340b7c89","#09b40989","#b409a389",];
+
     }
 
     console.log("parsedMessage", parsedMessage);

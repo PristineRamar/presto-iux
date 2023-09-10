@@ -25,7 +25,7 @@ function Navbar() {
 
 	return (
     <header>
-      <h3 className="tittle">IUX</h3>
+      <h3 className="tittle">KAI</h3>
       <button className="nav-btn" onClick={showNavbar}>
         <FaBars />
       </button>
