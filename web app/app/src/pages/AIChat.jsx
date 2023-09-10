@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 // import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
 
 const generateSessionId = () => {
   return uuidv4();
@@ -29,6 +30,7 @@ const AIChat = (props) => {
   // const { transcript, browserSupportsSpeechRecognition , resetTranscript, listening} = useSpeechRecognition();
 
   const [isRecording, setIsRecording] = useState(false);
+  const [timeoutId, setTimeoutId] = useState(null);
   const [isActive, setIsActive] = useState(false);
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -177,10 +179,10 @@ const AIChat = (props) => {
       if(data.message.summary)
         responseType = data.message.summary.type;
       const errorMessage = data.message.error_message;
-      console.log("responseType: " + errorMessage);
+      // console.log("responseType: " + responseType);
 
       let responseSummary;
-      if(responseType === "line" || responseType === "bar" || responseType === "table"){
+      if(responseType === "line" || responseType === "bar" || responseType === "table" || responseType === "pie"){
         responseSummary = JSON.stringify(data.message.summary)
       } else if(data.message.error_message){
         responseSummary = errorMessage;
@@ -189,7 +191,7 @@ const AIChat = (props) => {
 
       const responseMetadata = data.message.meta_data;
 
-      if(responseType === "line" || responseType === "bar" || responseType === "table"){
+      if(responseType === "line" || responseType === "bar" || responseType === "table" || responseType === "pie"){
         console.log("chatLog is a chart");
         setChatLog([...chatLogNew,
           {user: "gpt",message: `${responseSummary}`,metadata: responseMetadata,chatType: responseType,},]);
@@ -209,13 +211,13 @@ const AIChat = (props) => {
 
     trackPromise(
       //local testing URL
-      // fetchWithTokenRefresh("http://localhost:1514/", {
-      //dev testing URL
+      fetchWithTokenRefresh("http://localhost:1514/", {
+      //dev testing URL/ RA
       // fetch("http://secure.pristineinfotech.com:4026/", {
       //Synthectic data testing URL
       // fetch("http://secure.pristineinfotech.com:1514/", {
       //C&S testing URL
-      fetch("http://secure.pristineinfotech.com:4028/", {
+      // fetch("http://secure.pristineinfotech.com:4028/", {
       //let response 
       //  fetch("https://secure1.pristineinfotech.com:1514/", {
         
@@ -236,6 +238,44 @@ const AIChat = (props) => {
         .then((data) => handleMessageResponse(data)
   ))
 }
+
+const startListening = () => {
+  console.log('startListening');
+  const subscriptionKey = '42124f5a4bbd4b24946a867022a9b1c0';
+  const serviceRegion = 'eastus';
+  const speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+  speechConfig.speechRecognitionLanguage = 'en-US';
+  speechConfig.outputFormat = sdk.OutputFormat.Detailed;
+  speechConfig.enableDictation = true;
+  speechConfig.continuous = true;
+  const audioConfig = sdk.AudioConfig.fromDefaultMicrophoneInput();
+  const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
+  recognizer.recognizeOnceAsync(result => {
+    clearTimeout(timeoutId); // Clear the existing timeout.
+    if (result.reason === sdk.ResultReason.RecognizedSpeech) {
+      // Update the transcript state with the latest result
+      setTranscript(result.text);
+      setInput(result.text);
+      // Set a new timeout to stop listening after 5 seconds of silence.
+      setTimeoutId(setTimeout(() => {
+        recognizer.stopContinuousRecognitionAsync();
+        setListening(false);
+        setIsActive(false);
+      }, 2000));
+    } else if (result.reason === sdk.ResultReason.NoMatch) {
+      // Handle no speech recognized or pause.
+      console.log('No speech or pause.');
+      startListening(); // Restart listening for speech.
+    } else if (result.reason === sdk.ResultReason.Canceled) {
+      const cancellation = sdk.CancellationDetails.fromResult(result);
+      if (cancellation.reason === sdk.CancellationReason.Error) {
+        console.error(`CANCELED: ErrorCode=${cancellation.errorCode}`);
+        console.error(`CANCELED: ErrorDetails=${cancellation.errorDetails}`);
+      }
+    }
+  });
+  setListening(true);
+};
 
   function clearChat() {
     setChatLog([]);
@@ -304,7 +344,7 @@ function isSafariBrowser() {
 
 let recognitionTimeout;
 recognition.onresult = (event) => {
-  // console.log('Speech recognition result.');
+  console.log('Speech recognition result.');
   const interimTranscript = event.results[event.results.length - 1][0].transcript;
   // console.log('Interim result:', interimTranscript);
 
@@ -312,10 +352,10 @@ recognition.onresult = (event) => {
   // Check for a pause in the speech
   if (isChromeBrowser()) {
     recognitionTimeout = setTimeout(() => {
-      console.log('No input detected for 600 mseconds. Stopping the recording.');
+      console.log('No input detected for 100 mseconds. Stopping the recording.');
       recognition.stop();
       recognition.addEventListener("end", () => { console.log("Speech recognition service disconnected"); }); 
-    }, 600);
+    }, 100);
   } 
   if (isSafariBrowser()){
     recognitionTimeout = setTimeout(() => {
@@ -338,20 +378,26 @@ recognition.onresult = (event) => {
 };
 
 const handleIconClick = () => {
+
   console.log('handleIconClick', transcript);
   setTranscript('');
-  if (!isRecording && !isActive) {
-    setIsActive(true); // Set the microphone as active when starting recording
-    setIsRecording(true);
-    setListening(true);
-    recognition.start();
-  } else {
-    console.log('stop listening');
-    setIsActive(false); // Set the microphone as inactive when stopping recording
-    setIsRecording(false);
-    setListening(false);
-    recognition.stop();
-  }
+  setIsActive(true);
+  startListening();
+
+  // console.log('handleIconClick', transcript);
+  // setTranscript('');
+  // if (!isRecording && !isActive) {
+  //   setIsActive(true); // Set the microphone as active when starting recording
+  //   setIsRecording(true);
+  //   setListening(true);
+  //   recognition.start();
+  // } else {
+  //   console.log('stop listening');
+  //   setIsActive(false); // Set the microphone as inactive when stopping recording
+  //   setIsRecording(false);
+  //   setListening(false);
+  //   recognition.stop();
+  // }
 };
 
   return (

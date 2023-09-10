@@ -49,10 +49,10 @@ export default function Login() {
 
       //local testing URL
       let response = await fetch("http://localhost:1514/login", {
-      //dev testing URL
+      //dev testing URL/ RA
       // let response = await fetch("http://secure.pristineinfotech.com:4026/login", {
       //Synthectic data testing URL
-      //let response = await fetch("http://secure.pristineinfotech.com:1514/login", {
+      // let response = await fetch("http://secure.pristineinfotech.com:1514/login", {
       //C&S testing URL
       // let response = await fetch("http://secure.pristineinfotech.com:4028/login", {
       //let response 
