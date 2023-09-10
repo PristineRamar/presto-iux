@@ -41,6 +41,7 @@ export default function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    //check for the user details from prestopage along with validate form
     if (validateForm()) {
       const { username, password } = values;
       console.log("username: " + username);
@@ -116,7 +117,6 @@ export default function Login() {
           <TextField type="password" label="Password" placeholder="Password" name="password"
             onChange={(e) => handleChange(e)} variant="outlined" margin="normal" min="3"/>
           <button type="submit">Continue</button>
-          {/* <span className="spanlogin"> Don't have an account ? <Link to="/register">Create One.</Link> </span> */}
         </form>
       </div>
       <ToastContainer />

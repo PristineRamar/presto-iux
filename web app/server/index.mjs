@@ -68,6 +68,31 @@ async function fun() {
         res.status(200).json(result.rows);
       }
     });
+
+  //   app.post("/prestoUserValidation", (req, res) => {
+  //     console.log("prestoUserValidation");
+  //     const {userToken} = req.body;
+  //     // const sqlQuery = `SELECT user_id FROM user_token_details where USER_TOKEN= :userToken`;
+  //     // const binds = {userToken };
+  //     // connection.execute(sqlQuery, binds, {}).then((result) => {
+  //       // if (result.rows.length > 0) {
+  //         // console.log("status:", result.rows);
+  //         // const sqlQueryForUserDetails = `SELECT user_id, password FROM user_details where user_id= :result.rows`;
+  //         // const binds = {result.rows };
+  //         // connection.execute(sqlQuery, binds, {}).then((result) => {
+  //         //   if(result.rows.length > 0){
+  //         //     res.status(200).json(result.rows);
+  //         //   }
+  //         //   else{
+  //         //     res.status(401).json("USer details not found");
+  //         //   }
+  //         // })
+  //         res.status(200).json(userToken);
+  //       // } else {
+  //         // res.status(401).json("Incorrect Token!");
+  //       // }
+  //     });
+  //   // });
   } catch (err) {
     console.error("Error executing the query:", err);
   }
@@ -130,264 +155,186 @@ app.post("/refresh", async (req, res) => {
   });
 });
 
+//validate the token and get the user id and password from userdetails table
+// app.post("/prestoUserValidation", (req, res) => {
+//   console.log("prestoUserValidation");
+//   const userToken = req.body;
+//   const sqlQuery = `SELECT user_id FROM user_token_details where USER_TOKEN= :userToken`;
+//   const binds = {userToken };
+//   connection.execute(sqlQuery, binds, {}).then((result) => {
+//     if (result.rows.length > 0) {
+//       console.log("status:", result.rows);
+//       // const sqlQueryForUserDetails = `SELECT user_id, password FROM user_details where user_id= :result.rows`;
+//       // const binds = {result.rows };
+//       // connection.execute(sqlQuery, binds, {}).then((result) => {
+//       //   if(result.rows.length > 0){
+//       //     res.status(200).json(result.rows);
+//       //   }
+//       //   else{
+//       //     res.status(401).json("USer details not found");
+//       //   }
+//       // })
+//       res.status(200).json(result.rows);
+//     } else {
+//       res.status(401).json("Incorrect Token!");
+//     }
+//   });
+// });
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.post("/", verifyToken, async (req, res) => {
   const { userDetails, message, sessionId } = req.body;
   //console.log(message, "message");
   //console.log(userDetails, "userDetails");
- 
-  //REST API call
-  try {
-    const conversationId = uuidv4();
 
-    const response = await fetch("http://20.228.231.91:9002/query", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-       body: JSON.stringify({ 
-        userid: userDetails, 
-        prompt: message, 
-        sessionid: sessionId,
-        conversationid: conversationId,
-      }),
-    });
-  
-      if (response.ok) {
-        const responseData = await response.json();
-		    console.log("response1: ", responseData);
-		
-    //    res.json({
-    //      message: responseData.result,
-    //    });
-		
-		
-		// const conversationId = uuidv4();
-	
-        const connection = await oracledb.getConnection({
-          user: "DEV_FOODLION",
-          password: "F#oDLioN#DEV",
-          connectString: "secure.pristineinfotech.com:3541/DEVFL",
-        });
-	
-        console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId );
-        //, " :: ", responseData.result.summary, " :: ", responseData.result.meta_data);
-	
-		if(responseData.result.summary)
-        {
-          const sql = `
-            INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP)
-            VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP)
-          `;
-	
+  //REST API call
+    try {
+      const conversationId = uuidv4();
+
+      const response = await fetch("http://20.228.231.91:9002/query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+         body: JSON.stringify({
+          userid: userDetails,
+          prompt: message,
+          sessionid: sessionId,
+          conversationid: conversationId,
+        }),
+      });
+
+        if (response.ok) {
+          const responseData = await response.json();
+  		    console.log("response1: ", responseData);
+
+          const connection = await oracledb.getConnection({
+            user: "DEV_FOODLION",
+            password: "F#oDLioN#DEV",
+            connectString: "secure.pristineinfotech.com:3541/DEVFL",
+          });
+
+          console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId );
+
+  		if(responseData.result.summary)
+          {
+            const sql = `
+              INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP, INTENT)
+              VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP, :detail)
+            `;
+
+            const binds = {
+              id: sessionId,
+              conversationId: conversationId,
+              sender: userDetails,
+              message:message,
+              api_response: JSON.stringify(removeTypeProperty(responseData.result.summary)),
+              response_type: null,
+              metaData: null,
+              detail: responseData.result.detail,
+            };
+
+  		if(responseData.result.summary.type){
+             binds.response_type = responseData.result.summary.type;
+          }
+
+            if (responseData.result.meta_data) {
+              binds.metaData = JSON.stringify(responseData.result.meta_data);
+          }
+
+            function removeTypeProperty(obj) {
+              if (obj && typeof obj === 'object') {
+                  const { type, ...rest } = obj;
+                  return rest;
+              }
+              return obj;
+          }
+
+            const result = await connection.execute(sql, binds, { autoCommit: true });
+              connection.release();
+
+              res.json({
+                message: responseData.result,
+              });
+          }
+         else if(responseData.result.error_code){
+  		console.log("error test");
+            const sql = `
+              INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message,  TIMESTAMP, ERROR_CODE, ERROR_MESSAGE, ERROR_DETAIL)
+              VALUES (:id, :conversationId, :sender, :message, CURRENT_TIMESTAMP, :error_code, :error_message, :detail)
+            `;
+
           const binds = {
             id: sessionId,
             conversationId: conversationId,
             sender: userDetails,
             message:message,
-            api_response: JSON.stringify(removeTypeProperty(responseData.result.summary)),
-             response_type: null,
-              metaData: null,
+            error_code: responseData.result.error_code,
+            error_message: responseData.result.error_message,
+            detail: responseData.result.detail,
           };
-    
-	
-		if(responseData.result.summary.type){
-           binds.response_type = responseData.result.summary.type;
+
+  		 const result = await connection.execute(sql, binds, { autoCommit: true });
+           connection.release();
+
+  		res.json({
+  		message: responseData.result });
         }
-    
-          if (responseData.result.meta_data) {
-            binds.metaData = JSON.stringify(responseData.result.meta_data);
+        } else {
+          response.console.error();
+          console.log("response not received");
+          const response = {
+            result: {
+              summary: "Retry with a different question",
+            },
+          };
+          console.log(response.result);
+          res.json({ message: response.result });
         }
-    
-          function removeTypeProperty(obj) {
-            if (obj && typeof obj === 'object') {
-                const { type, ...rest } = obj;
-                return rest;
-            }
-            return obj;
-        }
-    
-          const result = await connection.execute(sql, binds, { autoCommit: true });
-            connection.release();
-        
-            res.json({
-              message: responseData.result,
-            });
-        }
-       else if(responseData.result.error_code){
-		console.log("error test");
-          const sql = `
-            INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message,  TIMESTAMP, ERROR_CODE, ERROR_MESSAGE, ERROR_DETAIL)
-            VALUES (:id, :conversationId, :sender, :message, CURRENT_TIMESTAMP, :error_code, :error_message, :detail)
-          `;
-	
-        const binds = {
-          id: sessionId,
-          conversationId: conversationId,
-          sender: userDetails,
-          message:message,
-          error_code: responseData.result.error_code,
-          error_message: responseData.result.error_message,
-          detail: responseData.result.detail,
-        };
-	
-		 const result = await connection.execute(sql, binds, { autoCommit: true });
-         connection.release();
-	
-		res.json({
-		message: responseData.result });
-      }
-      } else {
-        response.console.error();
-        console.log("response not received");
+      } catch (error) {
+        console.error("Error occurred during fetch:", error);
         const response = {
           result: {
-            summary: "Retry with a different question",
+            summary: "We had trouble interpreting your request. Can you try again with different phrasing?",
           },
         };
         console.log(response.result);
+        if(response.result.summary.includes("\"")){
+          console.log("includes");
+          const summaryObject = JSON.parse(response.result.summary);
+          response.result.summary = summaryObject;
+          console.log("response.result.summary", response.result.summary);
+        }
+        else {
+          console.log("not includes");
+        }
         res.json({ message: response.result });
       }
-    } catch (error) {
-      console.error("Error occurred during fetch:", error);
-      const response = {
-        result: {
-          summary: "We had trouble interpreting your request. Can you try again with different phrasing?",
-        },
-      };
-      console.log(response.result);
-      if(response.result.summary.includes("\"")){
-        console.log("includes");
-        const summaryObject = JSON.parse(response.result.summary);
-        response.result.summary = summaryObject;
-        console.log("response.result.summary", response.result.summary);
-      }
-      else {
-        console.log("not includes");
-      }
-      res.json({ message: response.result });
-    }
-});
+  });
 
-
-// const responseData = {
-  // result: {
-  //   // error_code:"parsing",
-  //   // error_message:"We had trouble identifying the product(s) you mentioned. Can you try rephrasing?",
-  //   // detail:"Got an error from DATA API",
-  //   // "summary": {"type": "table", "tableData1": [{"Cluster": 1, "Store Count": 4, "Store Names": "Grand Union-Warrensburg, Grand Union-Peru, Grand Union-Saranac Lake, Grand Union-Rome", "Avg. Distance In Miles": 1.5, "Median Income": 47533.82, "Urbanicity (Mode)": "Rural"}, {"Cluster": 2, "Store Count": 4, "Store Names": "Grand Union-Rutland, Grand Union-Sherrill, Grand Union-Owego, Grand Union-Cooperstown", "Avg. Distance In Miles": 2.5, "Median Income": 54767.31, "Urbanicity (Mode)": "Rural"}, {"Cluster": 3, "Store Count": 3, "Store Names": "Grand Union-Watertown, Grand Union-Cortland, Grand Union-Norwich", "Avg. Distance In Miles": 1.9, "Median Income": 59363.08, "Urbanicity (Mode)": "Suburban"}], "message": "You can download the complete data from this location E:/Users/Chavi/cluster_data.csv"}
-  //   "summary": "There are 1,428 Walgreens stores within 3 miles of a Rite Aid store"
-  // }
-
-//   result: {
-//     "summary": {
-//         "type": "pie",
-//         "options": {
-//           // "title":{ "text":"Student PieChart"} , 
-//           // "noData":{"text":"Empty Data"},                        
-//           "labels":['Hindi', 'Math', 'English', 'Science','SocialScience']
-//       },
-//       "series": [65, 76, 85, 65, 64] 
-//     }
-// }
-
-// result: {
-//       "summary": {
-//           "type": "bar",
-//           "options": {
-//             "xaxis": {
-//                 "LOCATION_NAME": ["E - RA - CVS WAG - BA - HCI","E - RA - CVS WAG - BA - LCI","E - RA - CVS WAG - LPS -","E - RA - CVS WAG - MPS - HCI","E - RA - CVS WAG - MPS - LCI","E - RA - NO DRUG - BA -","E - RA - NO DRUG - LPS -","E - RA - NO DRUG - MPS -","E - RA - WAG - BA -","E - RA - WAG - MPS -","M - RA - CVS WAG - BA - HCI","M - RA - CVS WAG - BA - LCI","M - RA - CVS WAG - MPS - HCI","M - RA - CVS WAG - MPS - LCI","M - RA - NO DRUG - BA -","M - RA - NO DRUG - MPS - LCI","M - RA - WAG - MPS -","MANHATTAN","ONLINE STORE","SMALL FORMAT STORES","W - BR - CVS WAG -  -","W - BR - WAG -  -","W - RA - CVS WAG - BA - HCI","W - RA - CVS WAG - BA - LCI","W - RA - CVS WAG - LPS -","W - RA - CVS WAG - MPS - HCI","W - RA - CVS WAG - MPS - LCI","W - RA - NO DRUG - BA -","W - RA - NO DRUG - LPS -","W - RA - NO DRUG - MPS -","W - RA - WAG - BA -"]
-//             }
+//   const responseData = {
+//     result: {
+//       summary: {
+//         type: "bar",
+//         options: {
+//           xaxis: {
+//             "PRODUCT_NAME": ["ADULT INCONTINENCE","ADULT NUTRITIONAL","AP/DEODORANTS","APPAREL","APPL/DOM/HW-BASIC","AS SEEN ON TV","AUTOMOTIVE","B/E TOYS - TAX","BABY CARE","BABY DIAPERS","BAKERY","BASIC TOYS","BATH","BATTERIES","BEER","BEVERAGES","BOOKS/MAGAZINES","CALENDARS","CANDLES","CBD","CHRISTMAS CANDY","CHRISTMAS TOYS & PLUSH","COTTON & COSMETIC BAGS","DAIRY","DIAGNOSTIC/DIABETIC","DIET","DIGESTIVE HEALTH","DOLLAR SHOP","DOMESTICS/HOUSEWARES-SSNL","DSD SNACKS","EASTER CANDY","EYE/EAR CARE","FIRST AID","FITNESS","FIXTURES","FOOT CARE","FRAGRANCES","FRAMES & ALBUMS","FROZEN FOOD","GARDEN DECOR","GARDEN LIVE GOODS","GARDEN SUPPLIES","GENERAL CANDY","GNC","GREETING CARDS/GIFT ACC","HAIR CARE","HAIR CARE ACCESSORIES","HAIR COLORING","HALLOWEEN CANDY","HALLOWEEN SUNDRIES","HARDWARE","HOLIDAY","HOME ELECTRONICS","HOME ENTERTAINMENT","HOME HEALTH CARE","HOSIERY","HOUSEHOLD CHEMICALS","HOUSEHOLD CLEANING","ICE","ICE CREAM","INSECTICIDES","LIGHT BULBS","MAKEUP - EYE","MAKEUP - FACIAL","MAKEUP - LIP","MAKEUP - NAIL","MAKEUP ACCESSORIES","MISCELL DUMP-CATCH ALL","MULTI CULTURAL","NEUTROGENA COSMETICS","NEWSPAPERS","NUTRITIONAL BARS","OPTICAL","ORAL CARE","OTC/RX UNKNOWN","PAIN CARE","PAPER PRODUCTS","PERISHABLE FOODS","PERSONAL CARE APPLIANCES","PET CARE","PHOTO-CAPTURE","PLASTIC BAGS","RX LEGEND","RX OTC","SANITARY PROTECTION","SEXUAL WELL BEING","SHAVING","SHOES/SEWING","SKIN CARE","SMOKING CESSATION","SOUVENIRS","SPIRITS","SPORTING GOODS","SPORTS NUTRITION","STATIONERY","SUMMER ACCESSORIES","SUMMER FURNITURE","SUMMER TOYS","SUN CARE","SUNDRIES","TOBACCO","TRIAL SIZE","UMBRELLAS","UNKNOWN","UPPER RESPIRATORY","VALENTINE CANDY","VITAMINS/HERBALS","WAREHOUSE GROCERY","WAREHOUSE SNACKS","WINE","WINTER SEASONAL"]
+//           },
 //         },
-//         "series": [
-//             {
-//                 "name": "Price Index",
-//                 "data": [109.14,98.88,101.79,95.83,96.08,103.69,102.54,99.04,100.63,95.26,96.05,98.95,95.85,95.52,104.46,103.2,96.79,96.34,169.74,97.72,92.9,92.73,97.15,98.84,105.64,100.34,96.46,102.97,103.33,101.68,99.28]
-//             },
-//             {
-//               "name": "Price column",
-//               "data": [10.14,9.88,10.79,9.83,9.08,10.69,10.54,9.04,10.63,9.26,9.05,9.95,9.85,9.52,10.46,10.2,7,9.34,16.74,9.72,9.9,9.73,9.15,9.84,15.64,10.34,9.46,10.97,10.33,11.68,9.28]
-//           }
-//         ]
-//       }
-//   }
-// };
-
-//         const conversationId = uuidv4();
-//         // const sessionId = uuidv4();
-
-//         const connection = await oracledb.getConnection({
-//           user: "DEV_FOODLION",
-//           password: "F#oDLioN#DEV",
-//           connectString: "secure.pristineinfotech.com:3541/DEVFL",
-//         });
-
-//         console.log(userDetails, " :: ", message, " :: ", conversationId, " :: ", sessionId , "::", responseData.result.summary.type);
-        
-//         // const completeSQl;
-//         if(responseData.result.summary)
-//         {
-//             const sql = `
-//               INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP)
-//               VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP)
-//             `;
-
-//             const binds = {
-//               id: sessionId,
-//               conversationId: conversationId,
-//               sender: userDetails,
-//               message:message,
-//               api_response: JSON.stringify(removeTypeProperty(responseData.result.summary)),
-//               response_type: null,
-//               metaData: null,
-//             };
-
-//             if(responseData.result.summary.type){
-//               binds.response_type = responseData.result.summary.type;
-//             }
-      
-//             if (responseData.result.meta_data) {
-//               binds.metaData = JSON.stringify(responseData.result.meta_data);
-//             }
-      
-//             function removeTypeProperty(obj) {
-//               if (obj && typeof obj === 'object') {
-//                   const { type, ...rest } = obj;
-//                   return rest;
-//               }
-//               return obj;
-//             }
-            
-      
-//             const result = await connection.execute(sql, binds, { autoCommit: true });
-//               connection.release();
-          
-//               res.json({
-//                 message: responseData.result,
-//               });
-//         }
-//         else if(responseData.result.error_code){
-//           const sql = `
-//             INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message,  TIMESTAMP, ERROR_CODE, ERROR_MESSAGE, ERROR_DETAIL)
-//             VALUES (:id, :conversationId, :sender, :message, CURRENT_TIMESTAMP, :error_code, :error_message, :detail)
-//           `;
-
-//         const binds = {
-//           id: sessionId,
-//           conversationId: conversationId,
-//           sender: userDetails,
-//           message:message,
-//           error_code: responseData.result.error_code,
-//           error_message: responseData.result.error_message,
-//           detail: responseData.result.detail,
-//         };
-
-//   //     console.log("completeSql", completeSql);
-//       const result = await connection.execute(sql, binds, { autoCommit: true });
-//         connection.release();
-
-//   res.json({
-//     message: responseData.result });
-//       }
+//         series: [
+//           {
+//             name: "Price Index",
+//             "data": [96.24,103.64,101.58,206.45,98.01,97.56,96.75,59.92,95.98,94.31,101.35,97.75,96.05,118.49,88.83,101.64,109.49,138.56,110.7,95.98,106.57,84.09,106.35,96.33,95.65,96.38,97.86,113.61,89.98,99.25,104.84,99.04,100.72,106.01,100.2,97.28,103.59,99.83,102.17,100.53,150.12,98.4,95.42,84.92,126.24,96.96,98.34,102.24,102.12,50.7,110.54,101.29,121.24,44.7,106.44,105.74,96.14,103.39,76.45,97.48,102.14,102.51,101.92,101.72,102.61,106.57,107.8,119.79,98.77,100.56,94.5,104.16,98.16,99.54,132.34,100.33,97.63,95.13,100.01,104.18,135.17,125.57,43.45,84.79,95.98,96.23,98.95,101.46,94.65,96.75,110.01,85.7,86.08,96.15,100.14,101.77,78.04,87.15,99.81,131.65,93.34,109.63,129.48,76.5,99.48,137.16,97.15,100.13,103.63,92.61,109.27]
+//           },
+//         ],
+//       },
+//       meta_data: {
+//         timeframe: "06/04/2023 - 09/02/2023",
+//         locations: ["CHAIN","Zone","store"],
+//         products: ["GROCERY","hair","oral care"],
+//       },
+//     },
+//   };
+//   res.json({ message: responseData.result });
 // });

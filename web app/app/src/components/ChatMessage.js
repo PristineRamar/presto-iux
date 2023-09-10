@@ -1,9 +1,10 @@
-import React, {memo} from "react";
+import React, {memo,useState, useEffect} from "react";
 import { FaUser } from "react-icons/fa";
 import Chart from "react-apexcharts";
 import Table from "./Table";
 import "../styles/table.css";
 import ChartParser from "./ChartParser";
+import ChartWidthCalculator from "../utils/ChartWidthCalculator";
 
 const ICON_SIZE = 20;
 
@@ -11,6 +12,41 @@ const ChatMessage = memo(({ message, metadata, chatType, visible }) => {
   console.log("chatType", chatType);
 
   const { updatedOptions, parsedMessage } = ChartParser({ message: message.message, chatType }); // Call ChartParser to get options and series
+
+  const [chartWidth, setChartWidth] = useState("100%");
+
+  // useEffect(() => {
+  //   let minWidthPerLabel = 25; // Minimum width per label
+  //   let additionalWidth = 100; // Additional width for padding
+  //   // Calculate the chart width based on the number of X-axis labels
+  //   if (chatType === "line" || chatType === "bar" || chatType === "pie") {
+  //     const numLabels =
+  //       updatedOptions.xaxis && updatedOptions.xaxis.categories
+  //         ? updatedOptions.xaxis.categories.length
+  //         : 1; // Default to 1 if no categories
+
+  //         console.log("numLabels", numLabels);
+  //     // Adjust minWidthPerLabel and additionalWidth as needed
+  //     if(numLabels > 50) {
+  //       minWidthPerLabel = 8; // Minimum width per label
+  //       additionalWidth = 270; // Additional width for padding
+  //     }
+
+  //     const calculatedWidth = numLabels * minWidthPerLabel + additionalWidth;
+
+  //     // Set the chart width dynamically
+  //     setChartWidth(`${calculatedWidth}px`);
+  //   }
+  // }, [chatType, updatedOptions]);
+
+  // const [chartHeight, setChartHeight] = useState('300px');
+
+  // useEffect(() => {
+  //   // Calculate the required chart height based on x-axis labels
+  //   const newChartHeight = calculateChartHeight(updatedOptions.xaxis[0]);
+  //   setChartHeight(newChartHeight);
+  // }, [updatedOptions.xaxis]);
+
 
   const renderList = (items) => (
     <ul className="text-container" style={{ listStyleType: "none" }}>
@@ -129,18 +165,35 @@ const ChatMessage = memo(({ message, metadata, chatType, visible }) => {
           )}
         </div>
         <div className="message">
+          <ChartWidthCalculator
+              chatType={chatType}
+              updatedOptions={updatedOptions}
+              setChartWidth={setChartWidth}
+            />
           {chatType === "array" ? (
             renderList(message.message.split(","))
           ) : chatType === "newLine" ? (
             renderList(message.message.split("\n"))
           ) : chatType === "line" || chatType === "bar" || chatType === "pie" ? (
+            <>
+            <div className = "chartheading"><p>Price Index</p></div>
+            <div className = "chartTitle">
+            {Array.isArray(metadata.locations) ? (
+              <p>
+                  <span className="chartdetails">Zone(s):</span> {metadata.locations.join(", ")} 
+                  <span className="chartdetails">, Product(s):</span> {metadata.products.join(", ")}
+                  <span className="chartdetails">, Time Period:</span> {metadata.timeframe}</p>) : (
+              <p><span className="chartdetails">Zone(s):</span> {metadata.locations} <span className="chartdetails">, Product(s):</span> {metadata.products}
+              <span className="chartdetails">, Time Period:</span>  {metadata.timeframe}</p>)}
+              </div>
             <Chart
               options={updatedOptions}
               series={parsedMessage.series}
               type={chatType}
-              width="100%"
-              height="300px"
-            />
+              width={chartWidth} //"100%"
+              // width="2000px"
+              height="350px"
+            /></>
           ) : chatType === "table" ? (
             <div className="table-container">
                 <Table data={parsedMessage.tableData1} />

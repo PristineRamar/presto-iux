@@ -61,6 +61,24 @@ td.center-align{
   width: 1000px;
 }
 
+.chartTitle{
+  width: 1050px;
+  padding-left: 20px;
+  text-align: center;
+}
+
+.chartdetails{
+  font-weight: bold;
+}
+
+.chartheading{
+  width: 1050px;
+  font-weight: bold;
+  padding-left: 20px;
+  text-align: center;
+}
+
+
 @media (resolution: 1.5dppx) {
   .text-container{
     width: 950px;
