@@ -38,6 +38,7 @@ function App() {
 
   return (
     <Routes>
+      {/* <Route basename={process.env.PUBLIC_URL} /> */}
       <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/presto" element={<PrestoPage />} />
@@ -46,7 +47,7 @@ function App() {
         path="/aichat"
         element={
           <div className="App" style={{ display: "flex", height: "100vh" }}>
-            {/* {isNavBar && <Navbar />} */}
+            {isNavBar && <Navbar />}
             <Navbar />
             <Sidebar className="sideCSS" visible={sideNavVisible} show={showSidebar}/>
             <div className={!sideNavVisible ? "page" : "page page-with-sidenavbar"}>

@@ -8,7 +8,7 @@ import ChartWidthCalculator from "../utils/ChartWidthCalculator";
 
 const ICON_SIZE = 20;
 
-const ChatMessage = memo(({ message, metadata, chatType, visible }) => {
+const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
   console.log("chatType", chatType);
 
   const { updatedOptions, parsedMessage } = ChartParser({ message: message.message, chatType }); // Call ChartParser to get options and series
@@ -143,28 +143,30 @@ const ChatMessage = memo(({ message, metadata, chatType, visible }) => {
             renderList(message.message.split("\n"))
           ) : chatType === "line" || chatType === "bar" || chatType === "pie" ? (
             <>
-            <div className = "chartheading"><p>Price Index</p></div>
-            {/* <div className = "chartTitle">
-            {Array.isArray(metadata.locations) ? (
-              <p>
-                  <span className="chartdetails">Zone(s):</span> {metadata.locations.join(", ")} 
-                  <span className="chartdetails">, Product(s):</span> {metadata.products.join(", ")}
-                  <span className="chartdetails">, Time Period:</span> {metadata.timeframe}</p>) : (
-              <p><span className="chartdetails">Zone(s):</span> {metadata.locations} <span className="chartdetails">, Product(s):</span> {metadata.products}
-              <span className="chartdetails">, Time Period:</span>  {metadata.timeframe}</p>)}
-              </div> */}
+            <div className = "chartheading"><p>{intent
+              .split("_") // Split the string into words
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
+              .join(" ")}</p></div>
+             {metadata && (<div className = "chartTitle">
+             {Array.isArray(metadata.locations) ? (
+               <p>
+                   <span className="chartdetails">Zone(s):</span> {metadata.locations.join(", ")} 
+                   <span className="chartdetails">, Product(s):</span> {metadata.products.join(", ")}
+                   <span className="chartdetails">, Time Period:</span> {metadata.timeframe}</p>) : (
+               <p><span className="chartdetails">Zone(s):</span> {metadata.locations} <span className="chartdetails">, Product(s):</span> {metadata.products}
+               <span className="chartdetails">, Time Period:</span>  {metadata.timeframe}</p>)}
+               </div>)}
             <Chart
               options={updatedOptions}
               series={parsedMessage.series}
               type={chatType}
               width={chartWidth} //"100%"
               // width="2000px"
-              height="350px"
+              height="400px"
             /></>
           ) : chatType === "table" ? (
             <div className="table-container">
                 <Table data={parsedMessage.tableData1} />
-              {/* ))} */}
             </div>
           ) : (
             <p className={!visible ? "text-container" : "text-container-with-sidebar"}>{message.message}</p>)}

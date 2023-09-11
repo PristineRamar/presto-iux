@@ -2,6 +2,7 @@
   "name": "react-sidebar",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.0.0",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
@@ -17,6 +18,8 @@
     "buffer": "^6.0.3",
     "chart.js": "^4.3.1",
     "crypto-browserify": "^3.12.0",
+    "dotenv": "^16.3.1",
+    "env-cmd": "^10.1.0",
     "jsonwebtoken": "^9.0.1",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
@@ -45,7 +48,9 @@
     "start": " react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build:dev": "env-cmd -f .env.dev react-scripts build",
+    "build:riteaid": "env-cmd -f .env.riteaid react-scripts build"
   },
   "eslintConfig": {
     "extends": [

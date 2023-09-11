@@ -155,7 +155,7 @@ app.post("/", verifyToken, async (req, res) => {
   //console.log(message, "message");
   //console.log(userDetails, "userDetails");
 
-  //REST API call
+  //REST API call to connect to Router
     try {
       const conversationId = uuidv4();
 
