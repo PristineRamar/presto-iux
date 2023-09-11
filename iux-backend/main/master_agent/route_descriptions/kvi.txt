@@ -1,0 +1,9 @@
+Title: kvi
+
+Description: This service is for retrieving KVI information, it is seful for getting Primary and Secondary KVI data by product, location and time frame.
+
+Example questions:
+
+1. Find the top 10 KVIs OR Find best 10 KVIs.
+2. Show the top KVIs for specific season/location(zone).
+3. Find top KVIs by using visits, purchase frequency, household reach and sales. 
