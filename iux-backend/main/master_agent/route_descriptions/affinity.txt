@@ -1,0 +1,11 @@
+Title: affinity
+
+Description: This service is for retrieving affinity information, it is seful for understanding the affinity items for a given item/LIG.
+If needed information can be available in table format as well.
+
+Example questions:
+
+1.What do people buy with RED BULL 12Z SNGL CN?
+2.What sells with SPRITE 20Z SNGL BT?
+3.What do people buy with RED BULL 12Z SNGL CN? Give in a table format
+

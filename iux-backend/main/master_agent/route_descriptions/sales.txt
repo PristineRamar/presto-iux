@@ -1,0 +1,13 @@
+Title: sales
+
+Description: This service is for retrieving sales, movment, margin, price, cost and promotion information 
+
+Example questions:
+
+1. Give me a list of all items which had a cost change in Zone 620 during the last three weeks.
+2. Tell me which items in OTC Internal had a cost change but no price change in the last period.
+3. What is the current cost of Item X ?
+4. Which items from Eye/Ear Care are planned to be on BOGO in the coming week? Of these, how many will on page 1 of the ad?
+5. What percentage of Oral Care sales come from promoted ones during last week?
+6. What is the current cost of Item X?
+7 .What is the current price of Item X?
