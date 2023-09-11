@@ -69,30 +69,23 @@ async function fun() {
       }
     });
 
-  //   app.post("/prestoUserValidation", (req, res) => {
-  //     console.log("prestoUserValidation");
-  //     const {userToken} = req.body;
-  //     // const sqlQuery = `SELECT user_id FROM user_token_details where USER_TOKEN= :userToken`;
-  //     // const binds = {userToken };
-  //     // connection.execute(sqlQuery, binds, {}).then((result) => {
-  //       // if (result.rows.length > 0) {
-  //         // console.log("status:", result.rows);
-  //         // const sqlQueryForUserDetails = `SELECT user_id, password FROM user_details where user_id= :result.rows`;
-  //         // const binds = {result.rows };
-  //         // connection.execute(sqlQuery, binds, {}).then((result) => {
-  //         //   if(result.rows.length > 0){
-  //         //     res.status(200).json(result.rows);
-  //         //   }
-  //         //   else{
-  //         //     res.status(401).json("USer details not found");
-  //         //   }
-  //         // })
-  //         res.status(200).json(userToken);
-  //       // } else {
-  //         // res.status(401).json("Incorrect Token!");
-  //       // }
-  //     });
-  //   // });
+    app.post("/prestoUserValidation", (req, res) => {
+      console.log("prestoUserValidation");
+      const {userToken} = req.body;
+      console.log("userToken", userToken);
+      const sqlQuery = `SELECT user_id, password FROM user_details where user_id = (select user_id FROM user_token_details where USER_TOKEN= :userToken)`;
+      const binds = {userToken };
+      connection.execute(sqlQuery, binds, {}).then((result) => {
+        if (result.rows.length > 0) {
+          // console.log("status:", result.rows);
+          // const userId = result.rows[0].USER_ID;
+          res.status(200).json(result.rows);
+        }
+        else {
+          res.status(401).json("Incorrect Token!");
+        }
+      });
+    });
   } catch (err) {
     console.error("Error executing the query:", err);
   }
@@ -154,32 +147,6 @@ app.post("/refresh", async (req, res) => {
     });
   });
 });
-
-//validate the token and get the user id and password from userdetails table
-// app.post("/prestoUserValidation", (req, res) => {
-//   console.log("prestoUserValidation");
-//   const userToken = req.body;
-//   const sqlQuery = `SELECT user_id FROM user_token_details where USER_TOKEN= :userToken`;
-//   const binds = {userToken };
-//   connection.execute(sqlQuery, binds, {}).then((result) => {
-//     if (result.rows.length > 0) {
-//       console.log("status:", result.rows);
-//       // const sqlQueryForUserDetails = `SELECT user_id, password FROM user_details where user_id= :result.rows`;
-//       // const binds = {result.rows };
-//       // connection.execute(sqlQuery, binds, {}).then((result) => {
-//       //   if(result.rows.length > 0){
-//       //     res.status(200).json(result.rows);
-//       //   }
-//       //   else{
-//       //     res.status(401).json("USer details not found");
-//       //   }
-//       // })
-//       res.status(200).json(result.rows);
-//     } else {
-//       res.status(401).json("Incorrect Token!");
-//     }
-//   });
-// });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
