@@ -48,7 +48,7 @@ function App() {
         element={
           <div className="App" style={{ display: "flex", height: "100vh" }}>
             {isNavBar && <Navbar />}
-            <Navbar />
+            {/* <Navbar /> */}
             <Sidebar className="sideCSS" visible={sideNavVisible} show={showSidebar}/>
             <div className={!sideNavVisible ? "page" : "page page-with-sidenavbar"}>
               {/* {console.log("sideNavVisible: ", sideNavVisible)} */}
