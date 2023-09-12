@@ -33,7 +33,7 @@ const AIChat = (props) => {
 
   const REACTAPP_CHATURL = process.env.REACT_APP_CHAT_URL;
   const REACT_APPHOST = process.env.REACT_APP_HOST;
-
+  const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
   const [isActive, setIsActive] = useState(false);
@@ -46,7 +46,7 @@ const AIChat = (props) => {
   const [chatLog, setChatLog] = useState([
     {
       user: "gpt",
-      message: "Hello, I am Presto. How can I help you?",
+      message: "Hello, I am Kai. How can I help you?",
       metadata: "",
     },
   ]);
@@ -132,7 +132,7 @@ const AIChat = (props) => {
 
   async function handleSubmit(e) {
     // Play button click sound
-    playButtonClickSound();
+    
     let chatLogNew = [
       ...chatLog,
       { user: "me", message: `${input}`, metadata: "", chatType: 'newLine' },
@@ -140,6 +140,7 @@ const AIChat = (props) => {
     setInput("");
     setChatLog(chatLogNew);
     setSelectedMessageIndex(-1);
+    
 
     //need to only send userid
     const token = JSON.parse(localStorage.getItem("auth"));
@@ -217,21 +218,19 @@ const AIChat = (props) => {
       else responseSummary = data.message.summary;
 
       const responseMetadata = data.message.meta_data;
-      const responseIntent = data.message.detail;
-      console.log("responseIntent: " + responseIntent);
 
       if(responseType === "line" || responseType === "bar" || responseType === "table" || responseType === "pie"){
         console.log("chatLog is a chart");
         setChatLog([...chatLogNew,
-          {user: "gpt",message: `${responseSummary}`,metadata: responseMetadata,chatType: responseType,intent:responseIntent},]);
+          {user: "gpt",message: `${responseSummary}`,metadata: responseMetadata,chatType: responseType,},]);
       }
       else if (Array.isArray(responseSummary)) {
         setChatLog([...chatLogNew,
-          {user: "gpt",message: `${responseSummary.slice(0, 7)}`,metadata: responseMetadata,chatType: "array",intent:responseIntent},]);
+          {user: "gpt",message: `${responseSummary.slice(0, 7)}`,metadata: responseMetadata,chatType: "array",},]);
       } else if (typeof responseSummary === "string") {
         const hasNewLine = responseSummary.includes("\n");
         setChatLog([...chatLogNew,
-          {user: "gpt", message: `${responseSummary}`, metadata: responseMetadata, chatType: hasNewLine ? "newLine" : "string",intent:responseIntent},
+          {user: "gpt", message: `${responseSummary}`, metadata: responseMetadata, chatType: hasNewLine ? "newLine" : "string",},
         ]);
       } else {
         console.log("chatLog is neither an array nor a string");
@@ -292,6 +291,7 @@ const startListening = () => {
         setListening(false);
         setIsActive(false);
         setSpeechRecognitionLoading(false);
+        playButtonClickSound();
       }, 2000));
     } else if (result.reason === sdk.ResultReason.NoMatch) {
       // Handle no speech recognized or pause.
@@ -332,8 +332,12 @@ const startListening = () => {
     } 
   }
 
+//   if (!browserSupportsSpeechRecognition) {
+//     return null
+// }
 
 const handleChange = (e) => {
+  // console.log('handleChange', e.target.value);
   setInput(e.target.value);
 };
 
@@ -405,9 +409,8 @@ recognition.onresult = (event) => {
 };
 
 const handleIconClick = () => {
-  
-
-  console.log('handleIconClick', transcript);
+  if (!isTyping) {
+ 
     setSpeechRecognitionLoading(true);
     setIcon(faMicrophone);
 
@@ -418,8 +421,24 @@ const handleIconClick = () => {
   setTranscript('');
   setIsActive(true);
   startListening();
+  
 
+  // console.log('handleIconClick', transcript);
+  // setTranscript('');
+  // if (!isRecording && !isActive) {
+  //   setIsActive(true); // Set the microphone as active when starting recording
+  //   setIsRecording(true);
+  //   setListening(true);
+  //   recognition.start();
+  // } else {
+  //   console.log('stop listening');
+  //   setIsActive(false); // Set the microphone as inactive when stopping recording
+  //   setIsRecording(false);
+  //   setListening(false);
+  //   recognition.stop();
+  // }
 };
+}
 
   return (
     <>
@@ -431,7 +450,6 @@ const handleIconClick = () => {
               message={message}
               metadata={message.metadata}
               chatType={message.chatType}
-              intent={message.intent}
               visible={props.visible}
             />
           ))}
@@ -449,9 +467,18 @@ const handleIconClick = () => {
           </div>
           <div className="chat-input">
             <TextareaAutosize className="chat-input-textarea" style={{ width: "100%" }} 
-             placeholder="Ask Presto" 
+             placeholder="Ask Kai" 
              value={listening ? transcript : input} onChange={handleChange}
-             onKeyDown={handleKeyDown} maxRows={5}/>
+             
+             onKeyDown={(e) => {
+              handleKeyDown(e);
+              setIsTyping(true); // User started typing
+            }}
+            onKeyUp={() => {
+              setIsTyping(false); // User stopped typing
+            }}
+            maxRows={5}
+          />
              
             <button className={`microphone-icon ${isActive ? 'active' : ''}`}>
             <FontAwesomeIcon icon={isActive ? faMicrophoneLines : micIcon} onClick={handleIconClick} />
@@ -459,7 +486,11 @@ const handleIconClick = () => {
           </div>
           <div className="flash-refresh send">
             <span className="send-span" onClick={handleSubmit}>
-              <svg className="send-svg-container" xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 30 30" fill="none" >
+            
+              
+              <svg className="send-svg-container" xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 30 30" fill="none" 
+              // class="h-4 w-4 m-1 md:m-0" stroke-width="2"
+              >
                 <path d="M.5 1.163A1 1 0 0 1 1.97.28l12.868 6.837a1 1 0 0 1 0 1.766L1.969 15.72A1 1 0 0 1 .5 14.836V10.33a1 1 0 0 1 .816-.983L8.5 8 1.316 6.653A1 1 0 0 1 .5 5.67V1.163Z" fill="currentColor"></path>
               </svg>
             </span>

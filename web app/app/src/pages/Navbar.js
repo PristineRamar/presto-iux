@@ -20,7 +20,7 @@ function Navbar() {
 
   const logout = () => {
     localStorage.clear();
-    navigate('/login')
+    navigate('/KAIProd')
 }
 
 	return (
@@ -35,9 +35,9 @@ function Navbar() {
         </button>
         <ul className="nav-right">
           {auth ? (
-          <li><Link onClick={logout} to="/login">Logout{" ("} {JSON.parse(auth).FIRST_NAME} {" "} {JSON.parse(auth).LAST_NAME}{" )"}</Link></li>
+          <li><Link onClick={logout} to="/KAIProd">Logout{" ("} {JSON.parse(auth).FIRST_NAME} {" "} {JSON.parse(auth).LAST_NAME}{" )"}</Link></li>
           ):(
-          <li><Link to="/login">Login</Link></li>)}
+          <li><Link to="/KAIProd">Login</Link></li>)}
         </ul>
 
       </nav>

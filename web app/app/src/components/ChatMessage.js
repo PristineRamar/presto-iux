@@ -143,10 +143,10 @@ const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
             renderList(message.message.split("\n"))
           ) : chatType === "line" || chatType === "bar" || chatType === "pie" ? (
             <>
-            <div className = "chartheading"><p>{intent
-              .split("_") // Split the string into words
+            <div className = "chartheading"><p>{intent}</p></div>
+              {/* .split("_") // Split the string into words
               .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
-              .join(" ")}</p></div>
+              .join(" ")}</p></div> */}
              {metadata && (<div className = "chartTitle">
              {Array.isArray(metadata.locations) ? (
                <p>

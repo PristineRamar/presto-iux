@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-function PrestoPage() {
+const PrestoPage = ({tokenfrompresto}) => {
   const navigate = useNavigate();
   const [status, setStatus] = useState(false);
   const [data1, setData1] = useState(null);
@@ -13,9 +13,11 @@ function PrestoPage() {
 
   useEffect(() => {
     console.log("Fetching userDetails");
-    // Get the token from the query parameter in the URL
+    //Get the token from the query parameter in the URL
     const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromURL = urlParams.get('token');
+    //const tokenFromURL = urlParams.get('token');
+    const tokenFromURL = tokenfrompresto;
+    console.log("tokenFromURL:" + tokenFromURL);
     setToken(tokenFromURL);
     console.log("urlParams:" + urlParams);
     // const tokenFromURL = '6yiy1A7LxAaCoYApUkZrrE8PqbQlZLfz';
