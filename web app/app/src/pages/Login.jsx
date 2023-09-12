@@ -15,6 +15,9 @@ export default function Login() {
     theme: "dark",
 };
 
+const REACTAPP_APIURL = process.env.REACT_APP_API_URL;
+const REACT_APPHOST = process.env.REACT_APP_HOST;
+
   useEffect(() => {
     const auth = localStorage.getItem('auth');
     if (auth) {
@@ -49,7 +52,9 @@ export default function Login() {
       // const { data } = await axios.post(loginRoute, {username, password,});
 
       //local testing URL
-      let response = await fetch("http://localhost:1514/login", {
+      console.log("REACTAPP_APIURL: " + REACTAPP_APIURL);
+      let response = await fetch(REACTAPP_APIURL, {
+      // let response = await fetch("http://localhost:1514/login", {
       //dev testing URL/ RA
       // let response = await fetch("http://secure.pristineinfotech.com:4026/login", {
       //Synthectic data testing URL

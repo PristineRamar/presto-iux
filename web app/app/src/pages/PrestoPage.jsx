@@ -7,6 +7,9 @@ function PrestoPage() {
   const [data1, setData1] = useState(null);
   const [token, setToken] = useState('');
 
+  const REACTAPP_APIURL = process.env.REACT_APP_API_URL;
+  const REACTAPP_PRESTOURL = process.env.REACT_APP_PRESTO_URL;
+  const REACT_APPHOST = process.env.REACT_APP_HOST;
 
   useEffect(() => {
     console.log("Fetching userDetails");
@@ -21,8 +24,9 @@ function PrestoPage() {
       setToken(tokenFromURL);
 
       // Send the token to the Node.js server for validation
-    //   fetch(`http://localhost:1514/prestoUserValidation`,{ 
-      fetch(`http://secure.pristineinfotech.com:4026/prestoUserValidation`,{ 
+      fetch(REACTAPP_PRESTOURL, {
+      // fetch(`http://localhost:1514/prestoUserValidation`,{ 
+    //   fetch(`http://secure.pristineinfotech.com:4026/prestoUserValidation`,{ 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,7 +46,8 @@ function PrestoPage() {
             console.log("password: " + password);
 
             // let response =  
-            fetch("http://secure.pristineinfotech.com:4026/login", {
+            fetch(REACTAPP_APIURL, {
+            // fetch("http://secure.pristineinfotech.com:4026/login", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
