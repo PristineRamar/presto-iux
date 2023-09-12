@@ -41,6 +41,7 @@ const AIChat = (props) => {
   const [transcript, setTranscript] = useState('');
   const [user, setUser] = useState(null);
   const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
   const [speechRecognitionLoading, setSpeechRecognitionLoading] = useState(false);
   const [micIcon, setIcon] = useState(faMicrophone);
   const [chatLog, setChatLog] = useState([
@@ -408,6 +409,7 @@ const handleIconClick = () => {
   
 
   console.log('handleIconClick', transcript);
+  if(!isTyping){
     setSpeechRecognitionLoading(true);
     setIcon(faMicrophone);
 
@@ -418,7 +420,7 @@ const handleIconClick = () => {
   setTranscript('');
   setIsActive(true);
   startListening();
-
+  }
 };
 
   return (
