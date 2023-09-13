@@ -21,7 +21,7 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
   useEffect(() => {
     const auth = localStorage.getItem('auth');
     if (auth) {
-      navigate("/aichat");
+      navigate(process.env.REACT_APP_AI_REDIRECT);    // navigate("/KAIProd/aichat");
     }
   });
 
@@ -109,7 +109,8 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
   }, [data, status]);
 
   const navigateToAiChat = (userId) => {
-    navigate(`/aichat?userId=${userId}`);
+    navigate(`/KAIStage/aichat?userId=${userId}`);
+    //navigate(process.env.REACT_APP_AI_REDIRECT`?userId=${userId}`);
   };
 
   return (

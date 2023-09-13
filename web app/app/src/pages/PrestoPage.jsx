@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 
-const PrestoPage = ({tokenfrompresto}) => {
+function PrestoPage() {
+  const { tokentoPrestoPage } = useParams();
+  console.log("tokentoPrestoPage:" + tokentoPrestoPage);
   const navigate = useNavigate();
   const [status, setStatus] = useState(false);
   const [data1, setData1] = useState(null);
@@ -16,7 +19,7 @@ const PrestoPage = ({tokenfrompresto}) => {
     //Get the token from the query parameter in the URL
     const urlParams = new URLSearchParams(window.location.search);
     //const tokenFromURL = urlParams.get('token');
-    const tokenFromURL = tokenfrompresto;
+    const tokenFromURL = tokentoPrestoPage;
     console.log("tokenFromURL:" + tokenFromURL);
     setToken(tokenFromURL);
     console.log("urlParams:" + urlParams);
@@ -87,7 +90,8 @@ const PrestoPage = ({tokenfrompresto}) => {
   }, [data1, status]);
 
   const navigateToAiChat = (userId) => {
-    navigate(`/aichat?userId=${userId}`);
+    navigate(`/KAIStage/aichat?userId=${userId}`);
+    //navigate(process.env.REACT_APP_AI_REDIRECT`?userId=${userId}`);
   };
 
 //   return (
