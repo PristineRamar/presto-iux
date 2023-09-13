@@ -116,6 +116,7 @@ def plot_data(data_file, type = 'line', metric_cols = 'sales', product_col = 'pr
     data_dict = data['data']
     data_keys = list(data_dict.keys())
    
+    meta_data =  data['meta-data']
     out_data = {
     "type": type,
     "options": {
@@ -130,7 +131,7 @@ def plot_data(data_file, type = 'line', metric_cols = 'sales', product_col = 'pr
             }
         ]
     }
-   
+    out_data["meta_data"] = meta_data
    
     return  out_data
 
