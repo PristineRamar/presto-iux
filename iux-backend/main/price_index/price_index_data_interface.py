@@ -19,7 +19,9 @@ from price_index.price_index_data_functions_common import (cal_lookup, sanitize_
 from price_index.price_index_data_config import (data_url, username, password, dbname, n_responses)
 
 from datetime import datetime
-import difflib
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
+
 # =============================================================================
 # 
 # =============================================================================
@@ -128,669 +130,107 @@ def sanitize_list(x):
 # 
 # =============================================================================    
 
-def cost_api(product_name = None, product_id = None, product_level = None, item_list = None,
-             active = 'Y', group_name = None,
-             location_name = None, location_id = None, location_level = None,
-             cal_year = None, quarter = None, period = None, week = None, day = None,
-             start_date = None, end_date = None, calendar_id = None, cal_type = 'W', user_id = None, change = 'All'):
-    
-    cal_year, quarter, period, week, day, start_date, end_date, calendar_id = cal_logic(cal_year, quarter, period, week, day, start_date, end_date, calendar_id)
-       
-    cal = cal_lookup(cal_year, quarter, period, week, day,
-                     start_date, end_date, calendar_id, cal_type)
 
-    if cal.empty:
-        raise ValueError('timeframe')
-        
-    last_week = cal_lookup(week = 'last 1')
-    start_week = min(cal['start-date'].min(), last_week['start-date'].min())
-
-    location_name = catch_empty_list(location_name)    
-    
-    locations = parse_loc_request(location_name, location_id, location_level, active) 
-
-    if locations.empty:
-        raise ValueError('location')
-               
-    loc_names = list(locations['location-name'].drop_duplicates())
-    locs = {l:[int(x) for x in locations.loc[locations['location-level'] == l, 'location-id']] for l in locations['location-level'].unique()}
-    
-    product_name = catch_empty_list(product_name)
-    
-    products = parse_prod_request(product_name, product_id, product_level,
-                               user_id, active, n_responses) 
-    
-    if products.empty:
-        raise ValueError('product')
-        
-    if (products['authorized'] == False).all():
-        raise ValueError('authorization')
-        
-    products = products.loc[products['authorized']]
-        
-    prod_names = list(products['product-name'].drop_duplicates())
-    prods = {p:[int(x) for x in products.loc[products['product-level'] == p, 'product-id']] for p in products['product-level'].unique()}
-    
-    try:
-        response = call_api('/cost/get-cost-data', locs, prods, cal, active, start_week)
-    except:
-        raise ValueError('missing_data')
-    
-    response = response.rename(columns = {'calendarId':'calendar-id',
-                                          'startDate':'effective-date',
-                                          'locationId':'location-id',
-                                          'locationLevelId':'location-level'})
-    response['location-level'] = np.where(response['location-level'] == 2, 5, response['location-level'])
-    response['location-level'] = np.where(response['location-level'] == 1, 6, response['location-level'])
-    response['location-level'] = np.where(response['location-level'] == 0, 1, response['location-level'])
-    response = response.merge(locations, how = 'left')
-    
-    items = response.loc[:, ['item-name', 'item-code']].drop_duplicates()
-    items['key'] = 0
-    extended_cal = pd.concat([cal, last_week] if last_week['start-date'].min() <= cal['end-date'].max() else [cal],
-                             ignore_index = True).drop_duplicates()
-    extended_cal['key'] = 0
-    extended_cal = extended_cal.merge(items, on = 'key')
-    extended_cal = extended_cal.merge(response, how = 'left', on = ['calendar-id', 'item-code', 'item-name'])
-    extended_cal = extended_cal.sort_values(by = ['calendar-id', 'item-code'])
-    extended_cal['cost'] = extended_cal.groupby(['item-code'])['cost'].transform(lambda x: x.fillna(method = 'ffill'))
-    extended_cal['effective-date'] = extended_cal.groupby(['item-code'])['effective-date'].transform(lambda x: x.fillna(method = 'ffill'))
-
-    extended_cal = extended_cal.loc[extended_cal['calendar-id'].isin(cal['calendar-id']),
-                                    ['cal-year', 'quarter-no', 'period-no', 'week-no', 
-                                     'start-date', 'end-date', 'location-name',
-                                     'item-name', 'item-code', 'cost', 'effective-date']]
-    
-    extended_cal['start-date'] = extended_cal['start-date'].dt.strftime('%m/%d/%Y')
-    extended_cal['end-date'] = extended_cal['end-date'].dt.strftime('%m/%d/%Y')
-    extended_cal = extended_cal.rename(columns = {'start-date':'week-start-date',
-                                                  'end-date':'week-end-date',
-                                                  'cost':'list-cost'})
-    extended_cal = extended_cal.dropna()
-    
-    if change == 'Yes':
-        extended_cal = extended_cal.groupby(['item-name', 'item-code']).filter(lambda x: (x['list-cost'].round(2) != x['list-cost'].round(2).min()).any())
-    if change == 'No':
-        extended_cal = extended_cal.groupby(['item-name', 'item-code']).filter(lambda x: (x['list-cost'].round(2) == x['list-cost'].round(2).min()).all())
-        
-    return extended_cal, prod_names, loc_names, cal['start-date'].min().strftime('%m/%d/%Y') + ' - ' + cal['end-date'].max().strftime('%m/%d/%Y')
-
-# =============================================================================
-# 
-# =============================================================================
-
-def price_api(product_name = None, product_id = None, product_level = None, item_list = None,
-              active = 'Y', group_name = None,
-             location_name = None, location_id = None, location_level = None,
-             cal_year = None, quarter = None, period = None, week = None, day = None,
-             start_date = None, end_date = None, calendar_id = None, cal_type = 'W', user_id = None, change = 'All'):
-    
-    cal_year, quarter, period, week, day, start_date, end_date, calendar_id = cal_logic(cal_year, quarter, period, week, day, start_date, end_date, calendar_id)
-       
-    cal = cal_lookup(cal_year, quarter, period, week, day,
-                     start_date, end_date, calendar_id, cal_type)
-    
-    if cal.empty:
-        raise ValueError('timeframe')
-        
-    last_week = cal_lookup(week = 'last 1')
-    start_week = min(cal['start-date'].min(), last_week['start-date'].min())
-
-    location_name = catch_empty_list(location_name)    
-    
-    locations = parse_loc_request(location_name, location_id, location_level, active) 
-
-    if locations.empty:
-        raise ValueError('location')
-               
-    loc_names = list(locations['location-name'].drop_duplicates())
-    locs = {l:[int(x) for x in locations.loc[locations['location-level'] == l, 'location-id']] for l in locations['location-level'].unique()}
-    
-    product_name = catch_empty_list(product_name)
-    
-    products = parse_prod_request(product_name, product_id, product_level,
-                               user_id, active, n_responses)
-
-    if products.empty:
-        raise ValueError('product')
-        
-    if (products['authorized'] == False).all():
-        raise ValueError('authorization')
-        
-    products = products.loc[products['authorized']]
-        
-    prod_names = list(products['product-name'].drop_duplicates())
-    prods = {p:[int(x) for x in products.loc[products['product-level'] == p, 'product-id']] for p in products['product-level'].unique()}
-    
-    try:
-        response = call_api('/price/get-price-data', locs, prods, cal, active, start_week)
-    except:
-        raise ValueError('missing_data')
-    
-    response = response.rename(columns = {'calendarId':'calendar-id',
-                                          'startDate':'effective-date',
-                                          'locationId':'location-id',
-                                          'locationLevelId':'location-level'})
-    response['location-level'] = np.where(response['location-level'] == 2, 5, response['location-level'])
-    response['location-level'] = np.where(response['location-level'] == 1, 6, response['location-level'])
-    response['location-level'] = np.where(response['location-level'] == 0, 1, response['location-level'])
-    response = response.merge(locations, how = 'left')
-    
-    items = response.loc[:, ['item-name', 'item-code']].drop_duplicates()
-    items['key'] = 0
-    extended_cal = pd.concat([cal, last_week] if last_week['start-date'].min() <= cal['end-date'].max() else [cal],
-                             ignore_index = True).drop_duplicates()
-    extended_cal['key'] = 0
-    extended_cal = extended_cal.merge(items, on = 'key')
-    extended_cal = extended_cal.merge(response, how = 'left', on = ['calendar-id', 'item-code', 'item-name'])
-    extended_cal = extended_cal.sort_values(by = ['calendar-id', 'item-code'])
-    
-    extended_cal['price'] = extended_cal.groupby(['item-code'])['price'].transform(lambda x: x.fillna(method = 'ffill'))
-    extended_cal['priceQty'] = extended_cal.groupby(['item-code'])['priceQty'].transform(lambda x: x.fillna(method = 'ffill'))
-    extended_cal['effective-date'] = extended_cal.groupby(['item-code'])['effective-date'].transform(lambda x: x.fillna(method = 'ffill'))
-    
-    extended_cal = extended_cal.loc[extended_cal['calendar-id'].isin(cal['calendar-id']),
-                                    ['cal-year', 'quarter-no', 'period-no', 'week-no', 
-                                     'start-date', 'end-date', 'location-name',
-                                     'item-name', 'item-code', 
-                                     'price', 'priceQty', 'effective-date']]
-    
-    extended_cal['start-date'] = extended_cal['start-date'].dt.strftime('%m/%d/%Y')
-    extended_cal['end-date'] = extended_cal['end-date'].dt.strftime('%m/%d/%Y')
-    extended_cal = extended_cal.rename(columns = {'start-date':'week-start-date',
-                                                  'end-date':'week-end-date',
-                                                  'priceQty':'reg-qty',
-                                                  'price':'reg-price'})
-    extended_cal = extended_cal.dropna()
-    
-    if change == 'Yes':
-        extended_cal = extended_cal.groupby(['item-name', 'item-code']).filter(lambda x: (x['reg-price'].round(2) != x['reg-price'].round(2).min()).any())
-    if change == 'No':
-        extended_cal = extended_cal.groupby(['item-name', 'item-code']).filter(lambda x: (x['reg-price'].round(2) == x['reg-price'].round(2).min()).all())
-        
-    return extended_cal, prod_names, loc_names, cal['start-date'].min().strftime('%m/%d/%Y') + ' - ' + cal['end-date'].max().strftime('%m/%d/%Y')
-
-# =============================================================================
-# 
-# =============================================================================
-
-def promotion_api(product_name = None, product_id = None, product_level = None, item_list = None,
-                  active = 'Y', group_name = None,
-             location_name = None, location_id = None, location_level = None,
-             cal_year = None, quarter = None, period = None, week = None, day = None,
-             start_date = None, end_date = None, calendar_id = None, cal_type = 'W',
-             promo_type = None, page_no = None, block_no = None, user_id = None):
-    
-    cal_year, quarter, period, week, day, start_date, end_date, calendar_id = cal_logic(cal_year, quarter, period, week, day, start_date, end_date, calendar_id)
-       
-    cal = cal_lookup(cal_year, quarter, period, week, day,
-                     start_date, end_date, calendar_id, cal_type) 
-    
-    if cal.empty:
-        raise ValueError('timeframe')
-
-    location_name = catch_empty_list(location_name)    
-    
-    locations = parse_loc_request(location_name, location_id, location_level, active)   
-
-    if locations.empty:
-        raise ValueError('location')
-             
-    loc_names = list(locations['location-name'].drop_duplicates())
-    locs = {l:[int(x) for x in locations.loc[locations['location-level'] == l, 'location-id']] for l in locations['location-level'].unique()}
-    
-    product_name = catch_empty_list(product_name)
-    
-    products = parse_prod_request(product_name, product_id, product_level,
-                               user_id, active, n_responses) 
-    
-    if products.empty:
-        raise ValueError('product')
-        
-    if (products['authorized'] == False).all():
-        raise ValueError('authorization')
-        
-    products = products.loc[products['authorized']]
-        
-    prod_names = list(products['product-name'].drop_duplicates())
-    prods = {p:[int(x) for x in products.loc[products['product-level'] == p, 'product-id']] for p in products['product-level'].unique()}
-    
-    try:
-        response = call_api('/promotion/get-promotion-data', locs, prods, cal, active)
-    except:
-        raise ValueError('missing_data')
-    
-    response = response.rename(columns = {'calendarId':'calendar-id'})
-    response = response.loc[response['invalid_data'] != 'Y']    
-    response['sale-price'] = np.where(response['promotionTypeId'] == 3, response['mustBuyPrice'], response['offerPrice'])
-    response['sale-qty'] = np.where(response['promotionTypeId'] == 3, response['mustBuyPriceQty'], response['offerPriceQty'])
-    response = response.loc[response['calendar-id'].isin(cal['calendar-id'])]
-    
-    response = response.rename(columns = {'startDate':'promo-start-date',
-                                          'endDate':'promo-end-date',
-                                          'calendarStartDate':'week-start-date',
-                                          'promotionTypeName':'promo-type',
-                                          'pageNumber':'page-no',
-                                          'blockNumber':'block-no',
-                                          'regPrice':'reg-price',
-                                          'regPriceQty':'reg-qty'})
-    
-    response = response.loc[:, ['week-start-date', 'item-name', 'promo-type',
-                                'reg-price', 'reg-qty', 'sale-price', 'sale-qty',
-                                'promo-start-date', 'promo-end-date', 
-                                'page-no', 'block-no']].drop_duplicates()
-    
-    response['block-no'] = response['block-no'].replace(0, np.nan)
-    response['page-no'] = response['page-no'].replace(0, np.nan)
-    response = response.sort_values(by = ['item-name', 'promo-start-date', 'promo-type',
-                                          'sale-price', 'sale-qty', 'page-no', 'block-no'])
-    response = response.groupby(['item-name', 'week-start-date', 'promo-type',
-                                 'sale-price', 'sale-qty', 'promo-start-date',
-                                 'promo-end-date']).first().reset_index()
-    response = response.sort_values(by = ['item-name', 'promo-start-date', 'promo-type',
-                                          'sale-price', 'sale-qty', 'page-no', 'block-no'])
-    
-    prices = price_api(product_name = product_name, product_id = product_id, product_level = product_level,
-                       item_list = item_list, active = active,
-                       location_name = location_name, location_id = location_id, location_level = location_level,
-                       cal_year = cal_year, quarter = quarter, period = period, week = week, day = day,
-                       start_date = start_date, end_date = end_date, calendar_id = calendar_id, cal_type = cal_type,
-                       user_id = user_id, change = 'A')[0]
-    
-    response = response.merge(prices.loc[:, ['week-start-date', 'item-name', 'reg-price', 'reg-qty']],
-                              how = 'inner')
-    
-    response = response.loc[:, ['item-name', 'reg-price', 'reg-qty', 'sale-price', 'sale-qty',
-                                'promo-type', 'promo-start-date', 'promo-end-date', 'page-no', 'block-no']]
-    response = response.drop_duplicates()
-    
-    if promo_type is not None:
-        if type(promo_type) == str:
-            response = response.loc[response['promo-type'] == promo_type]
-        if type(promo_type) == list:
-            response = response.loc[response['promo-type'].isin(promo_type)]
+def process_variable(var):
+    print(var)
+    if isinstance(var, list):
+        print(var)
+        if len(var) == 0:
             
-    if page_no is not None:
-        if type(page_no) in [int, float]:
-            response = response.loc[response['page-no'] == page_no]
-        if type(page_no) == list:
-            response = response.loc[response['page-no'].isin([int(x) for x in page_no if type(x) in [int, float]])]
-            
-    if block_no is not None:
-        if type(block_no) in [int, float]:
-            response = response.loc[response['block-no'] == block_no]
-        if type(block_no) == list:
-            response = response.loc[response['block-no'].isin([int(x) for x in block_no if type(x) in [int, float]])]        
-                       
-    return response, prod_names, loc_names, cal['start-date'].min().strftime('%m/%d/%Y') + ' - ' + cal['end-date'].max().strftime('%m/%d/%Y')
-
-# =============================================================================
-# 
-# =============================================================================
-
-def movement_api(product_name = None, product_id = None, product_level = None, item_list = None,
-                 active = 'Y', group_name = None,
-                 location_name = None, location_id = None, location_level = None,
-                 cal_year = None, quarter = None, period = None, week = None, day = None,
-                 start_date = None, end_date = None, calendar_id = None, cal_type = 'W',
-                 promoted = 'All', user_id = None):
-    
-    cal_year, quarter, period, week, day, start_date, end_date, calendar_id = cal_logic(cal_year, quarter, period, week, day, start_date, end_date, calendar_id)
-     
-    cal = cal_lookup(cal_year, quarter, period, week, day,
-                     start_date, end_date, calendar_id, cal_type)
-
-    if cal.empty:
-        raise ValueError('timeframe')
-    
-    location_name = catch_empty_list(location_name) 
-    
-    locations = parse_loc_request(location_name, location_id, location_level, active)
-
-    if locations.empty:
-        raise ValueError('location')
-              
-    loc_names = list(locations['location-name'].drop_duplicates())
-    locs = {l:[int(x) for x in locations.loc[locations['location-level'] == l, 'location-id']] for l in locations['location-level'].unique()}
-    
-    product_name = catch_empty_list(product_name)
-    
-    products = parse_prod_request(product_name, product_id, product_level,
-                                  user_id, active, n_responses)
-    
-    if products.empty:
-        raise ValueError('product')
-        
-    if (products['authorized'] == False).all():
-        raise ValueError('authorization')
-        
-    products = products.loc[products['authorized']]
-    
-    group_name = sanitize_list(group_name)
-    
-    if group_name is not None:
-        group_name_match = extractOne(group_name,
-                                set(product_data['types']['product-type'].values) | {'department', 'section', 'item'},
-                                scorer = QRatio,
-                                score_cutoff = 50)
-        if group_name_match:
-            group_name_match = group_name_match[0]
-            if group_name_match == 'department':
-                detail_level = 5
-            elif group_name_match == 'section':
-                detail_level = 3
-            elif group_name_match == 'item':
-                detail_level = 1
-            elif group_name_match in product_data['types']['product-type'].values:
-                detail_level = product_data['types'].loc[product_data['types']['product-type'] == group_name_match,
-                                                          'product-level'].iloc[0]
-                
-            temp = prod_hier(product_id = [int(x) for x in products['product-id'].values],
-                             product_level = products['product-level'].max(),
-                             detail_level = detail_level)
-            
-            group_name_match = group_name_match.replace('_', '-')
-            group_name_match += '-code' if detail_level == 1 else '-id'        
-            
-            products = parse_prod_request(product_id = list(temp[group_name_match].values),
-                                          product_level = detail_level)
-    
-    prod_names = list(products['product-name'].drop_duplicates())
-    prods = {p:[int(x) for x in products.loc[products['product-level'] == p, 'product-id']] for p in products['product-level'].unique()}
-    
-    responses = []
-    base_table_name = 'sales_aggr' + ('_daily' if cal_type == 'D' else '_weekly' if cal_type == 'W' else '')
-    for l in locs:
-        table_name = base_table_name + '_rollup' if l <= 4 else base_table_name
-        for p in prods:
-            if l != 6:
-                query = """
-                select
-                    calendar_id,
-                    location_id,
-                    location_level_id,
-                    product_id,
-                    product_level_id,
-                    tot_visit_cnt,
-                    tot_movement,
-                    reg_movement,
-                    sale_movement,
-                    tot_revenue,
-                    reg_revenue,
-                    sale_revenue,
-                    tot_margin,
-                    reg_margin,
-                    sale_margin,
-                    avg_order_size
-                from {table_name}
-                where calendar_id in ({calendar_list})
-                and location_level_id = {location_level}
-                and location_id in ({location_list})
-                """.format(table_name = table_name,
-                           location_level = l,
-                           location_list = ', '.join([str(x) for x in locs[l]]),
-                           calendar_list = ', '.join(str(x) for x in cal['calendar-id'].values))
-    
-                if p != 99:
-                    query += """
-                    and product_id in ({product_list})
-                    and product_level_id = {product_level}
-                    """.format(product_level = p,
-                               product_list = ', '.join([str(x) for x in prods[p]]))
-                else:
-                    query += """
-                    and product_id is null
-                    and product_level_id is null
-                    """
-                    
-            else:
-                query = """
-                select 
-                    calendar_id,
-                    price_zone_id location_id,
-                    6 as location_level_id,
-                    product_id,
-                    product_level_id,
-                    sum(tot_visit_cnt) tot_visit_cnt,
-                    sum(tot_movement) tot_movement,
-                    sum(reg_movement) reg_movement,
-                    sum(sale_movement) sale_movement,
-                    sum(tot_revenue) tot_revenue,
-                    sum(reg_revenue) reg_revenue,
-                    sum(sale_revenue) sale_revenue,
-                    sum(tot_margin) tot_margin,
-                    sum(reg_margin) reg_margin,
-                    sum(sale_margin) sale_margin,
-                    avg(avg_order_size) avg_order_size
-                from {table_name} sa
-                join (select comp_str_id, price_zone_id from competitor_store
-                      where price_zone_id in ({location_list})) cs
-                    on cs.comp_str_id = sa.location_id
-                    and sa.location_level_id = 5
-                where calendar_id in ({calendar_list})
-                """.format(table_name = table_name,
-                           location_list = ', '.join([str(x) for x in locs[l]]),
-                           calendar_list = ', '.join(str(x) for x in cal['calendar-id'].values)) 
-        
-                if p != 99:
-                    query += """
-                    and product_id in ({product_list})
-                    and product_level_id = {product_level}
-                    """.format(product_level = p,
-                               product_list = ', '.join([str(x) for x in prods[p]]))
-                else:
-                    query += """
-                    and product_id is null
-                    and product_level_id is null
-                    """
-                    
-                query += """
-                group by
-                    calendar_id,
-                    price_zone_id,
-                    product_id,
-                    product_level_id
-                """
-                
-            connection = cx_Oracle.connect(username, password, dbname)
-            response = pd.read_sql(query, connection)
-            connection.close()
-            response.columns = [x.lower().replace('_', '-') for x in response.columns]
-            if response.empty:
-# =============================================================================
-#                 response['product-id'] = prods[p]
-#                 response['product-level-id'] = p
-#                 response['key'] = 0
-#                 response = response.drop(columns = ['calendar-id', 'location-id', 'location-level-id'])
-#                 temp = pd.DataFrame(columns = ['key', 'location-id', 'location-level-id'])
-#                 temp['location-id'] = locs[l]
-#                 temp['location-level-id'] = l
-#                 temp['key'] = 0
-#                 response = response.merge(temp, on = 'key')
-#                 temp = pd.DataFrame(columns = ['key', 'calendar-id'])
-#                 temp['calendar-id'] = list(cal['calendar-id'].values)
-#                 temp['key'] = 0
-#                 response = response.merge(temp, on = 'key')
-#                 response.loc[:, ['tot-visit-cnt', 'tot-movement',
-#                        'reg-movement', 'sale-movement']] = 0
-#                 response.loc[:, ['tot-revenue', 'reg-revenue',
-#                 'sale-revenue', 'tot-margin', 'reg-margin', 'sale-margin',
-#                 'avg-order-size']] = 0.0
-# =============================================================================
-                continue
-            responses.append(response)
-    
-    try:
-        response = pd.concat(responses, ignore_index = True)
-    except:
-        raise ValueError('missing_data')
-    
-    response = response.rename(columns = {'location-level-id':'location-level',
-                                          'product-level-id':'product-level',
-                                          'tot-visit-cnt': 'visits'})
-    if 99 in products['product-level'].values:
-        response['product-id'] = response['product-id'].fillna(products.loc[products['product-level'] == 99, 'product-id'].iloc[0])
-        response['product-level'] = response['product-level'].fillna(99)
-    
-    if promoted == 'Yes':
-        response['movement'] = response['sale-movement']
-        response['sales'] = response['sale-revenue']
-        response['margin'] = response['sale-margin']
-    elif promoted == 'No':
-        response['movement'] = response['reg-movement']
-        response['sales'] = response['reg-revenue']
-        response['margin'] = response['reg-margin']
-    else:
-        response['movement'] = response['tot-movement']
-        response['sales'] = response['tot-revenue']
-        response['margin'] = response['tot-margin']
-        
-    response = response.merge(cal, how = 'left', on = 'calendar-id')
-    response = response.merge(products, how = 'left', on = ['product-id', 'product-level']) 
-    response = response.merge(locations, how = 'left', on = ['location-id', 'location-level']) 
-    
-    if (response['margin'] == 0).all():
-        rate = np.random.normal(loc = 0.3, scale = 0.05, size = len(response))
-        response['margin'] = (rate * response['sales']).round(2)
-        
-    response = response.loc[:, [x for x in ['cal-year', 'quarter-no', 'period-no', 'week-no', 'day-no',
-                                'start-date', 'end-date'] if x in cal.columns] + ['location-name', 'product-name', 
-                                'movement', 'sales', 'margin', 'visits', 'avg-order-size']]
-    response = response.sort_values([x for x in ['cal-year', 'quarter-no', 'period-no', 'week-no', 'day-no',
-                                'start-date', 'end-date'] if x in cal.columns] + ['location-name', 'product-name'])
-    response['end-date'] = response['end-date'].fillna(response['start-date']).dt.strftime('%m/%d/%Y')
-    response['start-date'] = response['start-date'].dt.strftime('%m/%d/%Y')
-    
-    if n_responses > 1:
-        response = response.groupby([x for x in ['cal-year', 'quarter-no', 'period-no', 'week-no', 'day-no',
-                                    'start-date', 'end-date'] if x in cal.columns] + ['location-name', 'product-name'])
-        response = response.agg({'movement':'sum', 'sales':'sum', 'margin':'sum',
-                                 'visits':'sum', 'avg-order-size':'mean'}).reset_index()
-    
-    response['margin-rate'] = (response['margin'] / response['sales']).fillna(0)
-    response['avg-selling-price'] = (response['sales'] / response['movement']).fillna(0)
-    return response, prod_names, loc_names, cal['start-date'].min().strftime('%m/%d/%Y') + ' - ' + cal['end-date'].fillna(cal['start-date']).max().strftime('%m/%d/%Y')
-
-# =============================================================================
-# 
-# =============================================================================
-
-def hier_api(product_name = None, product_id = None, product_level = None, detail_level = None,
-             other_levels = [5, 4, 3, 2, 1.5, 1], active = 'Y'):
-    
-    return prod_hier(product_name = product_name, product_id = product_id, product_level = product_level,
-                     detail_level = detail_level, other_levels = other_levels, active = active)
-
-# =============================================================================
-# 
-# =============================================================================
-
-def plotting_api(data, plot_type = 'table', metric_cols = ['sales'],
-                 product_col = 'product-name', location_col = 'location-name'):
-    
-    df = pd.DataFrame(data)
-
-    if 'week-no' in df.columns:
-        time_col = 'week-no'
-    elif 'period-no' in df.columns:
-        time_col = 'period-no'
-    elif 'quarter-no' in df.columns:
-        time_col = 'quarter-no'
-    else:
-        time_col = 'cal-year'
-        
-    time_cols = ['cal-year', time_col] if time_col != 'cal-year' else ['cal-year']
-
-    if isinstance(metric_cols, str):
-        metric_cols = [word.strip() for word in metric_cols.split(',')]
-
-    id_cols = time_cols + [product_col] + [location_col]
-    all_cols = time_cols + [product_col] + [location_col] + metric_cols
-
-    df = df[all_cols]
-    df = df.drop_duplicates(subset=id_cols)
-
-    unique_times = [int(x) for x in df[time_cols].drop_duplicates().loc[:, time_col].values]
-    products = sorted(df[product_col].unique())
-    locations = sorted(df[location_col].unique())
-
-    if plot_type == 'line':
-        options = { 'xaxis' : { time_col : unique_times}}
-        
-        if len(products) > 1 and  len(locations) == len(metric_cols) == 1:
-            df_wide = df.pivot(index = time_cols, columns = product_col, values = metric_cols).fillna(0).round(2)
-            cols = [f'{col[1]}' for col in df_wide.columns]
-            df_wide.columns = cols
-            
-        elif len(locations) > 1 and  len(products) == len(metric_cols) == 1:
-            df_wide = df.pivot(index = time_cols, columns = location_col, values = metric_cols).fillna(0).round(2)
-            cols = [f'{col[1]}' for col in df_wide.columns]
-            df_wide.columns = cols
-            
-        elif len(metric_cols) >= 1 and len(products) == len(locations) == 1:
-            df_wide = df[metric_cols].fillna(0).round(2)
-            cols = df_wide.columns
-            
+            return None
         else:
-            df_wide = df.groupby(time_cols)[metric_cols].sum().fillna(0).round(2)
-            cols = df_wide.columns
-            
-        series = [{'name': col, 'data': df_wide[col].tolist()} for col in cols]
-        res = {'type': plot_type,  'options' : options, 'series' : series}
-        
-    elif plot_type == 'bar':
-        
-        if len(products) > 1:
-            options = { 'xaxis' : { product_col : products}}
-            df_wide = df.groupby(product_col)[metric_cols].sum().fillna(0).round(2)
-            cols = df_wide.columns
-            
-        elif len(locations) > 1:
-            options = { 'xaxis' : { location_col : locations}}
-            df_wide = df.groupby(location_col)[metric_cols].sum().fillna(0).round(2)
-            cols = df_wide.columns
-        
-        else: 
-            options = { 'xaxis' : { time_col : unique_times}}
-            df_wide = df[metric_cols].fillna(0).round(2)
-            cols = df_wide.columns
-            
-        series = [{'name': col, 'data': df_wide[col].tolist()} for col in cols]
-        res = {'type': plot_type,  'options' : options, 'series' : series}
-        
-    elif plot_type == 'table':
-        df.columns = [x.replace('-', ' ').title() for x in df.columns]
-        tableData1 = df.fillna(0).round(2).to_dict(orient = 'records')
-        res = {'type': plot_type,  'tableData1' : tableData1}
-        
+            return var[0]
     else:
-        print("chart type not supoorted !!!")
-        res = {'Error': 'chart type not supported!'}
-
-    return res
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Aug  3 09:48:22 2023
-
-@author: Sainul
-"""
-#import sys
-#sys.path.insert(0, '../Report')
-
+        return var
 def reportgen(product_name = None, product_id = None, product_level = None, 
               child_prod_level = None, product_agg = 'N', item_list = None,
               active = 'Y', group_name = None,
              location_name = None, location_id = None, location_level = None, loc_agg = 'N', 
              cal_year = None, quarter =None, period = None, week = None, day = None,
              start_date = None, end_date = None, calendar_id = None, 
-             cal_type = 'Q', user_id = None,cal_agg = 'N',pi_type = "S",weighted_by = None): 
+             cal_type = 'Q', user_id = None,cal_agg = 'N',pi_type = "S",weighted_by = None,
+             comp_city = None,
+             comp_addr = None,
+             comp_name = None,
+             comp_tier = None): 
+    # if (comp_city is not None) or (comp_addr is not None) or  (comp_name is not None) or (comp_tier is not None):
+    #     comp_df = comp_parser(location_name  , comp_city,
+    #                                comp_addr , comp_name, comp_tier)
+    #     location_id = comp_df['LOCATION_ID'].unique()
+    #     location_level = 6
+    #     comp_str_id = comp_df['COMP_STR_ID'].unique()
+    cal_type = process_variable(cal_type)
+    print(cal_type)
+    quarter = process_variable (quarter)
+    print(quarter)
+    product_name = process_variable(product_name)
+    product_id = process_variable(product_id)
+    product_level = process_variable(product_level) 
+    child_prod_level = process_variable(child_prod_level) 
+    product_agg = process_variable(product_agg) 
+    item_list = process_variable(item_list) 
+    active =  process_variable(active)
+    group_name =  process_variable(group_name)
+    location_name = process_variable(location_name)
+    location_id = process_variable(location_id)
+    location_level = process_variable (location_level)
+    loc_agg = process_variable (loc_agg)
+    cal_year =  process_variable (cal_year)
+    
+    period = process_variable (period)
+    week =process_variable(week) 
+    day = process_variable (day)
+    # start_date = process_variable (start_date)
+    # end_date = process_variable (end_date)
+    calendar_id = process_variable(calendar_id)
+   
+    user_id = process_variable(user_id)
+    cal_agg = process_variable(cal_agg)
+    pi_type =process_variable(pi_type)
+    weighted_by = process_variable(weighted_by)           
+    comp_city = process_variable(comp_city)             
+    comp_addr = process_variable(comp_addr) 
+    comp_name = process_variable(comp_name) 
+    comp_tier = process_variable(comp_tier) 
+    if product_agg is None:
+        product_agg = 'N'
+    if active is None:
+        active = 'Y'
+    if loc_agg is None:
+        loc_agg = 'N'
+    if cal_type is None:
+        cal_type = 'Q'
+    if cal_agg is None:
+        cal_agg = 'N'
+    if  pi_type is None:
+        pi_type = "S"
+    
+    
+    if  cal_type == 'Q' and quarter is None:
+        quarter = 'Last 1'
+    if  cal_type == 'W' and week is None:
+        week = 'Last 1'
+    if  cal_type == 'P' and period is None:
+        period = 'Last 1'  
+    
+    if  cal_type is None and quarter is not None:
+        cal_type = 'Q'
+    if  cal_type is None and week is not None:
+        cal_type = 'W'
+    if  cal_type is None and period is not None:
+        period = 'P'     
+    
     cal_year, quarter, period, week, day, start_date, end_date, calendar_id = cal_logic(cal_year, quarter, period, week, day, start_date, end_date, calendar_id)
-       
+    if start_date is not None:
+       if len(start_date) == 0:
+           start_date = None
+       if len(end_date) == 0:
+           end_date = None
+   
     cal = cal_lookup(cal_year, quarter, period, week, day,
                      start_date, end_date, calendar_id, cal_type)
     if  child_prod_level is not None:
-        child_prod_level = product_level_identifier(child_prod_level[0])
-    
+        child_prod_level = product_level_identifier(child_prod_level)
     if cal.empty:
         raise ValueError('timeframe')
         
@@ -800,14 +240,17 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     end_date = max(cal['end-date'])
     end_date = end_date.strftime("%Y-%m-%d")
     location_name = catch_empty_list(location_name)    
-    
-    locations = parse_loc_request(location_name, location_id, location_level, active) 
-    location_level = locations.iloc[0,1]
-    location_id = locations.iloc[0,0]
-    
+    if location_name is not None:
+        locations = parse_loc_request(location_name, location_id, location_level, active) 
+        location_level = locations.iloc[0,1]
+        location_id = locations.iloc[0,0]
+        loc_names = list(locations['location-name'].drop_duplicates())
+        locs = {l:[int(x) for x in locations.loc[locations['location-level'] == l, 'location-id']] for l in locations['location-level'].unique()}
+    else:
+        location_level = None
+        location_id = None
    
-    loc_names = list(locations['location-name'].drop_duplicates())
-    locs = {l:[int(x) for x in locations.loc[locations['location-level'] == l, 'location-id']] for l in locations['location-level'].unique()}
+    
     if (location_level == 1 and location_id == 52):
         location_level = None 
         location_id = None
@@ -837,12 +280,18 @@ def reportgen(product_name = None, product_id = None, product_level = None,
         location_id = None
     if (product_level is None and child_prod_level is  None) :
         prod_id_cat, child_prod_cat_name, child_prod_id_cat = child_prod_query_string(product_level,child_prod_level)
-        result = prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_id_cat,start_date,end_date, location_id)  
+        result = prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_id_cat,start_date,end_date, location_id,comp_city,
+         comp_addr,
+         comp_name,
+         comp_tier)  
     #2. Get PI for all products at a child_product level under a product_level
     #PI Report  at any calendar range for a child_product level under a product_level
     if  (product_level is not None and child_prod_level is None) or  (product_level is not None and child_prod_level is not None) or (product_level is None and child_prod_level is not None):
         prod_id_cat, child_prod_cat_name, child_prod_id_cat = child_prod_query_string(child_prod_level,product_level)
-        result = prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_id_cat,start_date,end_date,location_id)  
+        result = prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_id_cat,start_date,end_date,location_id, comp_city,
+         comp_addr,
+         comp_name,
+         comp_tier)  
     
     # Aggregation levels
     if (product_agg == 'Y') or (product_agg == 'N' and loc_agg == 'N' and cal_agg == 'N'):
@@ -961,6 +410,11 @@ def child_prod_query_string(child_prod_level, product_level_id = None):
         child_prod_id_cat = 'CATEGORY_ID'
     if product_level_id == None and child_prod_level != None: 
          prod_id_cat = None
+         if child_prod_level == 5:
+             
+             child_prod_cat_name  = 'DEPARTMENT_NAME'
+             child_prod_id_cat = 'DEPARTMENT_ID'
+             
          if child_prod_level == 4:
              
              child_prod_cat_name  = 'CATEGORY_NAME'
@@ -987,16 +441,17 @@ def child_prod_query_string(child_prod_level, product_level_id = None):
 
 
 def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, 
-                     child_prod_id_cat,start_date,end_date, location_id):
+                     child_prod_id_cat,start_date,end_date, location_id,  comp_city,
+                      comp_addr,
+                      comp_name,
+                      comp_tier):
+    count_non_none, comp_col,name_comp,comp_col1,name_comp1 = comp_parser( comp_city,comp_addr,comp_name, comp_tier)
     if prod_id_cat !=None and product_id != None:
         prod_fil = "and {}={}".format(prod_id_cat,product_id)
     else:
         prod_fil = ''
-    if location_id is not None:
-       loc_fil = " where BASE_LOCATION_ID ={}".format(location_id)
-    else:
-       loc_fil = '' 
-        
+    
+    
     query = ''
     if child_prod_id_cat != 'ITEM_CODE': 
   
@@ -1005,6 +460,7 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name,
                                         PS.BASE_LOCATION_LEVEL_ID, 
                                         PS.BASE_LOCATION_ID,
                                         ps.start_date,
+                                        PS.COMP_LOCATION_ID COMP_STR_ID,
                                         pid.simple_index,PID.blended_index,
                                         PID.W_MOVEMENT_IX_REG,
                                         PID.W_MOVEMENT_IX_PROMO, 
@@ -1028,13 +484,23 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name,
                             and ps.start_date <= to_date('{}','YYYY-MM-DD')),
                 PROD_DATA AS (                
                     select DISTINCT {}, {} FROM ITEM_DETAILS_VIEW WHERE ACTIVE_INDICATOR = 'Y'),
-                LOC_DATA AS (SELECT DISTINCT PRICE_ZONE_ID, NAME LOCATION_NAME FROM RETAIL_PRICE_ZONE WHERE ACTIVE_INDICATOR = 'Y')
+                 
+                COMP_DATA AS (SELECT RPZ.PRICE_ZONE_ID LOCATION_ID,RPZ.ZONE_NUM LOCATION_NAME,PRIMARY_COMP_STR_ID COMP_STR_ID,'Primary' as COMP_TIER,CS.NAME COMP_NAME,CS.ADDR_LINE1,CS.CITY  FROM RETAIL_PRICE_ZONE RPZ LEFT JOIN COMPETITOR_STORE CS
+                                ON 
+                            RPZ.PRIMARY_COMP_STR_ID = CS.COMP_STR_ID
+                            WHERE RPZ.PRIMARY_COMP_STR_ID IS NOT NULL AND RPZ.ACTIVE_INDICATOR = 'Y'
+                            UNION ALL
+                            SELECT RPZ.PRICE_ZONE_ID LOCATION_ID,RPZ.ZONE_NUM LOCATION_NAME,SECONDARY_COMP_STR_ID_1 COMP_STR_ID,'Secondary' as COMP_TIER,CS.NAME COMP_NAME,CS.ADDR_LINE1,CS.CITY  FROM RETAIL_PRICE_ZONE RPZ LEFT JOIN COMPETITOR_STORE CS
+                                ON 
+                            RPZ.SECONDARY_COMP_STR_ID_1 = CS.COMP_STR_ID
+                            WHERE SECONDARY_COMP_STR_ID_1 IS NOT NULL AND  RPZ.ACTIVE_INDICATOR = 'Y' )
+
 
             SELECT  product_id, {},
                 product_level_id,
                     BASE_LOCATION_LEVEL_ID, 
                     BASE_LOCATION_ID,
-                    LOCATION_NAME,
+                    CD.LOCATION_NAME,CD.COMP_STR_ID,CD.COMP_TIER,COMP_NAME,CD.ADDR_LINE1,CD.CITY,
                     start_date,
                     simple_index, blended_index,
                     W_MOVEMENT_IX_REG,
@@ -1050,17 +516,19 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name,
                     FROM PI_TABLE PI LEFT JOIN PROD_DATA PD
                     ON
                     PI.PRODUCT_ID = PD.{}
-                    LEFT  JOIN LOC_DATA LD
-                    ON
-                    LD. PRICE_ZONE_ID = PI.BASE_LOCATION_ID {}'''.format(child_prod_id_cat,
+                    LEFT JOIN COMP_DATA CD
+                   ON PI.COMP_STR_ID  = CD.COMP_STR_ID
+                   
+                  AND PI.BASE_LOCATION_ID = CD.LOCATION_ID
+                    '''.format(child_prod_id_cat,
                     prod_fil,start_date,end_date,child_prod_id_cat, child_prod_cat_name,
-                    child_prod_cat_name,child_prod_id_cat, loc_fil)
+                    child_prod_cat_name,child_prod_id_cat)
     else:
         query = ''' WITH PI_TABLE AS (SELECT
         PID.ITEM_CODE AS PRODUCT_ID,
         1 AS product_level_id,
         PS.BASE_LOCATION_LEVEL_ID,
-        PS.BASE_LOCATION_ID,
+        PS.BASE_LOCATION_ID,PS.COMP_LOCATION_ID COMP_STR_ID,
         PS.START_DATE,
         PID.REGULAR AS simple_index,
         PID.PROMOTIONAL AS blended_index,
@@ -1090,13 +558,21 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name,
                             and ps.start_date <= to_date('{}','YYYY-MM-DD')),
                 PROD_DATA AS (                
                     select DISTINCT {}, {} FROM ITEM_DETAILS_VIEW WHERE ACTIVE_INDICATOR = 'Y'),
-                LOC_DATA AS (SELECT DISTINCT PRICE_ZONE_ID, NAME LOCATION_NAME FROM RETAIL_PRICE_ZONE WHERE ACTIVE_INDICATOR = 'Y')
+                COMP_DATA AS (SELECT RPZ.PRICE_ZONE_ID LOCATION_ID,RPZ.ZONE_NUM LOCATION_NAME,PRIMARY_COMP_STR_ID COMP_STR_ID,'Primary' as COMP_TIER,CS.NAME COMP_NAME,CS.ADDR_LINE1,CS.CITY  FROM RETAIL_PRICE_ZONE RPZ LEFT JOIN COMPETITOR_STORE CS
+                                ON 
+                            RPZ.PRIMARY_COMP_STR_ID = CS.COMP_STR_ID
+                            WHERE RPZ.PRIMARY_COMP_STR_ID IS NOT NULL AND RPZ.ACTIVE_INDICATOR = 'Y'
+                            UNION ALL
+                            SELECT RPZ.PRICE_ZONE_ID LOCATION_ID,RPZ.ZONE_NUM LOCATION_NAME,SECONDARY_COMP_STR_ID_1 COMP_STR_ID,'Secondary' as COMP_TIER,CS.NAME COMP_NAME,CS.ADDR_LINE1,CS.CITY  FROM RETAIL_PRICE_ZONE RPZ LEFT JOIN COMPETITOR_STORE CS
+                                ON 
+                            RPZ.SECONDARY_COMP_STR_ID_1 = CS.COMP_STR_ID
+                            WHERE SECONDARY_COMP_STR_ID_1 IS NOT NULL AND  RPZ.ACTIVE_INDICATOR = 'Y' )
 
             SELECT  product_id, {},
                 product_level_id,
                     BASE_LOCATION_LEVEL_ID, 
                     BASE_LOCATION_ID,
-                    LOCATION_NAME,
+                    PI.LOCATION_NAME,CD.COMP_STR_ID,CD.COMP_TIER,COMP_NAME,CD.ADDR_LINE1,CD.CITY,
                     start_date,
                     simple_index, blended_index,
                     W_MOVEMENT_IX_REG,
@@ -1111,12 +587,13 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name,
                     W_VISIT_IX_PROMO 
                     FROM PI_TABLE PI LEFT JOIN PROD_DATA PD
                     ON
-                    PI.PRODUCT_ID = PD.ITEM_CODE
-                    LEFT  JOIN LOC_DATA LD
-                    ON
-                    LD. PRICE_ZONE_ID = PI.BASE_LOCATION_ID {}'''.format(child_prod_id_cat,
-                    prod_fil,start_date,end_date,child_prod_id_cat, child_prod_cat_name,child_prod_cat_name, loc_fil)
-   
+                    PI.PRODUCT_ID = PD.{}
+                    LEFT JOIN COMP_DATA CD
+                     ON ON PI.COMP_STR_ID  = CD.COMP_STR_ID 
+                     AND PI.BASE_LOCATION_ID = CD.LOCATION_ID'''.format(child_prod_id_cat,
+                    prod_fil,start_date,end_date,child_prod_id_cat, child_prod_cat_name,
+                    child_prod_cat_name,child_prod_id_cat)
+    print(query)
     connection = cx_Oracle.connect(username , password,dbname )
     cursor = connection.cursor()
     cursor.execute( query)
@@ -1126,7 +603,7 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name,
     connection.close()
     result = result.drop_duplicates(subset=[0, 1,2,3,4,5])
     result.columns = ["PRODUCT_ID","PRODUCT_NAME","PRODUCT_LEVEL_ID","LOCATION_LEVEL_ID",
-                      "LOCATION_ID","LOCATION_NAME","START_DATE",
+                      "LOCATION_ID","LOCATION_NAME","COMP_STR_ID","COMP_TIER","COMP_NAME","ADDR_LINE","CITY","START_DATE",
                       "SIMPLE_INDEX","BLENDED_INDEX",
                       "W_MOVEMENT_IX_REG","W_MOVEMENT_IX_PROMO",
                       "W_MARGIN_IX_REG","W_MARGIN_IX_PROMO",
@@ -1134,23 +611,203 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name,
                       "W_13WEEK_MOVEMENT_IX_REG",
                       "W_13WEEK_MOVEMENT_IX_PROMO",
                       "W_VISIT_IX_REG","W_VISIT_IX_PROMO"]
-       
+    
+    if location_id is not None:
+        result = result.loc[result['LOCATION_ID'] == location_id,]
+            
+    else:
+       loc_fil = '' 
+    if count_non_none == 1:
+        search_list = list(set(result[comp_col]))
+        closest_match = process.extractOne(name_comp, search_list)
+        result = result.loc[result[comp_col] == closest_match[0],]
+    if count_non_none == 2:
+        search_list1 = list(set(result[comp_col]))
+        search_list2 = list(set(result[comp_col1]))
+        closest_match1 = process.extractOne(name_comp, search_list1)
+        closest_match2 = process.extractOne(name_comp1, search_list2)
+        result = result.loc[(result[comp_col] == closest_match1[0]) & (result[comp_col1] == closest_match2[0]),]
     return result
 
+
 def product_level_identifier(child_prod_level):
-    query = '''SELECT  Product_Level_ID
-    FROM (
-        SELECT Product_Level_ID, Name
-        FROM PRODUCT_GROUP_TYPE
-        WHERE UTL_MATCH.JARO_WINKLER_SIMILARITY(Name, '{}') > 0.8
-        ORDER BY UTL_MATCH.JARO_WINKLER_SIMILARITY(Name, '{}') DESC
-        )
-    WHERE ROWNUM = 1'''.format(child_prod_level,child_prod_level)
+    
+
+    
+    query = '''SELECT  * FROM PRODUCT_GROUP_TYPE'''
     connection = cx_Oracle.connect(username , password,dbname )
     cursor = connection.cursor()
     cursor.execute( query)
-    type_df  = cursor.fetchall()
-    product_level_id = type_df[0][0]
+    result  = cursor.fetchall()
+    result  = pd.DataFrame(result)
+    
     cursor.close()
     connection.close()
-    return product_level_id
+    product_level_list = list(result.iloc[:,1])
+    closest_match = process.extractOne(child_prod_level, product_level_list)
+    product_level_id = result.loc[result.iloc[:,1] == closest_match[0] ,]
+    return product_level_id.iloc[0,0]
+def comp_parser( comp_city = None,comp_addr = None,
+                     comp_name = None, comp_tier = None):
+    base_loc_name = None
+    count_non_none = 0
+    comp_col = comp_col1 = name_comp = name_comp1 = ''
+   
+    if base_loc_name is not None:
+        count_non_none += 1
+    if comp_city is not None:
+        count_non_none += 1
+    if comp_addr is not None:
+        count_non_none += 1
+    if comp_name is not None:
+        count_non_none += 1
+    if comp_tier is not None:
+        count_non_none += 1
+    
+    if count_non_none == 1: 
+        if base_loc_name is not None:
+            comp_col = "LOCATION_NAME"
+            name_comp = base_loc_name
+        if comp_city is not None:
+            comp_col = "CITY"
+            name_comp = comp_city
+        if comp_addr is not None:
+            comp_col = "ADDR_LINE1"
+            name_comp = comp_addr
+        if comp_tier is not None:
+            comp_col = "COMP_TIER"
+            name_comp = comp_tier 
+        if comp_name is not None:
+            comp_col = "COMP_NAME"
+            name_comp = comp_name
+        comp_col1 = None
+        name_comp1 = None
+    elif count_non_none == 2:
+        if base_loc_name is not None:
+            comp_col = "LOCATION_NAME"
+            name_comp = base_loc_name
+            if comp_city is not None:
+                comp_col1 = "CITY"
+                name_comp1 = comp_city
+            elif comp_addr is not None:
+                comp_col1 = "ADDR_LINE1"
+                name_comp1 = comp_addr
+            elif comp_tier is not None:
+                comp_col1 = "COMP_TIER"
+                name_comp1 = comp_tier 
+            elif comp_name is not None:
+                comp_col1 = "COMP_NAME"
+                name_comp1 = comp_name
+        elif comp_city  is not None:
+            comp_col = "CITY"
+            name_comp = comp_city
+            if comp_addr is not None:
+                comp_col1 = "ADDR_LINE1"
+                name_comp1 = comp_addr
+            elif comp_tier is not None:
+                comp_col1 = "COMP_TIER"
+                name_comp1 = comp_tier 
+            elif comp_name is not None:
+                comp_col1 = "COMP_NAME"
+                name_comp1 = comp_name
+        elif  comp_addr is not None:
+            comp_col = "ADDR_LINE1"
+            name_comp = comp_addr
+            if comp_tier is not None:
+                comp_col1 = "COMP_TIER"
+                name_comp1 = comp_tier 
+            elif comp_name is not None:
+                comp_col1 = "COMP_NAME"
+                name_comp1 = comp_name 
+        elif comp_tier is not None:
+            comp_col = "COMP_TIER"
+            name_comp = comp_tier 
+            if comp_name is not None:
+                comp_col1 = "COMP_NAME"
+                name_comp1 = comp_name 
+    return count_non_none, comp_col,name_comp,comp_col1,name_comp1
+    
+
+def plotting_api(data, plot_type = 'table', metric_cols = ['sales'],
+                 product_col = 'product-name', location_col = 'location-name'):
+    
+    df = pd.DataFrame(data)
+
+    if 'week-no' in df.columns:
+        time_col = 'week-no'
+    elif 'period-no' in df.columns:
+        time_col = 'period-no'
+    elif 'quarter-no' in df.columns:
+        time_col = 'quarter-no'
+    else:
+        time_col = 'cal-year'
+        
+    time_cols = ['cal-year', time_col] if time_col != 'cal-year' else ['cal-year']
+
+    if isinstance(metric_cols, str):
+        metric_cols = [word.strip() for word in metric_cols.split(',')]
+
+    id_cols = time_cols + [product_col] + [location_col]
+    all_cols = time_cols + [product_col] + [location_col] + metric_cols
+
+    df = df[all_cols]
+    df = df.drop_duplicates(subset=id_cols)
+
+    unique_times = [int(x) for x in df[time_cols].drop_duplicates().loc[:, time_col].values]
+    products = sorted(df[product_col].unique())
+    locations = sorted(df[location_col].unique())
+
+    if plot_type == 'line':
+        options = { 'xaxis' : { time_col : unique_times}}
+        
+        if len(products) > 1 and  len(locations) == len(metric_cols) == 1:
+            df_wide = df.pivot(index = time_cols, columns = product_col, values = metric_cols).fillna(0).round(2)
+            cols = [f'{col[1]}' for col in df_wide.columns]
+            df_wide.columns = cols
+            
+        elif len(locations) > 1 and  len(products) == len(metric_cols) == 1:
+            df_wide = df.pivot(index = time_cols, columns = location_col, values = metric_cols).fillna(0).round(2)
+            cols = [f'{col[1]}' for col in df_wide.columns]
+            df_wide.columns = cols
+            
+        elif len(metric_cols) >= 1 and len(products) == len(locations) == 1:
+            df_wide = df[metric_cols].fillna(0).round(2)
+            cols = df_wide.columns
+            
+        else:
+            df_wide = df.groupby(time_cols)[metric_cols].sum().fillna(0).round(2)
+            cols = df_wide.columns
+            
+        series = [{'name': col, 'data': df_wide[col].tolist()} for col in cols]
+        res = {'type': plot_type,  'options' : options, 'series' : series}
+        
+    elif plot_type == 'bar':
+        
+        if len(products) > 1:
+            options = { 'xaxis' : { product_col : products}}
+            df_wide = df.groupby(product_col)[metric_cols].sum().fillna(0).round(2)
+            cols = df_wide.columns
+            
+        elif len(locations) > 1:
+            options = { 'xaxis' : { location_col : locations}}
+            df_wide = df.groupby(location_col)[metric_cols].sum().fillna(0).round(2)
+            cols = df_wide.columns
+        
+        else: 
+            options = { 'xaxis' : { time_col : unique_times}}
+            df_wide = df[metric_cols].fillna(0).round(2)
+            cols = df_wide.columns
+            
+        series = [{'name': col, 'data': df_wide[col].tolist()} for col in cols]
+        res = {'type': plot_type,  'options' : options, 'series' : series}
+        
+    elif plot_type == 'table':
+        df.columns = [x.replace('-', ' ').title() for x in df.columns]
+        tableData1 = df.fillna(0).round(2).to_dict(orient = 'records')
+        res = {'type': plot_type,  'tableData1' : tableData1}
+        
+    else:
+        print("chart type not supoorted !!!")
+        res = {'Error': 'chart type not supported!'}
+
+    return res
