@@ -132,9 +132,9 @@ def sanitize_list(x):
 
 
 def process_variable(var):
-    print(var)
+    
     if isinstance(var, list):
-        print(var)
+       
         if len(var) == 0:
             
             return None
@@ -159,6 +159,7 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     #     location_id = comp_df['LOCATION_ID'].unique()
     #     location_level = 6
     #     comp_str_id = comp_df['COMP_STR_ID'].unique()
+    
     cal_type = process_variable(cal_type)
     print(cal_type)
     quarter = process_variable (quarter)
@@ -226,7 +227,10 @@ def reportgen(product_name = None, product_id = None, product_level = None,
            start_date = None
        if len(end_date) == 0:
            end_date = None
-   
+    if product_name is not None:
+        if product_name in ['All','all','any']:
+            product_name = None
+    
     cal = cal_lookup(cal_year, quarter, period, week, day,
                      start_date, end_date, calendar_id, cal_type)
     if  child_prod_level is not None:
@@ -258,6 +262,9 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     
     products = parse_prod_request(product_name, product_id, product_level,
                                user_id, active)
+    if product_name is not None:
+        product_name = products.iloc[0,2]
+    
 
     if products.empty:
         raise ValueError('product')
@@ -335,7 +342,13 @@ def reportgen(product_name = None, product_id = None, product_level = None,
         df.index = df.index.strftime('%Y-%m-%d')
     df.reset_index(inplace=True)
     json_data = df.to_json()
-    return json_data
+    meta_data = {
+        "timeframe": start_date + " - " + end_date,
+        "locations": ["Zone"],
+        "products": [product_name]
+      }
+    
+    return meta_data,json_data
 
 
 
