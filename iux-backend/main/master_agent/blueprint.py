@@ -39,6 +39,7 @@ def prompt2api(message, retriever):
 def add_endpoint():
     data = request.get_json()
     
+    # May need to modify prompt using context + prior prompts + prior api_name
     prompt = data['prompt']
     try:
         api_name = prompt2api(prompt, list_retriever)
@@ -56,9 +57,12 @@ def add_endpoint():
     if not api_url:
         raise HTTPException(status_code=404, detail="API not found")
     
+    print(api_url)
     response = requests.post(url = api_url,
                              json = data,
                              timeout = 30)
+    
+    response['result']['detail'] = {'detail' : api_name}
     
     res = response.json()
         

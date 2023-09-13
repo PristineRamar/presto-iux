@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, Blueprint
 import json
 import gc
@@ -49,14 +48,15 @@ def handler(exc):
 def health():
     return "Presto IUX backend is running..."
 
-# Wrap your function into a REST API
+# This is the agent
 @generic_blueprint.route('/query', methods=['POST'])
 def add_endpoint():
     data = request.get_json()
-    
+    print("Generic prompts")
     if not data or 'prompt' not in data:
         return jsonify({'error': 'Please provide a prompt'}), 400
     
+    # May want to modify prompt based on context + priors
     prompt = data['prompt']    
     user_id = data['user-id']
     message_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
@@ -358,5 +358,6 @@ def plot():
         
 
 if __name__ == '__main__':
+    
     app.run(debug=True, port = port, host = '0.0.0.0')
     #app.run(debug=True, port = 8000, host = '20.228.231.91')

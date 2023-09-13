@@ -28,6 +28,8 @@ summary_tools = [
     PostProcessTool(),
 ]
 
+# Possible approach : ask the LLM to look for information in the current prompt, then check previous prompt if it can't determine
+# something, otherwise leave blank.
 summary_sys_msg = '''You are an awesome assistant in retail. Only make function call to answer questions.
 
 Some Abbrevations you need to keep in mind:
@@ -57,6 +59,8 @@ plot_tools = [
     PlotDataTool(),
 ]
 
+# Possible approach : ask the LLM to look for information in the current prompt, then check previous prompt if it can't determine
+# something, otherwise leave blank.
 plot_sys_msg = '''You are an awesome assistant in retail. Only make function call to answer questions.
 
 Some Abbrevations you need to keep in mind:

@@ -1,9 +1,9 @@
 agent:
-    llm_model: gpt-3.5-turbo-0613
-    #llm-model: gpt-4-0613
-    api_url: http://localhost:8003/
+    #llm_model: gpt-3.5-turbo-0613
+    llm-model: gpt-4-0613
+    api_url: http://localhost:8001/
     user_id: ejack
-    port: 8003
+    port: 8001
 
 database:
     username: READONLY_RA
@@ -18,11 +18,23 @@ general:
     all_prod_id: 9491
     n_responses: 1
     cache: False
-    port: 8003
-    log_filename: 'RA_DEV'
+    port: 8001
+    log_filename: 'RA_STAG'
     
 open-ai:
     open_ai_key: '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'
    
 kvi:
     kvi_url: 'http://127.0.0.1:6999/'    
+
+router:
+  llm-model: gpt-4-0613
+  store: http://localhost:8001/query_store_llm
+  kvi: http://localhost:8001/getKVI
+  ### for the time being, the financials-agent is hosted on the same server of router
+  sales: http://localhost:8001/query
+  affinity: http://localhost:8001/getAffinity
+  price_index: http://localhost:8001/priceindexllm
+  port: 8001
+  timeout: 30
+  
