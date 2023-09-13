@@ -7,6 +7,13 @@ const ChartParser = ({ message, chatType }) => {
   let parsedMessage;
   let updatedOptions;
   
+  // function capitalizeFirstLetter(str) {
+  //   return str
+  //     .split(' ')
+  //     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  //     .join(' ');
+  // }
+
   if (chatType === "line" || chatType === "bar" || chatType === "table" || chatType === "pie" ) {
     parsedMessage = JSON.parse(message);
 
@@ -15,33 +22,21 @@ const ChartParser = ({ message, chatType }) => {
         for (let key in parsedMessage.options.xaxis) {
           const numLabels = parsedMessage.options.xaxis[key].length;
           const fontSize = "15px";
-          // numLabels > 50 ? "7px" : "12px";
           updatedOptions = {
             xaxis: {
               categories: parsedMessage.options.xaxis[key],
-              // tickPlacement: 'on',
               tickAmount: numLabels,
               labels: {
                 maxHeight: 200, 
-                offsetX: 10,
-                // trim: true, // Enable label trimming
-                // formatter: function (val) {
-                //   console.log("val", val);
-                //   console.log("val.length", val.length);
-                //   // Customize the label formatting and truncation as needed
-                // const maxLength = 15; // Maximum length of the label
-                //   console.log("maxLength", val.length > maxLength ? val.slice(0, maxLength) + "..." : maxLength);
-                // return val.length > maxLength ? val.slice(0, maxLength) + "..." : val;},
+                offsetX: 18,
                 style: {
                   fontSize: fontSize,
                   fontWeight: "bold",
                 },
-                // maxHeight: "100px",
               },
             },
             yaxis: {
               labels: {
-                // offsetX: -15,
                 formatter: function(val) {return val.toFixed(0);},
                 style: {
                   fontSize: fontSize,

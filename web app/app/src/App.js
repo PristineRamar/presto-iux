@@ -39,14 +39,14 @@ function App() {
 
 
   // This code is the culprit for login page flashing on refresh
-  useEffect(() => {
-    console.log("isLogin: ", isLogin);
-    console.log("isUserToken: ", isUserToken);
-    // if (!isLogin && !isUserToken) {
-    if (!isLogin) {
-      navigate(process.env.PUBLIC_URL); //navigate('/KAIStage');
-    }
-  }, [isLogin]);
+  // useEffect(() => {
+  //   console.log("isLogin: ", isLogin);
+  //   console.log("isUserToken: ", isUserToken);
+  //   // if (!isLogin && !isUserToken) {
+  //   if (!isLogin) {
+  //     navigate(process.env.PUBLIC_URL); //navigate('/KAIStage');
+  //   }
+  // }, [isLogin]);
 
 
   return (
@@ -59,8 +59,8 @@ function App() {
         path={process.env.REACT_APP_AI_REDIRECT}
         element={
           <div className="App" style={{ display: "flex", height: "100vh" }}>
-            {isNavBar && <Navbar />}
-            {/* <Navbar /> */}
+            {/* {isNavBar && <Navbar />} */}
+            <Navbar prestURL={isNavBar}/>
             <Sidebar className="sideCSS" visible={sideNavVisible} show={showSidebar}/>
             <div className={!sideNavVisible ? "page" : "page page-with-sidenavbar"}>
               <AIChat visible={sideNavVisible}/>

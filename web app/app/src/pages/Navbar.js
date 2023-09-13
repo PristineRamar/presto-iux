@@ -3,7 +3,8 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import "../styles/navbar.css";
 import { Link, useNavigate } from "react-router-dom";
 
-function Navbar() {
+function Navbar({prestURL}) {
+  console.log("prestURL: ", prestURL);
   const auth = localStorage.getItem("user");
  	const navRef = useRef();
   const navigate = useNavigate();
@@ -30,10 +31,10 @@ function Navbar() {
           <FaTimes />
         </button>
         <ul className="nav-right">
-          {auth ? (
+          {!prestURL ? null :(auth ? (
           <li><Link onClick={logout} to={process.env.PUBLIC_URL}>Logout{" ("} {JSON.parse(auth).FIRST_NAME} {" "} {JSON.parse(auth).LAST_NAME}{" )"}</Link></li>
           ):(
-          <li><Link to={process.env.PUBLIC_URL}>Login</Link></li>)}
+          <li><Link to={process.env.PUBLIC_URL}>Login</Link></li>))}
         </ul>
       </nav>
     </header>
