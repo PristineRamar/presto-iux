@@ -3,7 +3,7 @@ import React from "react";
 import "../styles/table.css";
 
 const ChartParser = ({ message, chatType }) => {
-    console.log("chatType", chatType);
+  //console.log("chatType", chatType);
   let parsedMessage;
   let updatedOptions;
   
@@ -42,6 +42,7 @@ const ChartParser = ({ message, chatType }) => {
             yaxis: {
               labels: {
                 // offsetX: -15,
+                formatter: function(val) {return val.toFixed(0);},
                 style: {
                   fontSize: fontSize,
                   fontWeight: "bold",

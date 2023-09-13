@@ -10,6 +10,8 @@ const ICON_SIZE = 20;
 
 const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
   console.log("chatType", chatType);
+  console.log("intent", intent);
+  console.log("metadata", metadata);
 
   const { updatedOptions, parsedMessage } = ChartParser({ message: message.message, chatType }); // Call ChartParser to get options and series
 

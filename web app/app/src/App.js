@@ -7,38 +7,36 @@ import Navbar from "./pages/Navbar";
 import LoginPage from "./pages/Login";
 import PrestoPage from "./pages/PrestoPage";
 
-
 function App() {
   const [sideNavVisible, showSidebar] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [isUserToken, setIsUserToken] = useState(false);
   const [isNavBar, setIsNavBar] = useState(true);
   const navigate = useNavigate();
-
-  let tokenFromURL;
+  const urlParams = new URLSearchParams(window.location.search);
+  
+  let tokentoPrestoPage;
+  tokentoPrestoPage = urlParams.get('token');
   
   useEffect(() => {
     const auth = localStorage.getItem("user");
     const userToken = localStorage.getItem("userToken");
-    const urlParams = new URLSearchParams(window.location.search);
-    tokenFromURL = urlParams.get('token');
-    console.log("tokenFromURL: ", tokenFromURL);
-    if(userToken){
+    // const urlParams = new URLSearchParams(window.location.search);
+    tokentoPrestoPage = urlParams.get('token');
+    console.log("Entry 1 Token: ", tokentoPrestoPage);
+    if (tokentoPrestoPage) {
+      console.log("Entry 2 Token: ", tokentoPrestoPage);
+      setIsUserToken(true);
+      navigate(`/presto/${tokentoPrestoPage}`);
+    }
+    if(tokentoPrestoPage){
       setIsNavBar(false);
     }
     if (auth) {
       setIsLogin(true);
     }
-    if (tokenFromURL) {
-      setIsUserToken(true);
-    }
   }, []);
 
-  useEffect(() => {
-    if (isUserToken) {
-        navigate('/presto', {tokenFromURL});
-    }
-  }, [isUserToken]);
 
   // This code is the culprit for login page flashing on refresh
   useEffect(() => {
@@ -46,30 +44,25 @@ function App() {
     console.log("isUserToken: ", isUserToken);
     // if (!isLogin && !isUserToken) {
     if (!isLogin) {
-      console.log("isUserToken: ", isUserToken);
-      console.log("Entry: ", isLogin);
-      navigate('/KAIProd');
+      navigate(process.env.PUBLIC_URL); //navigate('/KAIStage');
     }
   }, [isLogin]);
-
 
 
   return (
     <Routes>
       <Route basename={process.env.PUBLIC_URL} />
       <Route path="/" element={<LoginPage />} />
-      <Route path="/KAIProd" element={<LoginPage />} />
-      <Route path="/presto" element={<PrestoPage />} />
-      {/* {console.log("isLogin: ", isLogin)} */}
+      <Route path={process.env.PUBLIC_URL} element={<LoginPage />} />
+      <Route path="/presto/:tokentoPrestoPage" element={<PrestoPage />} />
       <Route
-        path="/aichat"
+        path={process.env.REACT_APP_AI_REDIRECT}
         element={
           <div className="App" style={{ display: "flex", height: "100vh" }}>
-            {/* {isNavBar && <Navbar />} */}
-            <Navbar />
+            {isNavBar && <Navbar />}
+            {/* <Navbar /> */}
             <Sidebar className="sideCSS" visible={sideNavVisible} show={showSidebar}/>
             <div className={!sideNavVisible ? "page" : "page page-with-sidenavbar"}>
-              {/* {console.log("sideNavVisible: ", sideNavVisible)} */}
               <AIChat visible={sideNavVisible}/>
             </div>
           </div>
