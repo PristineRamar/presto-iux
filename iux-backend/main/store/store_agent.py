@@ -15,8 +15,8 @@ from store.store_llm_tools import StoreClusterTool, PlotDataTool#PostProcessTool
 langchain.llm_cache = InMemoryCache()
 api_key= "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"
 #api_key = os.environ.get("OPEN_AI_API")
-GPT_MODEL = "gpt-3.5-turbo-0613"
-#GPT_MODEL = "gpt-4-0613"
+#GPT_MODEL = "gpt-3.5-turbo-0613"
+GPT_MODEL = "gpt-4-0613"
 
 llm = ChatOpenAI(
     openai_api_key = api_key,
@@ -30,8 +30,7 @@ tools = [
    # GetDataTool(),
    #PostProcessTool()
 ]
-
-func_agent_sys_msg = '''You are an awesome assistant in retail. Only make function call to answer questions. You will try your best to figure out four pieces of information:
+func_agent_sys_msg = '''You are an awesome assistant in retail. Only make function call to answer questions. You will try your best to figure out eight pieces of information:
 
 1. API to use
 2. Store Name
@@ -39,11 +38,22 @@ func_agent_sys_msg = '''You are an awesome assistant in retail. Only make functi
 4. Distance in miles
 5. No of groups
 6. Factors
+7. State
+8. nostore
+9. Geography
+10. City
+11. min_store
+12. max_store
 
-Leave Competitor Store Name/Distance in miles/no of groups/factors fields blank if you are not sure.
-You have to call only one API for each scenario, pass data and display the results obtained  or use plotting tool to format the data for plotting. 
+
+Map the correct Store Name in case its abbreviation is given.
+DG : Dollar General, GU : Grand Union, DT : Dollar Tree
+
+Leave Competitor Store Name/Distance in miles/no of groups/factors/City/State fields blank if you are not sure. 
+You have to identify one correct API  based on factors given and intent of user, for each scenario, and present result as it is.
+Do not use PlotDataTool for any task other than grouping or clustering.
 Answer exactly what is being asked, DO NOT make any assumption about the metrics asked or add any additional information.
-Report exactly what the tools returns. 
+Report exactly what the tools returns. DO NOT mention API to use in summary
 '''
 
 agent_kwargs = {
