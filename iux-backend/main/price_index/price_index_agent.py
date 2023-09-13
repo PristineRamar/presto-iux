@@ -9,12 +9,12 @@ from langchain.tools import BaseTool, StructuredTool, Tool, tool
 from langchain.cache import InMemoryCache
 sys.path.insert(0, './')
 from price_index.price_index_llm_tools import GetDataTool,  PlotDataTool
+from config.app_config import config
 
 langchain.llm_cache = InMemoryCache()
 
-api_key = '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'
-# GPT_MODEL = "gpt-3.5-turbo-0613"
-GPT_MODEL = "gpt-4-0613"
+api_key = config["open-ai"]["open_ai_key"]    
+GPT_MODEL = config["agent"]["llm-model"]
 
 llm = ChatOpenAI(
     openai_api_key = api_key,
