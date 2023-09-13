@@ -8,13 +8,13 @@ from langchain import LLMMathChain
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
 from langchain.cache import InMemoryCache
 sys.path.insert(0, './')
-from price_index.price_index_llm_tools import GetDataTool, PostProcessTool, PlotDataTool
+from price_index.price_index_llm_tools import GetDataTool,  PlotDataTool
+from config.app_config import config
 
 langchain.llm_cache = InMemoryCache()
 
-api_key = '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'
-GPT_MODEL = "gpt-3.5-turbo-0613"
-#GPT_MODEL = "gpt-4-0613"
+api_key = config["open-ai"]["open_ai_key"]    
+GPT_MODEL = config["agent"]["llm-model"]
 
 llm = ChatOpenAI(
     openai_api_key = api_key,
@@ -25,25 +25,26 @@ llm = ChatOpenAI(
 
 tools = [
     GetDataTool(),
-    PostProcessTool(),
+    #PostProcessTool(),
     PlotDataTool(),
 ]
 
-func_agent_sys_msg = '''You are an awesome assistant in retail. Only make function call to answer questions. You will try your best to figure out 8 pieces of information:
+func_agent_sys_msg = '''You are an awesome assistant in retail. Only 
+make function call to answer questions. You will try your best to figure out 10 pieces of information:
 
 1. API to use
-2. Products
-3. Locations
-4. Time Frames
-5. child product level 
-6. aggregation flags 
+2.  Calendar type
+3. Products
+4. chlid product level
+5. Competitor data
+6. Locations
+7. Time Frames
+8. aggregation flags 
+9. price index type
+10. weighted by parameters 
 
-7. price index type
-8. weighted by parameters 
 
-
-Leave Product/Location/Time Frame/aggregation flags if flags are 'Y'/child product level/price index type/weighted by/
-fields blank if you are not sure.
+ You must not return the blank field or field with empty list . return the values those are 100% sure for you
 
 Some Abbrevations you need to keep in mind:
 
@@ -52,7 +53,7 @@ P: Period, for example P3 means period 3.
 Q: Quarter, for example Q2 means quarter 2.
 PI: Price index
 
-And you have to answer the question in two steps: first call api to get data, then use the post process tool to get the final answer or use plotting tool to format the data for plotting. Answer exactly what is being asked, do NOT make any assumption about the metrics asked. Report exactly what the tools returns. And if asked about ratio or percentage, you have to call the same API twice with different flags.
+And you have to answer the question in two steps: first call api to get data, Answer exactly what is being asked, do NOT make any assumption about the metrics asked. Report exactly what the tools returns if it doesnot contain empty list.
 '''
 
 agent_kwargs = {

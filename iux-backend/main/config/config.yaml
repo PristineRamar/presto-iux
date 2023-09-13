@@ -1,9 +1,9 @@
 agent:
-    llm_model: gpt-3.5-turbo-0613
-    #llm-model: gpt-4-0613
-    api_url: http://localhost:8003/
+    # llm_model: gpt-3.5-turbo-0613
+    llm-model: gpt-4-0613
+    api_url: http://localhost:9503/
     user_id: ejack
-    port: 8003
+    port: 9503
 
 database:
     username: READONLY_RA
@@ -18,7 +18,7 @@ general:
     all_prod_id: 9491
     n_responses: 1
     cache: False
-    port: 8003
+    port: 9503
     log_filename: 'RA_DEV'
     
 open-ai:
