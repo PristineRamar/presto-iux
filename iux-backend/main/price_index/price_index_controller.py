@@ -54,12 +54,12 @@ def add_endpoint():
     data = request.get_json()
     
     print(data['prompt'])
-    result = agent.run(data['prompt'])
+    result, meta_data = agent.run(data['prompt'])
 
     # with open('meta-data.json', 'r') as file:
     #     meta_data = json.load(file)
 
-    final_res = {'summary': result }
+    final_res = {'summary': result,"meta_data":meta_data}
 
     response_data = json.dumps({'result' : final_res})
     return response_data

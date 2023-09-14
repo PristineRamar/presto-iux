@@ -116,6 +116,7 @@ def plot_data(data_file, type = 'line', metric_cols = 'sales', product_col = 'pr
     data_dict = data['data']
     data_keys = list(data_dict.keys())
    
+    meta_data =  data['meta-data']
     out_data = {
     "type": type,
     "options": {
@@ -130,9 +131,9 @@ def plot_data(data_file, type = 'line', metric_cols = 'sales', product_col = 'pr
             }
         ]
     }
+     
    
-   
-    return  out_data
+    return  out_data,meta_data
 
 class APICallParameters(BaseModel):
     """Inputs for get_data_by_api"""
@@ -164,18 +165,18 @@ class APICallParameters(BaseModel):
         
     )
     comp_name: Optional[List[str]] = Field(
-       None,
+        None,
         description= "Used to specify which Competitor the user wants data pertaining to. For example, 'Wallgreens', 'CVC' would be valid ways of using this argument. The types like 'Primary', 'Secondary' cannot be the competitor name"
         
     )
     
     comp_city: Optional[List[str]] = Field(
-       None,
+        None,
         description= "Used to specify which City of the Competitor the user wants data pertaining to. For example, 'Seattle', 'Dover' would be valid ways of using this argument"
         
     )
     comp_addr: Optional[List[str]] = Field(
-      None,
+       None,
        description= "Used to specify The address of the Competitor the user wants data pertaining to. For example, '5190 Library Rd ', '1801 York Rd' would be valid ways of using this argument"
        
      )
@@ -185,11 +186,11 @@ class APICallParameters(BaseModel):
         enum=[ "Y", "N"]
     )
     location_name: Optional[List[str]] = Field(
-       None,
+        None,
         description="Used to specify the location the user wants data pertaining to. For example, 'Zone 620' or 'online stores' would be valid ways of using this argument. "
     )
     loc_agg: Optional[List[str]] = Field(
-       None,
+        None,
         description= "do this if you are 100% sure: A flag to indicate if the query is about aggregation or summarization or averaging at location level. This flag only applies when user says about aggregation levels. if aggregation at location level or zone level the flag should be 'Y' else 'N'for example 'aggregate at location level' the flag is 'Y'. for the context 'aggregate at week level' or 'aggregatd at product level' the should be 'N' ",
         enum=[ "Y", "N"]
     )
@@ -204,21 +205,21 @@ class APICallParameters(BaseModel):
         description="Can be used to specify specific periods in the retail calendar, e.g., ['4'] or  ['5', '6']. Alternatively, the user can specify certain periods using key phrases such as 'current', 'last 1', or 'next 2'."
     )
     quarter: Optional[List[str]] = Field(
-       None,
+        None,
         description="Can be used to specify specific quarters in the retail calendar, e.g., ['1'] or  ['2', '3']. Alternatively, the user can specify certain quarters using key phrases such as 'current', 'last 1', or 'next 2'."
     )
     cal_year: Optional[List[str]] = Field(
-       None,
+        None,
         #alias="cal-year",
         description="Can be used to specify specific years in the retail calendar, e.g., ['2021'] or  ['2022', '2023']. Alternatively, the user can specify certain years using key phrases such as 'current', 'last 1', or 'next 2'."
     )
     start_date: Optional[str] = Field(
-      None,
+        None,
         #alias="start-date",
         description="Can be used to specify that the user wants information from a certain date onwards, e.g., 'May 12, 2021'."
     )
     end_date: Optional[str] = Field(
-      None,
+         None,
         #alias="end-date",
         description="Same as start-date"
     )
@@ -229,12 +230,12 @@ class APICallParameters(BaseModel):
     )
     
     pi_type:  Optional[List[str]] = Field(
-       None,
+        None,
         description="Used to specify the price index types. the user wants data pertaining to. For example, 'S' is valid for 'Simple Index', 'Reg price index' and 'Reg Index' and 'B' is valid for 'Blended Index', 'promotion idex' or 'promo index'. apart from 'S' or 'B' should not be used",
         enum=["S", "B"]
     )
     weighted_by:  Optional[List[str]] = Field(
-      None,
+        None,
         description="Used to specify whether price index weighted by 1. movement 2.margin 3.revenue 4. 13 week movement  5.visit. use 'M' for movement, 'MR' for margin,'R' for revenue, 'M13' for 13 week movement, 'V' for visit",
        
         enum=["M", "MR", "R","M13","V"]
