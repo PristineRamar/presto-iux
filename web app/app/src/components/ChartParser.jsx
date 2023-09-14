@@ -21,6 +21,12 @@ const ChartParser = ({ message, chatType }) => {
       if (parsedMessage.options.xaxis) {
         for (let key in parsedMessage.options.xaxis) {
           const numLabels = parsedMessage.options.xaxis[key].length;
+          const values = parsedMessage.options.xaxis[key];
+          const maxKeyLength = Math.max(...values.map(value => value.length));
+          let offset = 0;
+          if(maxKeyLength > 17) {
+            offset = 18
+          }
           const fontSize = "15px";
           updatedOptions = {
             xaxis: {
@@ -28,7 +34,7 @@ const ChartParser = ({ message, chatType }) => {
               tickAmount: numLabels,
               labels: {
                 maxHeight: 200, 
-                offsetX: 18,
+                offsetX: offset,
                 style: {
                   fontSize: fontSize,
                   fontWeight: "bold",
@@ -36,6 +42,7 @@ const ChartParser = ({ message, chatType }) => {
               },
             },
             yaxis: {
+              fixed: true,
               labels: {
                 formatter: function(val) {return val.toFixed(0);},
                 style: {

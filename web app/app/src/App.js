@@ -63,7 +63,7 @@ function App() {
             <Navbar prestURL={isNavBar}/>
             <Sidebar className="sideCSS" visible={sideNavVisible} show={showSidebar}/>
             <div className={!sideNavVisible ? "page" : "page page-with-sidenavbar"}>
-              <AIChat visible={sideNavVisible}/>
+              <AIChat visible={sideNavVisible} prestURL={isNavBar}/>
             </div>
           </div>
         }

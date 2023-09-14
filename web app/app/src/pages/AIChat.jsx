@@ -422,28 +422,14 @@ const handleIconClick = () => {
   setIsActive(true);
   startListening();
   
-
-  // console.log('handleIconClick', transcript);
-  // setTranscript('');
-  // if (!isRecording && !isActive) {
-  //   setIsActive(true); // Set the microphone as active when starting recording
-  //   setIsRecording(true);
-  //   setListening(true);
-  //   recognition.start();
-  // } else {
-  //   console.log('stop listening');
-  //   setIsActive(false); // Set the microphone as inactive when stopping recording
-  //   setIsRecording(false);
-  //   setListening(false);
-  //   recognition.stop();
-  // }
 };
 }
 
   return (
     <>
       <div className="chat-container">
-        <div className="chat-log" ref={messageEl}>
+        {/* <div className="chat-log" ref={messageEl}> */}
+      <div className={!props.prestoURL ? 'chat-log' : 'chat-log-presto'} ref={messageEl}>  
           {chatLog.map((message, index) => (
             <ChatMessage
               key={index}

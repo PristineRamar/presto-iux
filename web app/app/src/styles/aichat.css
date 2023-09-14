@@ -188,8 +188,7 @@
 }
 
 .chat-log {
-  /*height: 550px;*/ /* RB */
-  height: 500px;
+  height: 550px;
   padding-bottom: 20px;
   width: 98%;
   overflow-x: hidden;
@@ -198,6 +197,11 @@
   -ms-overflow-style: thin;  /* IE and Edge */
   scrollbar-width: thin;  /* Firefox */
 }
+
+.chat-log-presto{
+  height: 480px;
+}
+
 
 .chat-container {
   padding-top: 8px;
@@ -261,11 +265,14 @@
 }
 
 @media (resolution: 1.5dppx) {
-  .chat-log {
-    height: 430px;
-    /* width: auto; */
-  }
 
+  .chat-log{
+    height: 430px;
+  }
+  
+  .chat-log-presto{
+    height: 380px;
+  }
   
 }
 
