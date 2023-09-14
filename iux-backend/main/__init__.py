@@ -11,6 +11,7 @@ from generic.generic_controller import generic_blueprint
 from store.store_controller import store_blueprint
 from price_index.price_index_controller import price_index_blueprint
 from kvi.kvi_controller import kvi_blueprint
+from affinity.affinity_controller import affinity_blueprint
 from config.app_config import config
 
 
@@ -22,6 +23,7 @@ app.register_blueprint(generic_blueprint, url_prefix="/")
 app.register_blueprint(store_blueprint, url_prefix="/")
 app.register_blueprint(price_index_blueprint, url_prefix="/")
 app.register_blueprint(kvi_blueprint, url_prefix="/")
+app.register_blueprint(affinity_blueprint, url_prefix="/")
 
 if __name__ == '__main__':
     app.run(port=config["general"]["port"])

@@ -1,14 +1,18 @@
 agent:
     # llm_model: gpt-3.5-turbo-0613
     llm-model: gpt-4-0613
-    api_url: http://localhost:9503/
+    api_url: http://localhost:9506/
     user_id: ejack
-    port: 9503
+    port: 9506
 
 database:
-    username: READONLY_RA
-    password: 'RE1#AD2#RA3'
-    dbname: secure9.pristineinfotech.com:7784/RiteAid
+    # username: READONLY_RA
+    # password: 'RE1#AD2#RA3'
+    # dbname: secure9.pristineinfotech.com:7784/RiteAid
+    
+    username: PRESTO_IUX
+    password: 'PR#IUX#2023'
+    dbname: secure2.pristineinfotech.com:7781/IUX
 
 general:
     client_name: "RA"
@@ -18,22 +22,22 @@ general:
     all_prod_id: 9491
     n_responses: 1
     cache: False
-    port: 9503
+    port: 9506
     log_filename: 'RA_DEV'    
 open-ai:
-    open_ai_key: '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'
+    open_ai_key: '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'
    
 kvi:
     kvi_url: 'http://127.0.0.1:6999/'    
 
 router:
   llm-model: gpt-4-0613
-  store: http://localhost:8001/query_store_llm
-  kvi: http://localhost:8001/getKVI
+  store: http://localhost:9506/query_store_llm
+  kvi: http://localhost:9506/getKVI
   ### for the time being, the financials-agent is hosted on the same server of router
-  sales: http://localhost:8001/query
-  affinity: http://localhost:8001/getAffinity
-  price_index: http://localhost:8001/priceindexllm
-  port: 8001
+  sales: http://localhost:9506/query
+  affinity: http://localhost:9506/getAffinity
+  price_index: http://localhost:9506/priceindexllm
+  port: 9506
   timeout: 30
   
