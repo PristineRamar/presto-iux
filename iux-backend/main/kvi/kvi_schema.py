@@ -68,9 +68,10 @@ def get_data_by_api(**kwargs):
     
     try:
         res = {}
-        res['Primary KVI'] = data['Primary KVI']
-        res['Stats'] = data['stats']
-        res['Factor used']= data['Factor used']
+        res = data['summary']
+        #res['Primary KVI'] = data['Primary KVI']
+        #res['Stats'] = data['stats']
+        #res['Factor used']= data['Factor used']
         print(data['timeframe'])
         meta_keys = ['timeframe', 'locations', 'products']
         meta_data = {key: data[key] for key in meta_keys if key in data}
@@ -156,7 +157,7 @@ class APICallParameters(BaseModel):
     )
     location_name: Optional[str] = Field(
         None,
-        description="Used to specify the location the user wants data pertaining to. For example, 'Zone 620' or 'online stores' would be valid ways of using this argument."
+        description="Used to specify the location the user wants data pertaining to. For example, 'Zone 620' or 'online stores' or 'BM11' would be valid ways of using this argument."
     )
     location_id: Optional[int] = Field(
         None,
@@ -164,7 +165,7 @@ class APICallParameters(BaseModel):
     )
     product_name: Optional[str] = Field(
         None,
-        description="Used to specify which product group the user wants data pertaining to. For example, 'Upper Respiratory', 'OTC internal',  or 'grocery' would be valid ways of using this argument."
+        description="Used to specify which product group the user wants data pertaining to. For example, 'Upper Respiratory', 'Milk Fresh', 'Tabletop'  or 'grocery' would be valid ways of using this argument."
     )
     product_id: Optional[int]= Field(
         None,

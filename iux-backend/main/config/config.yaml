@@ -1,9 +1,9 @@
 agent:
-    # llm_model: gpt-3.5-turbo-0613
+    #llm-model: gpt-3.5-turbo-0613
     llm-model: gpt-4-0613
-    api_url: http://localhost:9502/
+    api_url: http://localhost:9511/
     user_id: ejack
-    port: 9502
+    port: 9511
 
 database:
     # username: READONLY_RA
@@ -17,13 +17,13 @@ database:
 general:
     client_name: "RA"
     data_url: 'http://secure1.pristineinfotech.com:7200/presto-data-services'
-    chain_id: 52
+    chain_id: 53
     global_zone_id: 483
     all_prod_id: 9491
     n_responses: 1
     cache: False
-    port: 9502
-    log_filename: 'E:/Users/Pradeep/Logs/dev-logs.log'    
+    port: 9511
+    log_filename: 'dev-log'    
 open-ai:
     open_ai_key: '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'
    
@@ -32,12 +32,12 @@ kvi:
 
 router:
   llm-model: gpt-4-0613
-  store: http://localhost:9502/query_store_llm
-  kvi: http://localhost:9502/getKVI
+  store: http://localhost:9511/query_store_llm
+  kvi: http://localhost:9511/getKVI
   ### for the time being, the financials-agent is hosted on the same server of router
-  sales: http://localhost:9502/query
-  affinity: http://localhost:9502/getAffinity
-  price_index: http://localhost:9502/priceindexllm
-  port: 9502
+  sales: http://localhost:9511/query
+  affinity: http://localhost:9511/getAffinity
+  price_index: http://localhost:9511/priceindexllm
+  port: 9511
   timeout: 30
   

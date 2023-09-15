@@ -6,9 +6,11 @@ import pandas as pd
 import time
 import random
 import string
-
+import logging
 import datetime
-from app_logger.logger import logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.ERROR)
+
 from typing import Type
 from typing import Optional, List
 from pydantic import BaseModel, Field
@@ -20,6 +22,7 @@ sys.path.insert(0, '../store_data_api')
 from store.store_data_location import root_dir #change store.
 from config.app_config import config 
 #root_dir = 'E:\\Users\\Chavi\\code_from_git1\\presto-iux\\iux-backend\\main\\store\\'
+
 
 def get_data_by_api(**kwargs):
     
@@ -56,12 +59,8 @@ def get_data_by_api(**kwargs):
 
         # Extract values of 'stores' and 'no_of_groups' keys
         stores_value = converted_dict['stores'][0].strip('[]')
-        distance_within = int(converted_dict['distanceWithin'][0].strip('[]')) if 'distanceWithin' in converted_dict else 5
-        no_of_groups_value = int(converted_dict['no-of-groups'][0].strip('[]')) if 'no-of-groups' in converted_dict else 3
         city = converted_dict['city'][0].strip('[]') if 'city' in converted_dict else 'US'
         state = converted_dict['state'][0].strip('[]') if 'state' in converted_dict else 'US'
-        min_store = int(converted_dict['minStore'][0].strip('[]')) if 'minStore' in converted_dict else 2
-        max_store = int(converted_dict['maxStore'][0].strip('[]')) if 'maxStore' in converted_dict else 20000
         if 'factors' not in converted_dict:
             converted_dict['factors']=['LAT','LON']
             
@@ -70,7 +69,30 @@ def get_data_by_api(**kwargs):
         if 'factors' in converted_dict:
             factors_list = [word.strip() for word in factors]
             factors= fix_urbanicity(factors_list)
-       
+        if 'distanceWithin' in converted_dict:
+            
+             distance_within=converted_dict['distanceWithin'][0]
+        else:
+             distance_within=5
+           
+        if 'no_of_groups' in converted_dict:
+               no_of_groups_value = converted_dict['no_of_groups'][0]
+               #no_of_groups_value = no_of_groups_value.strip('[]')
+              # no_of_groups_value = int(no_of_groups_value)
+        else:
+              no_of_groups_value= 3
+              
+        if 'minStore' in converted_dict:
+            
+             min_store=converted_dict['minStore'][0]
+        else:
+             min_store=2
+             
+        if 'maxStore' in converted_dict:
+            
+             max_store=converted_dict['maxStore'][0]
+        else:
+             max_store=50000
         # Update the dictionary with the modified values
         modified_dict = {
             'stores': stores_value,
@@ -94,11 +116,13 @@ def get_data_by_api(**kwargs):
             stores_value = converted_dict['stores'][0].strip('[]')
            # competitor_value = converted_dict['distanceStores'][0].strip('[]')
             competitor_value = converted_dict['distanceStores']
-            distance_within = [int(dist) for dist in converted_dict['distanceWithin']] if 'distanceWithin' in converted_dict else [5]
             city = converted_dict['city'][0].strip('[]') if 'city' in converted_dict else 'US'
             state = converted_dict['state'][0].strip('[]') if 'state' in converted_dict else 'US'
             nostore = converted_dict['nostore'][0] if 'nostore' in converted_dict else False
-            
+            if 'distanceWithin' in converted_dict:
+                distance_within=[int(dist) for dist in converted_dict['distanceWithin']]
+            else:
+                distance_within=[3]
            # geography_value = converted_dict['geography'][0].strip('[]') if 'geography' in converted_dict else None
            # if 'geography' in converted_dict and converted_dict['geography'] is not None:
             geography_value = converted_dict['geography'][0].strip('[]') if 'geography' in converted_dict else None
@@ -186,7 +210,7 @@ def get_data_by_api(**kwargs):
     except requests.RequestException as e:
             logger.error(f'API Request failed: {e}')
             error_message = {"error_code": "api_error", "error_message": "API request error"}
-            logger.error('Input JSON: %s', json.dumps(converted_dict, indent=2))
+            logging.error('Input JSON: %s', json.dumps(converted_dict, indent=2))
         
             if hasattr(response, 'status_code'):
                 logger.error(f'Request failed with status code {response.status_code}')
@@ -205,13 +229,13 @@ def get_data_by_api(**kwargs):
                     log_file.write(f"{log_entry['x_time']}:\n API Name : {log_entry['api_name']} \n GeneralError: {log_entry['error']}\n")
         
                 if hasattr(response, 'text'):
-                    logger.error('Response Content: %s', response.text)
+                    logging.error('Response Content: %s', response.text)
                 
                 try:
                     response_json = response.json()
-                    logger.error('Response Content (JSON): %s', json.dumps(response_json, indent=2))
+                    logging.error('Response Content (JSON): %s', json.dumps(response_json, indent=2))
                 except json.JSONDecodeError as decode_error:
-                    logger.error('JSONDecodeError: %s', decode_error)
+                    logging.error('JSONDecodeError: %s', decode_error)
                 
                 raise DataHTTPException(status_code=400, detail="Fail to fetch data.", error_code=error_code, error_message=error_message)
 
@@ -251,7 +275,7 @@ def plot_data(**kwargs):
             
    except Exception as e:
            # Log other exceptions
-           logger.error('Error: %s', e)
+           logging.error('Error: %s', e)
            file_name_error="error_log.txt"
            file_path_error=root_dir+file_name_error
            with open(file_path_error, "a") as log_file:
@@ -266,7 +290,7 @@ class APICallParameters(BaseModel):
     """Inputs for get_data_by_api"""
     api_name: str = Field(
         ...,
-        description="APIs to call: 1. find_no_of_stores API: Use this API to count number of stores of given store name in a city or state. ; 2. competing_stores_in_miles API: Use this API to find number of another stores in a certian miles or miles of given main store in a city or state.  ; 3. group_stores API: Use this api to create 'groups or cluster'  of given stores. Arguments may have two different store names, factors and distance. Plot data in tabular format",
+        description="APIs to call: 1. find_no_of_stores API: Use this API to count number of stores of given store name in a city or state. ; 2. competing_stores_in_miles API: Use this API to find number of another stores in a certian miles or miles of given main store in a city or state.  ; 3. group_stores API: Use this api to create 'groups or cluster'  of given stores. Arguments may have two different store names, distance within them and different  factors . Plot data in tabular format",
         enum=["find_no_of_stores, competing_stores_in_miles, group_stores"]
     )
     
@@ -278,11 +302,11 @@ class APICallParameters(BaseModel):
         None,
         description="Competitior store names  for which users want to get information for in comparison with their store .For example : 'walgreens', 'walmart' "
     )
-    distanceWithin: Optional[List[str]] = Field(
+    distanceWithin: Optional[List[int]] = Field(
         None,
         description="distance within contains the number of miles for which store information is required. this should be collected as list. For example, 1 mile, 5 mile should be extracted as input [1,5]"
     )
-    no_of_groups: Optional[List[str]] = Field(
+    no_of_groups: Optional[List[int]] = Field(
         None,
         description="This contains the number of groups for which store clustering is required. For example: Create 10 groups of my stores."
     )
@@ -298,7 +322,7 @@ class APICallParameters(BaseModel):
         None,
         description="This contains the location like 'state' for which user needs the information. Identify state correctly"
     )
-    nostore: Optional[List[str]] = Field(
+    nostore: Optional[List[int]] = Field(
           None,
           description="Consider the following user query:'How many Giant Eagle stores don't or do not have an Aldi store within 5 miles?' Now, analyze the query and provide a response that takes into account the negation expressed by 'don't or do not'. Provide information on the Giant Eagle stores that do not have an Aldi store within 5 miles.Set nostore as True if negation exists o/w False"
       )
@@ -306,11 +330,11 @@ class APICallParameters(BaseModel):
           None,
           description="This contains geographies for which user needs information.  For example : Northeast, Midwest, South, West"
       )
-    minStore: Optional[List[str]] = Field(
+    minStore: Optional[List[int]] = Field(
           None,
           description="This contains minium stores to be used for grouping or clustering"
       )
-    maxStore: Optional[List[str]] = Field(
+    maxStore: Optional[List[int]] = Field(
           None,
           description="This contains maximum stores to be used for grouping or clustering"
       )

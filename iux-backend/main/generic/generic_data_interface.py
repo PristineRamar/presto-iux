@@ -575,14 +575,14 @@ def movement_api(product_name = None, product_id = None, product_level = None, i
     
                 if p != 99:
                     query += """
-                    and product_level_id = {product_level}
                     and product_id in ({product_list})
+                    and product_level_id = {product_level}
                     """.format(product_level = p,
                                product_list = ', '.join([str(x) for x in prods[p]]))
                 else:
                     query += """
-                    and product_level_id is null
                     and product_id is null
+                    and product_level_id is null
                     """
                     
             else:
@@ -616,14 +616,14 @@ def movement_api(product_name = None, product_id = None, product_level = None, i
         
                 if p != 99:
                     query += """
-                    and product_level_id = {product_level}
                     and product_id in ({product_list})
+                    and product_level_id = {product_level}
                     """.format(product_level = p,
                                product_list = ', '.join([str(x) for x in prods[p]]))
                 else:
                     query += """
-                    and product_level_id is null
                     and product_id is null
+                    and product_level_id is null
                     """
                     
                 query += """
@@ -635,9 +635,6 @@ def movement_api(product_name = None, product_id = None, product_level = None, i
                 """
                 
             connection = cx_Oracle.connect(username, password, dbname)
-            f = open("demofile2.txt", "a")
-            f.write(query)
-            f.close()
             response = pd.read_sql(query, connection)
             connection.close()
             response.columns = [x.lower().replace('_', '-') for x in response.columns]
