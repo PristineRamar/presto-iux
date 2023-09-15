@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, Blueprint
 import sys
 import json
-import logging
+from app_logger.logger import logger
 import requests
 #sys.path.insert(0, '/')
 
@@ -89,27 +89,27 @@ def add_endpoint():
            return json.dumps({'result' : final_res})
        
        except requests.exceptions.RequestException as e:
-            logging.error('API Request error: %s', e)
+            logger.error('API Request error: %s', e)
             error_message = "There was an issue in retrieving the data. Please try again later with valid store names"
             raise DataHTTPException(error_code="api_request_error", error_message=error_message, detail=str(e))
     
        except json.JSONDecodeError as e:
-            logging.error('JSONDecodeError: %s', e)
+            logger.error('JSONDecodeError: %s', e)
             error_message = "Looks like we were unable to fetch data for given store names. Could you please try with some other stores."
             raise DataHTTPException(error_code="json_decode_error", error_message=error_message, detail=str(e))
             
        except CSVAddressNotFoundException as e:
-            logging.error('CSV address not found: %s', e)
+            logger.error('CSV address not found: %s', e)
             response_data = e.to_dict()
             return json.dumps(response_data), 400  # Bad Request
         
        except OutputParserException as e:
-           logging.error('OutputParserException: %s', e)
+           logger.error('OutputParserException: %s', e)
            error_message = "Could not parse LLM output: " + str(e)
            raise DataHTTPException(error_code="output_parser_error", error_message=error_message, detail=str(e))
         
        except Exception as e:
-            logging.error('General error: %s', e)
+            logger.error('General error: %s', e)
             error_message = "Looks like we were unable to fetch data from given stores names. Could you please try rephrasing"
             raise DataHTTPException(error_code="Input error", error_message=error_message, detail=str(e))
 

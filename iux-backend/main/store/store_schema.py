@@ -6,11 +6,9 @@ import pandas as pd
 import time
 import random
 import string
-import logging
-import datetime
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.ERROR)
 
+import datetime
+from app_logger.logger import logger
 from typing import Type
 from typing import Optional, List
 from pydantic import BaseModel, Field
@@ -188,7 +186,7 @@ def get_data_by_api(**kwargs):
     except requests.RequestException as e:
             logger.error(f'API Request failed: {e}')
             error_message = {"error_code": "api_error", "error_message": "API request error"}
-            logging.error('Input JSON: %s', json.dumps(converted_dict, indent=2))
+            logger.error('Input JSON: %s', json.dumps(converted_dict, indent=2))
         
             if hasattr(response, 'status_code'):
                 logger.error(f'Request failed with status code {response.status_code}')
@@ -207,13 +205,13 @@ def get_data_by_api(**kwargs):
                     log_file.write(f"{log_entry['x_time']}:\n API Name : {log_entry['api_name']} \n GeneralError: {log_entry['error']}\n")
         
                 if hasattr(response, 'text'):
-                    logging.error('Response Content: %s', response.text)
+                    logger.error('Response Content: %s', response.text)
                 
                 try:
                     response_json = response.json()
-                    logging.error('Response Content (JSON): %s', json.dumps(response_json, indent=2))
+                    logger.error('Response Content (JSON): %s', json.dumps(response_json, indent=2))
                 except json.JSONDecodeError as decode_error:
-                    logging.error('JSONDecodeError: %s', decode_error)
+                    logger.error('JSONDecodeError: %s', decode_error)
                 
                 raise DataHTTPException(status_code=400, detail="Fail to fetch data.", error_code=error_code, error_message=error_message)
 
@@ -253,7 +251,7 @@ def plot_data(**kwargs):
             
    except Exception as e:
            # Log other exceptions
-           logging.error('Error: %s', e)
+           logger.error('Error: %s', e)
            file_name_error="error_log.txt"
            file_path_error=root_dir+file_name_error
            with open(file_path_error, "a") as log_file:

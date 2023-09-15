@@ -13,7 +13,7 @@ from datetime import datetime
 import cx_Oracle
 import difflib
 import json
-from affinity_data_config import username, dbname, password, idv_query, prod_types, all_prod_id
+from affinity.affinity_data_config import username, dbname, password, idv_query, prod_types, all_prod_id
 
 
 # =============================================================================
