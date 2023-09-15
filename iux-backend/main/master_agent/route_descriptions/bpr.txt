@@ -1,0 +1,6 @@
+Title: bpr
+
+Description: This service is used for retrieving Promotion information to meet goals for certain time period for given product and location.
+
+Example questions:
+1.What Dairy promotions can I run to meet Q3 goals

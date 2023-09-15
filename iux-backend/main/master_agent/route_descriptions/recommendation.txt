@@ -1,0 +1,11 @@
+Title: recommendation
+
+Description: This service  will call the recommendation or complete review api on users request 
+
+Example questions:
+
+1. run recommendation for PIZZA for 0011
+2. Trigger Recommendation for Automotive Batterier RU  for Zone 4
+3. Run Recommendation for Automotive Batterier RU  for Zone 4
+4. Complete Review For Baby Care for east Base
+

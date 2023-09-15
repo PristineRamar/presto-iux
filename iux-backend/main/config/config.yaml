@@ -17,6 +17,9 @@ database:
 general:
     client_name: "RA"
     data_url: 'http://secure1.pristineinfotech.com:7200/presto-data-services'
+    authentication_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/Common.asmx/AuthenticateUser'
+    recommendation_service_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/Common.asmx/ExecutePriceRecommendationQR'
+    completeRevieweview_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/QuarterlyPriceReview.asmx/CompleteReviewIUX'
     chain_id: 52
     global_zone_id: 483
     all_prod_id: 9491
@@ -38,6 +41,8 @@ router:
   sales: http://localhost:9502/query
   affinity: http://localhost:9502/getAffinity
   price_index: http://localhost:9502/priceindexllm
+  recommend-review-approve: http://localhost:9502/recommend-review-approve-service
+  bpr: http://localhost:9502/query-bpr
   port: 9502
   timeout: 30
   
