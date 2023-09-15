@@ -22,6 +22,7 @@ def add_endpoint():
     
     print(data['prompt'])
     result = agent.run(data['prompt'])
+    result = result.replace('\\n', '\n')
 
     with open('meta-data.json', 'r') as file:
         meta_data = json.load(file)

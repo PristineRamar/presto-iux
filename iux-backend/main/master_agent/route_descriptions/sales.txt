@@ -10,4 +10,6 @@ Example questions:
 4. Which items from Eye/Ear Care are planned to be on BOGO in the coming week? Of these, how many will on page 1 of the ad?
 5. What percentage of Oral Care sales come from promoted ones during last week?
 6. What is the current cost of Item X?
-7 .What is the current price of Item X?
+7. What is the current price of Item X?
+8. show average price for Cheese for Q2
+9. show minimum price for Cheese for Q2
