@@ -4,7 +4,7 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  /* font-family: "Titillium Web", sans-serif; */
+  font-family: "Verdana", sans-serif;
 }
 
 :root {
@@ -22,7 +22,8 @@ header {
   width: 100%;
   padding: 0 2rem;
   /* background-color: var(--mainColor); */
-  background: transparent linear-gradient(93deg, #1baff8 0%, #0967c6 100%) 0% 0%
+  /* background: transparent linear-gradient(93deg, #1baff8 0%, #0967c6 100%) 0% 0% */
+  background: transparent linear-gradient(93deg, #ffffff 0%, #0967c6 100%) 0% 0%
     no-repeat padding-box;
   color: var(--textColor);
   box-shadow: 0px 1px 9px #c8c8c866;
@@ -121,5 +122,10 @@ header li{
     text-align: right;
     padding-left: 0rem;
     display: contents;
+  }
+
+  .logo {
+    max-width: 90%; /* Set a maximum width to ensure it doesn't exceed its container */
+    max-height: 90%; /* Set a maximum height for similar reasons */
   }
 }
