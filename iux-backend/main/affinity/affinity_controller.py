@@ -5,7 +5,7 @@ sys.path.insert(0, './')
 #from iux_custom_agent import agent_executor as agent
 #from iux_agent import agent_executor as agent
 from affinity.affinity_agent import func_agent as agent
-from affinity.affinity_data_interface import cost_api, price_api, promotion_api, movement_api, hier_api,affinity_api
+from affinity.affinity_data_interface import affinity_api
 
 app = Flask(__name__)
 

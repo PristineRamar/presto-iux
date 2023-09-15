@@ -15,6 +15,7 @@ import httpx
 import json
 import cx_Oracle
 import pandas as pd
+from app_logger.logger import logger
 
 controller_blueprint = Blueprint('controller', __name__)
 
@@ -41,28 +42,36 @@ def add_endpoint():
     
     # May need to modify prompt using context + prior prompts + prior api_name
     prompt = data['prompt']
+    logger.debug(f"router is called with data: {data}")
     try:
         api_name = prompt2api(prompt, list_retriever)
+        logger.debug(f"Retriever returns api_name as {api_name}")
     except Exception as e1:
         try:
             api_name = prompt2api(prompt, bm25_retriever)
+            logger.debug(f"E1: Retriever returns api_name as {api_name}")
         except Exception as e2:
             try:
                 api_name = prompt2api(prompt, retriever)
+                logger.debug(f"E2: Retriever returns api_name as {api_name}")
             except Exception as e3:
                 api_name = 'sales'
+                logger.debug(f"E3: Retriever returns api_name as {api_name}")
                 
     api_url = router.get(api_name)
+    
     
     if not api_url:
         raise HTTPException(status_code=404, detail="API not found")
     
-    print(api_url)
+    logger.debug(f"Calling API... URL:{api_url}")
     response = requests.post(url = api_url,
                              json = data,
                              timeout = 30)
     
-    response['result']['detail'] = {'detail' : api_name}
+    #response['result']['detail'] = {'detail' : api_name}
+    
+    logger.debug(f"API call completed, status code:{response.status_code}")
     
     res = response.json()
         

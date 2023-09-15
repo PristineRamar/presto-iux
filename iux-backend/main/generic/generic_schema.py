@@ -14,6 +14,7 @@ from generic.generic_data_config import port
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
 from config.app_config import config
 from generic.generic_e_types import DataHTTPException
+from app_logger.logger import logger
 
 def get_data_by_api(**kwargs):
 
@@ -23,7 +24,9 @@ def get_data_by_api(**kwargs):
     endpoint = url + api_name
     args = {key.replace('_', '-'): value for key, value in kwargs.items()}
     headers = {'Content-Type': 'application/json'}
+    logger.debug(f'Calling Api... endpoint={endpoint}, args={args}')
     response = requests.post(endpoint, headers = headers, json = args)
+    logger.debug(f'API Call ended. Status={response.status_code}')
 
     if response.status_code == 200:
         data = response.json()
@@ -63,6 +66,7 @@ def get_data_by_api(**kwargs):
     with open(f'meta-data_{message_id}.json', 'w') as file:
         json.dump(meta_data, file)
 
+    logger.debug('Returning data to agent...')
     return json.dumps(res)
 
 # =============================================================================
@@ -141,8 +145,8 @@ def plot_data(data_file, type = 'line', metric_cols = 'sales',
         error_message = {"error_code": "data_error", "error_message": "Failed to call Plotting API"}
         raise DataHTTPException(status_code=400, detail="Fail to fetch data.", error_message = error_message)
 
-    json_data = json.dumps(res)
-    return json_data
+    #json_data = json.dumps(res)
+    return res
 
 # =============================================================================
 # 

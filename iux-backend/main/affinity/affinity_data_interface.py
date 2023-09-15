@@ -14,8 +14,8 @@ Created on Mon Jun  5 11:19:18 2023
 # import time
 # import re
 
-from affinity_data_functions_common import cal_lookup, loc_lookup, parse_prod_request, parse_loc_request, prod_hier
-from affinity_data_config import data_url, chain_id, global_zone_id,username,password,dbname,is_db
+from affinity.affinity_data_functions_common import cal_lookup, loc_lookup, parse_prod_request, parse_loc_request, prod_hier
+from affinity.affinity_data_config import data_url, chain_id, global_zone_id,username,password,dbname,is_db
 from rapidfuzz.process import extractOne
 from rapidfuzz.fuzz import QRatio
 import requests

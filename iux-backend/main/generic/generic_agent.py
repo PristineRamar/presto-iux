@@ -14,8 +14,7 @@ from config.app_config import config
 langchain.llm_cache = InMemoryCache()
 
 api_key = config['open-ai']['open_ai_key']
-#GPT_MODEL = "gpt-3.5-turbo-0613"
-GPT_MODEL = "gpt-4-0613"
+GPT_MODEL = config['agent']['llm-model']
 
 llm = ChatOpenAI(
     openai_api_key = api_key,
