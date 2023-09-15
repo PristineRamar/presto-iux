@@ -466,7 +466,14 @@ const handleIconClick = () => {
             maxRows={5}
           />
              
-            <button className={`microphone-icon ${isActive ? 'active' : ''}`}>
+          <button className={`microphone-icon ${isActive ? 'active' : ''}`}>
+          {isActive && (
+          <img
+          src="https://media.giphy.com/media/sSgvbe1m3n93G/giphy.gif" // Updated URL
+          alt="Microphone Animation"
+          style={{ width: "30px", height: "30px" }} // Adjust the width and height as needed
+              />
+          )}
             <FontAwesomeIcon icon={isActive ? faMicrophoneLines : micIcon} onClick={handleIconClick} />
             </button>
           </div>
@@ -474,7 +481,7 @@ const handleIconClick = () => {
             <span className="send-span" onClick={handleSubmit}>
             
               
-              <svg className="send-svg-container" xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 30 30" fill="none" 
+              <svg className="send-svg-container" xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 25 25" fill="none" 
               // class="h-4 w-4 m-1 md:m-0" stroke-width="2"
               >
                 <path d="M.5 1.163A1 1 0 0 1 1.97.28l12.868 6.837a1 1 0 0 1 0 1.766L1.969 15.72A1 1 0 0 1 .5 14.836V10.33a1 1 0 0 1 .816-.983L8.5 8 1.316 6.653A1 1 0 0 1 .5 5.67V1.163Z" fill="currentColor"></path>
