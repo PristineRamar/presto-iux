@@ -148,13 +148,17 @@ def reportgen(product_name = None, product_id = None, product_level = None,
         active = 'Y'
     if loc_agg is None:
         loc_agg = 'N'
-    if cal_type is None:
-        cal_type = 'Q'
     if cal_agg is None:
         cal_agg = 'N'
     if  pi_type is None:
         pi_type = "S"
-    
+    if comp_name is not None:
+        comp_name = comp_name.lower()
+        if comp_tier is not None:
+            comp_tier = comp_tier.lower()
+    if comp_name == 'cvs' and comp_tier == "primary":
+        comp_tier = None
+        
     
     if  cal_type == 'Q' and quarter is None and start_date is None:
         quarter = 'Last 1'
@@ -168,9 +172,14 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     # if  cal_type is None and week is not None:
     #     cal_type = 'W'
     # if  cal_type is None and period is not None:
-    #     period = 'P'     
-    
-    cal_year, quarter, period, week, day, start_date, end_date, calendar_id = cal_logic(cal_year, quarter, period, week, day, start_date, end_date, calendar_id)
+    #     period = 'P'
+    if location_name is not None:     
+        location_name = location_name.lower()
+        loc_not_list = ['all zones', 'all', 'zones', 'zone', 'locations', 'all locations']
+        if location_name in loc_not_list:
+            location_name = None
+        
+  
     if start_date is not None:
        if len(start_date) == 0:
            start_date = None
@@ -182,7 +191,7 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     if  (start_date is None) and (quarter is None) and (period is None) and ( week is None) and (day is None):
         start_date, end_date = cal_q()
         cal_type = 'W'
-    
+    cal_year, quarter, period, week, day, start_date, end_date, calendar_id = cal_logic(cal_year, quarter, period, week, day, start_date, end_date, calendar_id)
     cal = cal_lookup(cal_year, quarter, period, week, day,
                      start_date, end_date, calendar_id, cal_type)
     if  child_prod_level is not None:
@@ -239,14 +248,14 @@ def reportgen(product_name = None, product_id = None, product_level = None,
         location_level = None 
         location_id = None
     if (product_level is None and child_prod_level is  None) :
-        prod_id_cat, child_prod_cat_name, child_prod_id_cat = child_prod_query_string(product_level,child_prod_level)
-        result, com_name_act = prod_level_query(product_id,prod_id_cat,child_prod_level, child_prod_cat_name, child_prod_id_cat,start_date,end_date, location_id,comp_city,
+        prod_id_cat, child_prod_cat_name, child_prod_id_cat,prod_all = child_prod_query_string(product_level,child_prod_level)
+        result,com_name_act,measure_para = prod_level_query(product_id,prod_id_cat,child_prod_level, child_prod_cat_name, child_prod_id_cat,start_date,end_date, location_id,comp_city,
          comp_addr, comp_name, comp_tier , product_agg,loc_agg,cal_agg,pi_type,weighted_by)  
     #2. Get PI for all products at a child_product level under a product_level
     #PI Report  at any calendar range for a child_product level under a product_level
     if  (product_level is not None and child_prod_level is None) or  (product_level is not None and child_prod_level is not None) or (product_level is None and child_prod_level is not None):
-        prod_id_cat, child_prod_cat_name, child_prod_id_cat = child_prod_query_string(child_prod_level,product_level)
-        result,com_name_act = prod_level_query(product_id,prod_id_cat, child_prod_cat_name,child_prod_level, child_prod_id_cat,start_date,end_date,location_id, comp_city,
+        prod_id_cat, child_prod_cat_name, child_prod_id_cat,prod_all= child_prod_query_string(child_prod_level,product_level)
+        result,com_name_act,measure_para = prod_level_query(product_id,prod_id_cat, child_prod_cat_name,child_prod_level, child_prod_id_cat,start_date,end_date,location_id, comp_city,
          comp_addr,comp_name,comp_tier, product_agg,loc_agg,cal_agg,pi_type,weighted_by)  
     
     # Aggregation levels
@@ -261,13 +270,19 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     json_data = df.to_json()
     if len(com_name_act) > 1:
         com_name_act = [None]
+    if product_name is None and child_prod_level is not None:
+        product_name = prod_all
+    if loc_names[0] is None:
+        loc_names[0] = "All Zones"
+        
     meta_data = {
         "timeframe": start_date + " - " + end_date,
         "locations": loc_names,
         "products": [product_name],
-        "competitor": com_name_act
+        "competitor": com_name_act,
+        "index type" : [measure_para]
       }
-    
+    print("function passed")
     return meta_data,json_data
 
 
@@ -276,6 +291,7 @@ def child_prod_query_string(child_prod_level, product_level_id = None):
     child_prod_cat_name  = ''
     child_prod_id_cat = ''
     prod_id_cat = ''
+    prod_all = ''
     if product_level_id != 1 and child_prod_level != None: 
         
         if product_level_id == 5:
@@ -347,29 +363,29 @@ def child_prod_query_string(child_prod_level, product_level_id = None):
              
              child_prod_cat_name  = 'DEPARTMENT_NAME'
              child_prod_id_cat = 'DEPARTMENT_ID'
-             
+             prod_all = "All Departments"
          if child_prod_level == 4:
              
              child_prod_cat_name  = 'CATEGORY_NAME'
              child_prod_id_cat = 'CATEGORY_ID'
-             
+             prod_all = "All Categories"
          if child_prod_level == 3:
             
              child_prod_cat_name  = 'SUB_CATEGORY_NAME'
              child_prod_id_cat = 'SUB_CATEGORY_ID'
-            
+             prod_all = "All Sub Categories"
          if child_prod_level == 2:
               
-            
-              child_prod_cat_name = 'SEGMENT_NAME'
-              child_prod_id_cat = 'SEGMENT_ID'
+             prod_all = "All Segments"
+             child_prod_cat_name = 'SEGMENT_NAME'
+             child_prod_id_cat = 'SEGMENT_ID'
              
          if child_prod_level == 1:
-             
+              prod_all = "All Items"
               child_prod_cat_name  = 'ITEM_NAME'
               child_prod_id_cat = 'ITEM_CODE'  
               
-    return prod_id_cat, child_prod_cat_name, child_prod_id_cat 
+    return prod_id_cat, child_prod_cat_name, child_prod_id_cat, prod_all
     
 
 
@@ -562,7 +578,7 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
     connection.close()
     result = result.drop_duplicates(subset=[0, 1])
     result.columns = [groupby_para, measure_para]
-    return result,com_name_act
+    return result,com_name_act,measure_para
 
 
 def product_level_identifier(child_prod_level):
