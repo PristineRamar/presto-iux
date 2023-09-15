@@ -17,7 +17,10 @@ database:
 general:
     client_name: "RA"
     data_url: 'http://secure1.pristineinfotech.com:7200/presto-data-services'
-    chain_id: 53
+    authentication_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/Common.asmx/AuthenticateUser'
+    recommendation_service_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/Common.asmx/ExecutePriceRecommendationQR'
+    completeRevieweview_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/QuarterlyPriceReview.asmx/CompleteReviewIUX'
+    chain_id: 52
     global_zone_id: 483
     all_prod_id: 9491
     n_responses: 1
@@ -35,9 +38,11 @@ router:
   store: http://localhost:9511/query_store_llm
   kvi: http://localhost:9511/getKVI
   ### for the time being, the financials-agent is hosted on the same server of router
-  sales: http://localhost:9511/query
-  affinity: http://localhost:9511/getAffinity
-  price_index: http://localhost:9511/priceindexllm
-  port: 9511
+  sales: http://localhost:9502/query
+  affinity: http://localhost:9502/getAffinity
+  price_index: http://localhost:9502/priceindexllm
+  recommend-review-approve: http://localhost:9502/recommend-review-approve-service
+  bpr: http://localhost:9502/query-bpr
+  port: 9502
   timeout: 30
   
