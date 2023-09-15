@@ -148,18 +148,24 @@ app.post("/refresh", async (req, res) => {
   });
 });
 
+let previous_metadata = null;
+let previous_intent = null;
+let previous_message = null;
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.post("/", verifyToken, async (req, res) => {
   const { userDetails, message, sessionId } = req.body;
   //console.log(message, "message");
   //console.log(userDetails, "userDetails");
+  console.log("previous_metadata", previous_metadata);
+  console.log("previous_intent", previous_intent);
+  console.log("previous_message", previous_message);
 
   //REST API call to connect to Router
     try {
       const conversationId = uuidv4();
-
-      const response = await fetch("http://20.228.231.91:9002/query", {
+      const response = await fetch("http://127.0.0.1:1515/query", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,8 +173,9 @@ app.post("/", verifyToken, async (req, res) => {
          body: JSON.stringify({
           userid: userDetails,
           prompt: message,
-          sessionid: sessionId,
-          conversationid: conversationId,
+          metadata: previous_metadata,
+          intent: previous_intent,
+          previous_message: previous_message,
         }),
       });
 
@@ -186,6 +193,8 @@ app.post("/", verifyToken, async (req, res) => {
 
   		if(responseData.result.summary)
           {
+            previous_intent = responseData.result.detail;
+            previous_message = message;
             const sql = `
               INSERT INTO CONVERSATIONS (SESSIONID, CONVERSATIONID, USERDETAILS, message, Response, TYPE, METADATA, TIMESTAMP, INTENT)
               VALUES (:id, :conversationId, :sender, :message, :api_response, :response_type,  :metaData, CURRENT_TIMESTAMP, :detail)
@@ -208,7 +217,8 @@ app.post("/", verifyToken, async (req, res) => {
 
             if (responseData.result.meta_data) {
               binds.metaData = JSON.stringify(responseData.result.meta_data);
-          }
+              previous_metadata = responseData.result.meta_data;
+          } else previous_metadata = null;
 
             function removeTypeProperty(obj) {
               if (obj && typeof obj === 'object') {
@@ -281,27 +291,56 @@ app.post("/", verifyToken, async (req, res) => {
   });
 
 //   const responseData = {
-//     result: {
+//     result: { 
 //       summary: {
 //         type: "bar",
 //         options: {
 //           xaxis: {
 //             "PRODUCT_NAME": ["ADULT INCONTINENCE","ADULT NUTRITIONAL","AP/DEODORANTS","APPAREL","APPL/DOM/HW-BASIC","AS SEEN ON TV","AUTOMOTIVE","B/E TOYS - TAX","BABY CARE","BABY DIAPERS","BAKERY","BASIC TOYS","BATH","BATTERIES","BEER","BEVERAGES","BOOKS/MAGAZINES","CALENDARS","CANDLES","CBD","CHRISTMAS CANDY","CHRISTMAS TOYS & PLUSH","COTTON & COSMETIC BAGS","DAIRY","DIAGNOSTIC/DIABETIC","DIET","DIGESTIVE HEALTH","DOLLAR SHOP","DOMESTICS/HOUSEWARES-SSNL","DSD SNACKS","EASTER CANDY","EYE/EAR CARE","FIRST AID","FITNESS","FIXTURES","FOOT CARE","FRAGRANCES","FRAMES & ALBUMS","FROZEN FOOD","GARDEN DECOR","GARDEN LIVE GOODS","GARDEN SUPPLIES","GENERAL CANDY","GNC","GREETING CARDS/GIFT ACC","HAIR CARE","HAIR CARE ACCESSORIES","HAIR COLORING","HALLOWEEN CANDY","HALLOWEEN SUNDRIES","HARDWARE","HOLIDAY","HOME ELECTRONICS","HOME ENTERTAINMENT","HOME HEALTH CARE","HOSIERY","HOUSEHOLD CHEMICALS","HOUSEHOLD CLEANING","ICE","ICE CREAM","INSECTICIDES","LIGHT BULBS","MAKEUP - EYE","MAKEUP - FACIAL","MAKEUP - LIP","MAKEUP - NAIL","MAKEUP ACCESSORIES","MISCELL DUMP-CATCH ALL","MULTI CULTURAL","NEUTROGENA COSMETICS","NEWSPAPERS","NUTRITIONAL BARS","OPTICAL","ORAL CARE","OTC/RX UNKNOWN","PAIN CARE","PAPER PRODUCTS","PERISHABLE FOODS","PERSONAL CARE APPLIANCES","PET CARE","PHOTO-CAPTURE","PLASTIC BAGS","RX LEGEND","RX OTC","SANITARY PROTECTION","SEXUAL WELL BEING","SHAVING","SHOES/SEWING","SKIN CARE","SMOKING CESSATION","SOUVENIRS","SPIRITS","SPORTING GOODS","SPORTS NUTRITION","STATIONERY","SUMMER ACCESSORIES","SUMMER FURNITURE","SUMMER TOYS","SUN CARE","SUNDRIES","TOBACCO","TRIAL SIZE","UMBRELLAS","UNKNOWN","UPPER RESPIRATORY","VALENTINE CANDY","VITAMINS/HERBALS","WAREHOUSE GROCERY","WAREHOUSE SNACKS","WINE","WINTER SEASONAL"]
+//             // "PRODUCT_NAME": ["ADULT INCONTINENCE","ADULT NUTRITIONAL","AP/DEODORANTS","APPAREL"]
+//             // "PRODUCT_NAME": ["ZP008","ZP0026","ZS0474","ZS0047"]
 //           },
-//         },
+//         }, 
 //         series: [
 //           {
 //             name: "Price Index",
 //             "data": [96.24,103.64,101.58,206.45,98.01,97.56,96.75,59.92,95.98,94.31,101.35,97.75,96.05,118.49,88.83,101.64,109.49,138.56,110.7,95.98,106.57,84.09,106.35,96.33,95.65,96.38,97.86,113.61,89.98,99.25,104.84,99.04,100.72,106.01,100.2,97.28,103.59,99.83,102.17,100.53,150.12,98.4,95.42,84.92,126.24,96.96,98.34,102.24,102.12,50.7,110.54,101.29,121.24,44.7,106.44,105.74,96.14,103.39,76.45,97.48,102.14,102.51,101.92,101.72,102.61,106.57,107.8,119.79,98.77,100.56,94.5,104.16,98.16,99.54,132.34,100.33,97.63,95.13,100.01,104.18,135.17,125.57,43.45,84.79,95.98,96.23,98.95,101.46,94.65,96.75,110.01,85.7,86.08,96.15,100.14,101.77,78.04,87.15,99.81,131.65,93.34,109.63,129.48,76.5,99.48,137.16,97.15,100.13,103.63,92.61,109.27]
+//             // "data": [90000000,80000000,76583921,64798654]
 //           },
 //         ],
 //       },
 //       meta_data: {
 //         timeframe: "06/04/2023 - 09/02/2023",
-//         locations: ["CHAIN","Zone","store"],
-//         products: ["GROCERY","hair","oral care"],
+//         locations: ["Zone"],
+//         products: ["Oral Care"],
+//         competitor: ['CVS-Pittsburgh', "Chain", "Store"],
 //       },
-//     },
+//       detail:"Sale",
+//     }
+//     // result: {
+//     //      "summary": "There are 1,428 Walgreens stores within 3 miles of a Rite Aid store. We enable zoom for the x-axis by setting zoom.enabled to true. This enables x-axis scrolling when there are more x-axis labels than can fit within the chart area.We set a maximum value for the number of x-axis labels using updatedOptions.xaxis.max. This value controls how many x-axis labels are displayed at once before scrolling is enabled. Adjust this value as needed."
+//     //  }
+//     // "result": {
+//     //   "meta_data": {
+//     //     "locations": ["Global Zone"],
+//     //     "products": ["CULTURED DAIRY"],
+//     //     "timeframe": ["2023/03/09 - 2023/12/02"]
+//     //   },
+//     //   "summary": {
+//     //     "tableData1": [
+//     //         {"Category Name": "CULTURED DAIRY","Curr Units": 582.0,"End Date": "11/25/2023","Gross Margin": 472,"Item Name": "SMITH'S FRENCH ONION DIP","Margin Final Price": 6.02,"Metric Type Id": 3,"Pred Mov Final Price": 1037.0,"Product Level Id": 1,"Rec Offer Type": null,"Rec Offer Value": 0.0,"Rec Promotion": "Standard","Rec Sale Multiple": 1,"Rec Sale Price": 1.59,"Ret Lir Name": null,"Retailer Item Code": "130000876","Revenue Final Price": 1648.83,"Sales": 49234,"Start Date": "11/19/2023","Units": 18878},
+//     //         {"Category Name": "CULTURED DAIRY","Curr Units": 580.0,"End Date": "12/02/2023","Gross Margin": 472,"Item Name": "SMITH'S FRENCH ONION DIP","Margin Final Price": 6.02,"Metric Type Id": 3,"Pred Mov Final Price": 1038.0,"Product Level Id": 1,"Rec Offer Type": null,"Rec Offer Value": 0.0,"Rec Promotion": "Standard","Rec Sale Multiple": 1,"Rec Sale Price": 1.59,"Ret Lir Name": null,"Retailer Item Code": "130000876","Revenue Final Price": 1650.42,"Sales": 49234,"Start Date": "11/26/2023","Units": 18878},
+//     //         {"Category Name": "CULTURED DAIRY","Curr Units": 582.0,"End Date": "11/25/2023","Gross Margin": 12,"Item Name": "SMITH'S FRENCH ONION DIP","Margin Final Price": 6.02,"Metric Type Id": 1,"Pred Mov Final Price": 1037.0,"Product Level Id": 1,"Rec Offer Type": null,"Rec Offer Value": 0.0,"Rec Promotion": "Standard","Rec Sale Multiple": 1,"Rec Sale Price": 1.59,"Ret Lir Name": null,"Retailer Item Code": "130000876","Revenue Final Price": 1648.83,"Sales": 50221,"Start Date": "11/19/2023","Units": 19791},
+//     //         {"Category Name": "CULTURED DAIRY","Curr Units": 580.0,"End Date": "12/02/2023","Gross Margin": 12,"Item Name": "SMITH'S FRENCH ONION DIP","Margin Final Price": 6.02,"Metric Type Id": 1,"Pred Mov Final Price": 1038.0,"Product Level Id": 1,"Rec Offer Type": null,"Rec Offer Value": 0.0,"Rec Promotion": "Standard","Rec Sale Multiple": 1,"Rec Sale Price": 1.59,"Ret Lir Name": null,"Retailer Item Code": "130000876","Revenue Final Price": 1650.42,"Sales": 50221,"Start Date": "11/26/2023","Units": 19791}
+//     //     ],
+//     //     "type": "table"
+//     //   }
+//     // }
 //   };
+
+//   previous_metadata = responseData.result.meta_data;
+//   previous_intent = responseData.result.detail;
+//   previous_message = message;
+//   // console.log("previous_metadata", previous_metadata.locations);
 //   res.json({ message: responseData.result });
 // });

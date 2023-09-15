@@ -54,15 +54,17 @@ td.center-align{
 }
 
 .text-container{
-  width: 1150px;
+  /* width: 1150px; */
+  width:1400px;
 }
 
 .text-container-with-sidebar{
-  width: 1000px;
+  /* width: 1000px; */
+  width: 1250px;
 }
 
 .chartTitle{
-  width: 1050px;
+  width: 1350px;
   padding-left: 20px;
   text-align: center;
   padding-bottom: 10px;
@@ -70,15 +72,27 @@ td.center-align{
 
 .chartdetails{
   font-weight: bold;
+  padding-top: 10px;
+  padding-bottom: 5px;
+  display: inline-block;
+  font-size: 15px;
+}
+
+.chartlist{
+  font-size: 15px;
 }
 
 .chartheading{
-  width: 1050px;
+  width: 1250px;
   font-weight: bold;
   padding-left: 20px;
   text-align: center;
 }
 
+.addSpace{
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
 
 @media (resolution: 1.5dppx) {
   .text-container{

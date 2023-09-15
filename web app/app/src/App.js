@@ -37,18 +37,6 @@ function App() {
     }
   }, []);
 
-
-  // This code is the culprit for login page flashing on refresh
-  // useEffect(() => {
-  //   console.log("isLogin: ", isLogin);
-  //   console.log("isUserToken: ", isUserToken);
-  //   // if (!isLogin && !isUserToken) {
-  //   if (!isLogin) {
-  //     navigate(process.env.PUBLIC_URL); //navigate('/KAIStage');
-  //   }
-  // }, [isLogin]);
-
-
   return (
     <Routes>
       <Route basename={process.env.PUBLIC_URL} />

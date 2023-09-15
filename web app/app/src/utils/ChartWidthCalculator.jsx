@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-const ChartWidthCalculator = ({ chatType, updatedOptions, setChartWidth }) => {
+const ChartWidthCalculator = ({ chatType, updatedOptions, setChartWidth, maxKeyLength }) => {
   useEffect(() => {
     // Calculate the chart width based on the number of X-axis labels
     if (chatType === "line") {
@@ -25,7 +25,11 @@ const ChartWidthCalculator = ({ chatType, updatedOptions, setChartWidth }) => {
     if (chatType === "bar" || chatType === "pie") {
       // For bar and pie charts, you can use your existing code
       let minWidthPerLabel = 75; // Minimum width per label
-      let additionalWidth = 500; // Additional width for padding
+      let additionalWidth ;// Additional width for padding
+      if(maxKeyLength > 10) 
+        additionalWidth = 1000;
+      else
+      additionalWidth = 300;
 
       const numLabels =
         updatedOptions.xaxis && updatedOptions.xaxis.categories ? updatedOptions.xaxis.categories.length: 1; // Default to 1 if no categories

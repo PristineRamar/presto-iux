@@ -22,7 +22,9 @@
   background-color: #131324;
   padding-right: 5rem;
   /* background-image: url("C:/Code-Repos/IUX-projects/app/src/assets/bg/backimg - Copy.jpg"); */
-  background-image: url("C:/Code-Repos/IUX-projects/app/src/assets/Images/MicrosoftTeams-image.jpg");
+  /* background-image: url("C:/Code-Repos/IUX-projects/app/src/assets/Images/MicrosoftTeams-image.jpg"); */
+  background-image: url("C:/Code-Repos/presto-iux/web app/app/src/assets/Images/Login-Desktop-KaiEmbed_3.png");
+  
   }
 
   .brand {
@@ -103,7 +105,7 @@
 
   @media only screen and (max-width: 768px){
     .formatcont{
-      background-image: url("C:/Code-Repos/IUX-projects/app/src/assets/Images/login-mobile.jpg");
+      background-image: url("C:/Code-Repos/presto-iux/web app/app/src/assets/Images/Login-Mobile–KaiEmbed.png");
     }
   } 
 

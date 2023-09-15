@@ -207,7 +207,6 @@ const AIChat = (props) => {
       if(data.message.summary)
         responseType = data.message.summary.type;
       const errorMessage = data.message.error_message;
-      // console.log("responseType: " + responseType);
 
       let responseSummary;
       if(responseType === "line" || responseType === "bar" || responseType === "table" || responseType === "pie"){
@@ -217,12 +216,14 @@ const AIChat = (props) => {
       }
       else responseSummary = data.message.summary;
 
-      const responseMetadata = data.message.meta_data;
+      const responseMetadata = data.message.meta_data;;
+      const intent = data.message.detail;
+      //console.log("data.message.detail: " + data.message.detail);
 
       if(responseType === "line" || responseType === "bar" || responseType === "table" || responseType === "pie"){
         console.log("chatLog is a chart");
         setChatLog([...chatLogNew,
-          {user: "gpt",message: `${responseSummary}`,metadata: responseMetadata,chatType: responseType,},]);
+          {user: "gpt",message: `${responseSummary}`,metadata: responseMetadata,chatType: responseType, intent:intent},]);
       }
       else if (Array.isArray(responseSummary)) {
         setChatLog([...chatLogNew,
@@ -437,6 +438,7 @@ const handleIconClick = () => {
               metadata={message.metadata}
               chatType={message.chatType}
               visible={props.visible}
+              intent={message.intent}
             />
           ))}
           {promiseInProgress && <LoadingSpinner />}
@@ -478,10 +480,8 @@ const handleIconClick = () => {
             </button>
           </div>
           <div className="flash-refresh send">
-            <span className="send-span" onClick={handleSubmit}>
-            
-              
-              <svg className="send-svg-container" xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 25 25" fill="none" 
+            <span className="send-span" onClick={handleSubmit}>  
+              <svg className="send-svg-container" xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 30 30" fill="none" 
               // class="h-4 w-4 m-1 md:m-0" stroke-width="2"
               >
                 <path d="M.5 1.163A1 1 0 0 1 1.97.28l12.868 6.837a1 1 0 0 1 0 1.766L1.969 15.72A1 1 0 0 1 .5 14.836V10.33a1 1 0 0 1 .816-.983L8.5 8 1.316 6.653A1 1 0 0 1 .5 5.67V1.163Z" fill="currentColor"></path>
