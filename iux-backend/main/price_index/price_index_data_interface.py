@@ -249,7 +249,7 @@ def reportgen(product_name = None, product_id = None, product_level = None,
         location_id = None
     if (product_level is None and child_prod_level is  None) :
         prod_id_cat, child_prod_cat_name, child_prod_id_cat,prod_all = child_prod_query_string(product_level,child_prod_level)
-        result,com_name_act,measure_para = prod_level_query(product_id,prod_id_cat,child_prod_level, child_prod_cat_name, child_prod_id_cat,start_date,end_date, location_id,comp_city,
+        result,com_name_act,measure_para = prod_level_query(product_id,prod_id_cat,child_prod_cat_name,child_prod_level,  child_prod_id_cat,start_date,end_date, location_id,comp_city,
          comp_addr, comp_name, comp_tier , product_agg,loc_agg,cal_agg,pi_type,weighted_by)  
     #2. Get PI for all products at a child_product level under a product_level
     #PI Report  at any calendar range for a child_product level under a product_level
@@ -270,7 +270,7 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     json_data = df.to_json()
     if len(com_name_act) > 1:
         com_name_act = [None]
-    if product_name is None and child_prod_level is not None:
+    if (product_name is None and child_prod_level is not None) or (product_name is None and child_prod_level is None):
         product_name = prod_all
     if loc_names[0] is None:
         loc_names[0] = "All Zones"
@@ -357,6 +357,7 @@ def child_prod_query_string(child_prod_level, product_level_id = None):
         prod_id_cat = None
         child_prod_cat_name  = 'CATEGORY_NAME'
         child_prod_id_cat = 'CATEGORY_ID'
+        prod_all = "All Categories"
     if product_level_id == None and child_prod_level != None: 
          prod_id_cat = None
          if child_prod_level == 5:
@@ -578,6 +579,10 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
     connection.close()
     result = result.drop_duplicates(subset=[0, 1])
     result.columns = [groupby_para, measure_para]
+    if comp_tier is not None and len(com_name_act) > 1:
+        com_name_act = [comp_tier]
+    if comp_name is not None and len(com_name_act) > 1:
+        com_name_act = [comp_name]
     return result,com_name_act,measure_para
 
 
