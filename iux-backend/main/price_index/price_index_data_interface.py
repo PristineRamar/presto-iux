@@ -65,7 +65,20 @@ def sanitize_list(x):
 # =============================================================================
 # 
 # =============================================================================    
-
+def cal_q():
+    cal_qr = ''
+    cal_qr = '''SELECT max(start_date) START_DATE, max(start_date)+6 END_DATE 
+    FROM pi_selection_criteria '''
+    connection = cx_Oracle.connect(username , password,dbname )
+    cursor = connection.cursor()
+    cursor.execute(cal_qr)
+    result = cursor.fetchall()
+    result = pd.DataFrame(result)
+    cursor.close()
+    connection.close()
+    start_date = result.iloc[0,0].strftime('%Y-%m-%d')
+    end_date = result.iloc[0,1].strftime('%Y-%m-%d')
+    return start_date, end_date
 
 def process_variable(var):
     
@@ -84,7 +97,7 @@ def reportgen(product_name = None, product_id = None, product_level = None,
              location_name = None, location_id = None, location_level = None, loc_agg = 'N', 
              cal_year = None, quarter =None, period = None, week = None, day = None,
              start_date = None, end_date = None, calendar_id = None, 
-             cal_type = 'Q', user_id = None,cal_agg = 'N',pi_type = "S",weighted_by = None,
+             cal_type = 'W', user_id = None,cal_agg = 'N',pi_type = "S",weighted_by = None,
              comp_city = None,
              comp_addr = None,
              comp_name = None,
@@ -97,9 +110,9 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     #     comp_str_id = comp_df['COMP_STR_ID'].unique()
     
     cal_type = process_variable(cal_type)
-    print(cal_type)
+    
     quarter = process_variable (quarter)
-    print(quarter)
+    
     product_name = process_variable(product_name)
     product_id = process_variable(product_id)
     product_level = process_variable(product_level) 
@@ -143,19 +156,19 @@ def reportgen(product_name = None, product_id = None, product_level = None,
         pi_type = "S"
     
     
-    if  cal_type == 'Q' and quarter is None:
+    if  cal_type == 'Q' and quarter is None and start_date is None:
         quarter = 'Last 1'
-    if  cal_type == 'W' and week is None:
+    if  cal_type == 'W' and week is None  and start_date is None:
         week = 'Last 1'
-    if  cal_type == 'P' and period is None:
+    if  cal_type == 'P' and period is None and start_date is None:
         period = 'Last 1'  
     
-    if  cal_type is None and quarter is not None:
-        cal_type = 'Q'
-    if  cal_type is None and week is not None:
-        cal_type = 'W'
-    if  cal_type is None and period is not None:
-        period = 'P'     
+           # if  cal_type is None and quarter is not None:
+    #     cal_type = 'Q'
+    # if  cal_type is None and week is not None:
+    #     cal_type = 'W'
+    # if  cal_type is None and period is not None:
+    #     period = 'P'     
     
     cal_year, quarter, period, week, day, start_date, end_date, calendar_id = cal_logic(cal_year, quarter, period, week, day, start_date, end_date, calendar_id)
     if start_date is not None:
@@ -166,6 +179,9 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     if product_name is not None:
         if product_name in ['All','all','any']:
             product_name = None
+    if  (start_date is None) and (quarter is None) and (period is None) and ( week is None) and (day is None):
+        start_date, end_date = cal_q()
+        cal_type = 'W'
     
     cal = cal_lookup(cal_year, quarter, period, week, day,
                      start_date, end_date, calendar_id, cal_type)
@@ -189,6 +205,7 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     else:
         location_level = None
         location_id = None
+        loc_names = [None]
    
     
     if (location_level == 1 and location_id == 52):
@@ -223,30 +240,32 @@ def reportgen(product_name = None, product_id = None, product_level = None,
         location_id = None
     if (product_level is None and child_prod_level is  None) :
         prod_id_cat, child_prod_cat_name, child_prod_id_cat = child_prod_query_string(product_level,child_prod_level)
-        result = prod_level_query(product_id,prod_id_cat,child_prod_level, child_prod_cat_name, child_prod_id_cat,start_date,end_date, location_id,comp_city,
-         comp_addr,
-         comp_name,
-         comp_tier)  
+        result, com_name_act = prod_level_query(product_id,prod_id_cat,child_prod_level, child_prod_cat_name, child_prod_id_cat,start_date,end_date, location_id,comp_city,
+         comp_addr, comp_name, comp_tier , product_agg,loc_agg,cal_agg,pi_type,weighted_by)  
     #2. Get PI for all products at a child_product level under a product_level
     #PI Report  at any calendar range for a child_product level under a product_level
     if  (product_level is not None and child_prod_level is None) or  (product_level is not None and child_prod_level is not None) or (product_level is None and child_prod_level is not None):
         prod_id_cat, child_prod_cat_name, child_prod_id_cat = child_prod_query_string(child_prod_level,product_level)
-        result = prod_level_query(product_id,prod_id_cat, child_prod_cat_name,child_prod_level, child_prod_id_cat,start_date,end_date,location_id, comp_city,
+        result,com_name_act = prod_level_query(product_id,prod_id_cat, child_prod_cat_name,child_prod_level, child_prod_id_cat,start_date,end_date,location_id, comp_city,
          comp_addr,comp_name,comp_tier, product_agg,loc_agg,cal_agg,pi_type,weighted_by)  
     
     # Aggregation levels
 
-    df = result
+    df = result.copy()
     df = pd.DataFrame(df)
+    df.set_index(df.columns[0], inplace=True)
     idx_dtype = pd.api.types.is_datetime64_any_dtype(df.index)
     if idx_dtype == True: 
         df.index = df.index.strftime('%Y-%m-%d')
     df.reset_index(inplace=True)
     json_data = df.to_json()
+    if len(com_name_act) > 1:
+        com_name_act = [None]
     meta_data = {
         "timeframe": start_date + " - " + end_date,
-        "locations": ["Zone"],
-        "products": [product_name]
+        "locations": loc_names,
+        "products": [product_name],
+        "competitor": com_name_act
       }
     
     return meta_data,json_data
@@ -364,11 +383,14 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
     prod_fil = ''
     loc_sp = ''
     if comp_city is not None or comp_addr is not None or comp_name is not None or comp_tier is not None:
-        comp_str_id = comp_parser( location_id,comp_city,comp_addr,comp_name, comp_tier)
-        if len(comp_str_id) == 1:
-            comp_fil = 'and PS.COMP_LOCATION_ID IN ({})'.format(comp_str_id[0])
-        else:
-            comp_fil = 'and PS.COMP_LOCATION_ID IN {}'.format(tuple(comp_str_id))
+        comp_str_id, com_name_act= comp_parser( location_id,comp_city,comp_addr,comp_name, comp_tier)
+    else:
+        comp_str_id, com_name_act= comp_parser( location_id,comp_city,comp_addr,comp_name, comp_tier = 'Primary')
+    if len(comp_str_id) == 1:
+        comp_fil = 'and PS.COMP_LOCATION_ID IN ({})'.format(comp_str_id[0])
+    else:
+        comp_fil = 'and PS.COMP_LOCATION_ID IN {}'.format(tuple(comp_str_id))
+            
     if location_id is not None:
         loc_fil = "AND BASE_LOCATION_ID = {}".format(location_id)
     else:
@@ -540,7 +562,7 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
     connection.close()
     result = result.drop_duplicates(subset=[0, 1])
     result.columns = [groupby_para, measure_para]
-    return result
+    return result,com_name_act
 
 
 def product_level_identifier(child_prod_level):
@@ -577,6 +599,9 @@ def comp_parser( location_id,comp_city = None,comp_addr = None,
         count_non_none += 1
     if comp_tier is not None:
         count_non_none += 1
+    if count_non_none == 3:
+        comp_tier = None
+        count_non_none = 2
     
     if count_non_none == 1: 
         if base_loc_name is not None:
@@ -658,7 +683,7 @@ def comp_parser( location_id,comp_city = None,comp_addr = None,
     cursor.close()
     connection.close()
     if location_id is not None: 
-        result.loc[result["LOCATION_ID"] == location_id,]
+        result = result.loc[result["LOCATION_ID"] == location_id,]
 
     if count_non_none == 1:
         key_list = []
@@ -685,8 +710,8 @@ def comp_parser( location_id,comp_city = None,comp_addr = None,
         result = result.loc[(result[comp_col].isin(key_list)) & (result[comp_col1].isin(key_list1)),]
     
     comp_str_id = list(result["COMP_STR_ID"].unique())
-    
-    return  comp_str_id 
+    com_name_act = list(result["COMP_NAME"].unique())
+    return  comp_str_id, com_name_act
     
 
 def plotting_api(data, plot_type = 'table', metric_cols = ['sales'],

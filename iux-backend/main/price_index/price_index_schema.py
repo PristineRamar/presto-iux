@@ -161,7 +161,7 @@ class APICallParameters(BaseModel):
   
     comp_tier: Optional[List[str]] = Field(
         None,
-        description= "Used to specify Competitor Tier the user wants data pertaining to. For example, 'Primary', 'Secondary' would be valid ways of using this argument"
+        description= "Used to specify Competitor Tier the user wants data pertaining to. For example, 'Primary', 'Secondary' would be valid ways of using this argument. if user not specified leave it blank"
         
     )
     comp_name: Optional[List[str]] = Field(

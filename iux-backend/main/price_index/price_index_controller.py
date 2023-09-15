@@ -33,7 +33,7 @@ def generate_report():
                         start_date = input_json['start-date'] if 'start-date' in input_json else None,
                         end_date = input_json['end-date'] if 'end-date' in input_json else None,
                         calendar_id = input_json['calendar-id'] if 'calendar-id' in input_json else None,
-                        cal_type = input_json['cal-type'] if 'cal-type' in input_json else 'Q',
+                        cal_type = input_json['cal-type'] if 'cal-type' in input_json else None,
                         user_id = input_json['user-id'] if 'user-id' in input_json else 'ejack',
                         cal_agg = input_json['cal-agg'] if 'cal-agg' in input_json else 'N',
                         pi_type = input_json['pi-type'] if 'pi-type' in input_json else 'S',
