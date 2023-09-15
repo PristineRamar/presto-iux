@@ -24,9 +24,7 @@ def get_data_by_api(**kwargs):
     endpoint = url + api_name
     args = {key.replace('_', '-'): value for key, value in kwargs.items()}
     headers = {'Content-Type': 'application/json'}
-    logger.debug(f'Calling Api... endpoint={endpoint}, args={args}')
     response = requests.post(endpoint, headers = headers, json = args)
-    logger.debug(f'API Call ended. Status={response.status_code}')
 
     if response.status_code == 200:
         data = response.json()
@@ -49,8 +47,10 @@ def get_data_by_api(**kwargs):
 #                 df[x] = 11 * df[x]
 # =============================================================================
         data['data'] = df.to_dict(orient = 'records')
+        logger.debug("writing file...")
         with open(file_name, 'w') as file:
             json.dump(data, file)    
+        logger.debug("writing file is completed")
     else:
         error_message = {"error_code": "data_error", "error_message": "Failed to call DATA API"}
         raise DataHTTPException(status_code=400, detail="Fail to fetch data.", error_message = error_message)
@@ -63,10 +63,10 @@ def get_data_by_api(**kwargs):
 
     meta_keys = ['timeframe', 'locations', 'products']
     meta_data = {key: data[key] for key in meta_keys if key in data}
+    logger.debug("writing meta file...")
     with open(f'meta-data_{message_id}.json', 'w') as file:
         json.dump(meta_data, file)
-
-    logger.debug('Returning data to agent...')
+    logger.debug("writing meta file is completed")
     return json.dumps(res)
 
 # =============================================================================
@@ -93,7 +93,7 @@ def post_process_data(data_file, action = 'mean', cols = 'sales'):
         ## TODO: this is a hack to limit the number of items selected
         if len(df) >= 25:
             df = df.head(25)
-        json_data = json.dumps(df[cols].to_json())
+        #json_data = json.dumps(df[cols].to_json())
     elif action == 'max' or action == 'min':
         numerical_cols = df[cols].select_dtypes(include=['number']).columns
         ### TODO: need more valiation here
@@ -102,12 +102,20 @@ def post_process_data(data_file, action = 'mean', cols = 'sales'):
             res = df.loc[df[num_col].idxmax()]
         else:
             res = df.loc[df[num_col].idxmin()]
-        json_data = json.dumps(res.to_json())
+        #json_data = json.dumps(res.to_json())
     else:
-        res = df[cols].apply(action)
-        json_data = json.dumps(res.to_json())
+        res =  df[cols].apply(action)
+    
+    res_df = pd.DataFrame(res)
+    res_df.columns = cols
+    #tableData1 = res.to_dict(orient='records')
+    logger.debug(f"res_df = {res_df}, type = {type(res_df)}")
+    res = {'type': 'table',  'tableData1' : res_df.to_dict(orient='records')}
+    print('Res')
+    logger.debug(f"response after post processing: {res}")
+        #json_data = json.dumps(res)
 
-    return json_data
+    return res
 
 # =============================================================================
 # 
@@ -128,22 +136,27 @@ def plot_data(data_file, type = 'line', metric_cols = 'sales',
     if isinstance(metric_cols, str):
         metric_cols = [word.strip() for word in metric_cols.split(',')]
     
-    url = config['agent']['api_url'] + 'plotting'
-
-    req_dict = {'data': data['data'],
+    if type == 'table':
+        tableData1 = data.to_dict(orient='records')
+        res = {'type': 'table',  'tableData1' : tableData1}
+        print('Res')
+        print(res)
+    else:
+        url = config['agent']['api_url'] + 'plotting'
+        req_dict = {'data': data['data'],
                 'type': type,
                 'product-col': product_col,
                 'metric-cols': metric_cols,
                 'location-col': location_col}
 
-    response = requests.post(url = url,
+        response = requests.post(url = url,
                         json = req_dict)
     
-    if response.status_code == 200:
-        res = response.json()
-    else:
-        error_message = {"error_code": "data_error", "error_message": "Failed to call Plotting API"}
-        raise DataHTTPException(status_code=400, detail="Fail to fetch data.", error_message = error_message)
+        if response.status_code == 200:
+            res = response.json()
+        else:
+            error_message = {"error_code": "data_error", "error_message": "Failed to call Plotting API"}
+            raise DataHTTPException(status_code=400, detail="Fail to fetch data.", error_message = error_message)
 
     #json_data = json.dumps(res)
     return res

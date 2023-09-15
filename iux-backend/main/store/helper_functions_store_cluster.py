@@ -54,7 +54,7 @@ def fuzzy_logic2(df, store_name, n=1):
            
            
           # dictionary = np.unique(df['STORE_NAME'].values)
-           threshold =80   # Set your desired threshold value here
+           threshold =70   # Set your desired threshold value here
            best_match = process.extractOne(store_name, dictionary, score_cutoff=threshold)
            if best_match:
                 best_match = best_match[0].strip()
@@ -170,12 +170,13 @@ def return_data_from_pickle(file_path, store_name, distance_stores, city='US', s
 
     result=pd.DataFrame()
     folder_path='store-distances\\'
+  
     base_path = root_dir + folder_path
     
     if type(distance_stores) == str:
         distance_stores = [distance_stores]
   
-
+    print("filtered_data", filtered_data.shape)
     for distance_store in distance_stores:
        filtered_data_new=original_store_data.copy()
        dist_store_data = fuzzy_logic2(data, distance_store, n=1)
@@ -196,7 +197,8 @@ def return_data_from_pickle(file_path, store_name, distance_stores, city='US', s
                
            else:
                 filtered_data_new=pickle_data
-                
+       print("filtered_data_new", filtered_data_new.shape)
+         
        # Reset index for both DataFrames
        filtered_data_new.reset_index(drop=True, inplace=True)
        result.reset_index(drop=True, inplace=True)
@@ -659,7 +661,7 @@ def func_group_stores_cluster(file_path, store_name, no_of_groups, distance_stor
     #creating distance files 
     filtered_data_new=return_data_from_pickle(file_path, store_name, distance_stores)
     original_data=filtered_data_new
-    within=int(within)
+    within=within[0]
     filtered_data_new = filtered_data_new.apply(lambda col: col.apply(lambda x: x if pd.isna(x) or x <=within else np.nan) if col.name.startswith("Distance_") else col)
     # Count values greater than 0 and not NaN in columns starting with "Distance_"
     #counts = filtered_data_new.filter(like="Distance_").gt(0).notna().sum()

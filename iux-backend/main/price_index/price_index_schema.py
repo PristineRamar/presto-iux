@@ -150,7 +150,7 @@ class APICallParameters(BaseModel):
     cal_type:  Optional[List[str]] = Field(
         None,
        
-        description="Used to specify the calendar types. the user wants data pertaining to. For example, 'Q' is valid for 'Quarter',  'W' is valid for Weeks, 'P' is valid for 'Periods'. apart from 'Q' or 'P' or 'W' should not be used. for instance, if user is asking 'Last quarter' this argument Should be 'Q', or 'Last 2 weeks' this argument Should be 'W' "
+        description="Used to specify the calendar types. the user wants data pertaining to. For example, 'Q' is valid for 'Quarter',  'W' is valid for Weeks, 'P' is valid for 'Periods'. for instance, if user is asking 'Last quarter' this argument Should be 'Q', or 'Last 2 weeks' this argument Should be 'W' "
         
     )
     
@@ -206,7 +206,7 @@ class APICallParameters(BaseModel):
     )
     quarter: Optional[List[str]] = Field(
         None,
-        description="Can be used to specify specific quarters in the retail calendar, e.g., ['1'] or  ['2', '3']. Alternatively, the user can specify certain quarters using key phrases such as 'current', 'last 1', or 'next 2'."
+        description="Can be used to specify specific quarters in the retail calendar, e.g., ['1'] or  ['2', '3']. Alternatively, the user can specify certain quarters using key phrases such as 'current', 'last 1', or 'next 2'. otherwise keep it blank"
     )
     cal_year: Optional[List[str]] = Field(
         None,

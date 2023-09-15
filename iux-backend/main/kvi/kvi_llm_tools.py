@@ -17,7 +17,7 @@ from kvi.kvi_schema import get_data_by_api #post_process_data
 from kvi.kvi_schema import APICallParameters, PostProcessParameters
 
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
-from app_logger.logger import logger
+
 
 
 class GetKVIDataTool(BaseTool):
@@ -26,12 +26,11 @@ class GetKVIDataTool(BaseTool):
         Useful when getting Primary and Secondary KVI data by product, location and time frame. 
         Output will be a dictionary in the form of JSON.
         """
+    return_direct = True  
     args_schema: Type[BaseModel] = APICallParameters
 
     def _run(self, **kwargs):
-        logger.debug('get_data_by_api starts...')
         response = get_data_by_api(**kwargs)
-        logger.debug('get_data_by_api ends.')
         return response
 
     def _arun(self, **kwargs):

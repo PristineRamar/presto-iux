@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, Blueprint
 import sys
 import json
-from app_logger.logger import logger
+import logging
 import requests
 #sys.path.insert(0, '/')
 
@@ -89,27 +89,27 @@ def add_endpoint():
            return json.dumps({'result' : final_res})
        
        except requests.exceptions.RequestException as e:
-            logger.error('API Request error: %s', e)
+            logging.error('API Request error: %s', e)
             error_message = "There was an issue in retrieving the data. Please try again later with valid store names"
             raise DataHTTPException(error_code="api_request_error", error_message=error_message, detail=str(e))
     
        except json.JSONDecodeError as e:
-            logger.error('JSONDecodeError: %s', e)
+            logging.error('JSONDecodeError: %s', e)
             error_message = "Looks like we were unable to fetch data for given store names. Could you please try with some other stores."
             raise DataHTTPException(error_code="json_decode_error", error_message=error_message, detail=str(e))
             
        except CSVAddressNotFoundException as e:
-            logger.error('CSV address not found: %s', e)
+            logging.error('CSV address not found: %s', e)
             response_data = e.to_dict()
             return json.dumps(response_data), 400  # Bad Request
         
        except OutputParserException as e:
-           logger.error('OutputParserException: %s', e)
+           logging.error('OutputParserException: %s', e)
            error_message = "Could not parse LLM output: " + str(e)
            raise DataHTTPException(error_code="output_parser_error", error_message=error_message, detail=str(e))
         
        except Exception as e:
-            logger.error('General error: %s', e)
+            logging.error('General error: %s', e)
             error_message = "Looks like we were unable to fetch data from given stores names. Could you please try rephrasing"
             raise DataHTTPException(error_code="Input error", error_message=error_message, detail=str(e))
 
@@ -161,6 +161,7 @@ def group_stores_handler():
         min_store = data.get('minStore')
         max_store = data.get('maxStore')
     
+       
         if store_name is not None and no_of_groups is not None and distance_stores is not None:
             cluster_summary_json_data = group_store_clusters_route(store_name, no_of_groups, distance_stores, factors, within, city, state, min_store, max_store)
     

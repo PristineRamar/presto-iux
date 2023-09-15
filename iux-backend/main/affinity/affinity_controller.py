@@ -83,6 +83,7 @@ def affinity():
     print('Reached Here')
     input_json = json.dumps(input_json)
     input_json = json.loads(input_json)
+    print(input_json)
     with open('log.txt', 'a') as logfile:        
         #logfile.write(pd.to_datetime(datetime.now()).strftime('%Y-%m-%d %I:%M:%S %p') + '\n')
         logfile.write('4')
@@ -115,12 +116,12 @@ def affinity():
         #                         'eJack'
         #                         #user_id = input_json['user-id'][0]
         #                         )
-        
+        print('Reached Here')
         if 'product-name' in input_json:
             value = input_json['product-name'][0]
         elif 'item-list' in input_json:
             value = input_json['item-list'][0]
-            
+        print(value)     
         response = affinity_api(value,'eJack')
      
         # output_json['timeframe'] = response[3]

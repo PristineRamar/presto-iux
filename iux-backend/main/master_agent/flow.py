@@ -36,8 +36,9 @@ def extract_tile(input_str):
     else:
         title = None
     return title
-
-llm = OpenAI(model=config["agent"]["llm-model"], temperature=0, api_key = open_ai_key)
+#TODO.. change it to config in future
+gpt_model="gpt-3.5-turbo-0613"
+llm = OpenAI(model=gpt_model, temperature=0, api_key = open_ai_key)
 embed_model = OpenAIEmbedding(api_key = open_ai_key)
 
 service_context = ServiceContext.from_defaults(llm =llm, embed_model = embed_model )

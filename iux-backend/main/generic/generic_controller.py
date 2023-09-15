@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, Blueprint
 import json
 import gc
@@ -8,16 +7,13 @@ import random
 import nltk
 from nltk import word_tokenize, pos_tag
 
-#nltk.download('punkt')
-#nltk.download('averaged_perceptron_tagger')
-
-
 from generic.generic_data_interface import cost_api, price_api, promotion_api, movement_api, hier_api, plotting_api
 from generic.generic_data_config import port, log_filename
 #from dummy_data_interface import cost_api, price_api, promotion_api, movement_api, hier_api
 from datetime import datetime
 from generic.generic_agent import summary_agent, plot_agent
 from generic.generic_e_types import DataHTTPException
+from app_logger.logger import logger
 
 app = Flask(__name__)
 
@@ -43,8 +39,6 @@ def error_handling(error):
 
 def contains_any(target_string, keywords):
     return any(keyword in target_string for keyword in keywords)
-
-
 
 def extract_product_name(current_prompt):
     # Tokenize and POS tag the current prompt
@@ -97,7 +91,6 @@ def get_prev_response(metadata):
     return result
 
 
-
 @generic_blueprint.errorhandler(DataHTTPException)
 def handler(exc):
     content={"result": exc.error_message}
@@ -109,19 +102,20 @@ def handler(exc):
 def health():
     return "Presto IUX backend is running..."
 
-# Wrap your function into a REST API
+# This is the agent
 @generic_blueprint.route('/query', methods=['POST'])
 def add_endpoint():
     data = request.get_json()
-    
+    print("Generic prompts")
     if not data or 'prompt' not in data:
         return jsonify({'error': 'Please provide a prompt'}), 400
     
+    # May want to modify prompt based on context + priors
    # prompt = data['prompt']    
     user_id = data['user-id']
     # Step 1: Extract prompt and check for keywords
     current_prompt = data["prompt"]
-    keywords = ["sales", "margin", "unit"]
+    keywords = ["sales", "margin", "unit", "movement", "revenue", "cost", "price"]
     curr_intent = "sales" if any(keyword in current_prompt for keyword in keywords) else None
 
     # Step 2: Extract intent from data and compare with curr_intent
@@ -135,7 +129,6 @@ def add_endpoint():
         else:
           prompt = f"current: {current_prompt}"
 
-      
     message_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
     
     lc_prompt = prompt.lower()
@@ -146,7 +139,9 @@ def add_endpoint():
         agent = plot_agent
     else:
         agent = summary_agent
-   # 
+
+    logger.debug("Calling generic agent...")
+    
     result = agent.run(prompt + f'The user id is {user_id}. The message id is {message_id}')
 
    # result = agent.run(data['prompt'] + f'The user id is {user_id}. The message id is {message_id}')
@@ -175,7 +170,7 @@ def add_endpoint():
     with open(f'meta-data_{message_id}.json', 'r') as file:
         meta_data = json.load(file)
 
-    final_res = {'summary': result, 'meta_data': meta_data, 'intent' : 'sales'}
+    final_res = {'summary': result, 'meta_data': meta_data, 'intent': "sales"}
 
     return jsonify({'result' : final_res})
 
@@ -437,6 +432,6 @@ def plot():
         
 
 if __name__ == '__main__':
-    port=6022
+    
     app.run(debug=True, port = port, host = '0.0.0.0')
     #app.run(debug=True, port = 8000, host = '20.228.231.91')
