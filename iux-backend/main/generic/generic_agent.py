@@ -28,8 +28,6 @@ summary_tools = [
     PostProcessTool(),
 ]
 
-# Possible approach : ask the LLM to look for information in the current prompt, then check previous prompt if it can't determine
-# something, otherwise leave blank.
 summary_sys_msg = '''You are an awesome assistant in retail. Only make function call to answer questions.
 
 Some Abbrevations you need to keep in mind:
@@ -38,6 +36,7 @@ W: Week, for example W3 means week 3.
 P: Period, for example P3 means period 3.
 Q: Quarter, for example Q2 means quarter 2.
 
+In the user'prompt' message, if timeframe like Q1, Q2, P1, P2, W1,W2 or datatime ,location, product name or graph type is given in current prompt,use it from current prompt and not last prompt. 
 And you have to answer the question in two steps: first call api to get data, then use the post process tool to get the final answer. Always return proper JSON data specified by the functions until you have the final answer.
 '''
 
@@ -59,8 +58,6 @@ plot_tools = [
     PlotDataTool(),
 ]
 
-# Possible approach : ask the LLM to look for information in the current prompt, then check previous prompt if it can't determine
-# something, otherwise leave blank.
 plot_sys_msg = '''You are an awesome assistant in retail. Only make function call to answer questions.
 
 Some Abbrevations you need to keep in mind:
