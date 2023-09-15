@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import "../styles/navbar.css";
 import { Link, useNavigate } from "react-router-dom";
+import logo from '../assets/Images/Kai_Black_Red_2.0.png';
 
 function Navbar({prestURL}) {
   console.log("prestURL: ", prestURL);
@@ -22,7 +23,14 @@ function Navbar({prestURL}) {
 
 	return (
     <header>
-      <h3 className="tittle">KAI</h3>
+      <h3 className="tittle">
+      <img
+          src={logo}
+          alt="Kai"
+          className="logo"
+          width="30px"
+          height="30px"
+        /></h3>
       <button className="nav-btn" onClick={showNavbar}>
         <FaBars />
       </button>
