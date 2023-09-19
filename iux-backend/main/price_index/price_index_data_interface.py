@@ -158,7 +158,8 @@ def reportgen(product_name = None, product_id = None, product_level = None,
             comp_tier = comp_tier.lower()
     if comp_name == 'cvs' and comp_tier == "primary":
         comp_tier = None
-        
+    if comp_city == None and comp_addr == None and comp_name == None and comp_tier == None:
+        comp_tier = 'primary'
     
     if  cal_type == 'Q' and quarter is None and start_date is None:
         quarter = 'Last 1'
@@ -399,6 +400,7 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
     loc_fil = ''
     prod_fil = ''
     loc_sp = ''
+    prod_sp = ''
     if comp_city is not None or comp_addr is not None or comp_name is not None or comp_tier is not None:
         comp_str_id, com_name_act= comp_parser( location_id,comp_city,comp_addr,comp_name, comp_tier)
     else:
@@ -418,6 +420,7 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
         prod_fil = ''
     if (product_agg == 'Y') or (product_agg == 'N' and loc_agg == 'N' and cal_agg == 'N'):
         groupby_para = child_prod_cat_name
+        prod_sp =  "HAVING " + child_prod_cat_name + " IS NOT NULL"
     if loc_agg == 'Y':
         groupby_para = "LOCATION_NAME"
         loc_sp =  "HAVING LOCATION_NAME IS NOT NULL"
@@ -506,10 +509,10 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
                     LEFT JOIN COMP_DATA CD
                    ON PI.COMP_STR_ID  = CD.COMP_STR_ID
                   AND PI.BASE_LOCATION_ID = CD.LOCATION_ID
-                  GROUP BY  {groupby_para} {loc_sp}
+                  GROUP BY  {groupby_para} {loc_sp}  {prod_sp}
                   '''.format(prod_fil = prod_fil,start_date = start_date,end_date = end_date, 
                   loc_fil = loc_fil,comp_fil = comp_fil,child_prod_id_cat=child_prod_id_cat,child_prod_level=child_prod_level,
-                  child_prod_cat_name= child_prod_cat_name, measure_para = measure_para,groupby_para = groupby_para, loc_sp = loc_sp)
+                  child_prod_cat_name= child_prod_cat_name, measure_para = measure_para,groupby_para = groupby_para, loc_sp = loc_sp,prod_sp = prod_sp)
     else:
         query = ''' WITH PI_TABLE AS (SELECT
         PID.ITEM_CODE AS PRODUCT_ID,
