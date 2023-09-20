@@ -231,7 +231,7 @@ class APICallParameters(BaseModel):
     
     pi_type:  Optional[List[str]] = Field(
         None,
-        description="Used to specify the price index types. the user wants data pertaining to. For example, 'S' is valid for 'Simple Index', 'Reg price index' and 'Reg Index' and 'B' is valid for 'Blended Index', 'promotion idex' or 'promo index'. apart from 'S' or 'B' should not be used",
+        description="Used to specify the price index types. the user wants data pertaining to. For example, 'S' is valid for 'Simple Index', 'Reg price index' and 'Reg Index' and 'B' is valid for 'Blended Index', 'promotion idex' or 'promo index'. apart from 'S' or 'B' should not be used. If it is not mentioned leave it blank",
         enum=["S", "B"]
     )
     weighted_by:  Optional[List[str]] = Field(
