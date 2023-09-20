@@ -65,7 +65,7 @@ const AIChat = (props) => {
       // Create an oscillator to generate a simple tone
       const oscillator = audioContext.createOscillator();
       oscillator.type = "sine"; // You can change the type of waveform
-      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime); // Adjust the frequency as needed
+      oscillator.frequency.setValueAtTime(3000, audioContext.currentTime); // Adjust the frequency as needed
   
        // Connect the oscillator to the audio output
       oscillator.connect(audioContext.destination);
@@ -409,20 +409,39 @@ recognition.onresult = (event) => {
   setInput(interimTranscript);
 };
 
+
+
 const handleIconClick = () => {
   if (!isTyping) {
  
-    setSpeechRecognitionLoading(true);
-    setIcon(faMicrophone);
+  setSpeechRecognitionLoading(true);
+  setIcon(faMicrophone);
 
   // Play button click sound
-  playButtonClickSound();
+  //playButtonClickSound();
+
+  const currentTime = new Date();
+  const hours = currentTime.getHours().toString().padStart(2, '0');
+  const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+  const seconds = currentTime.getSeconds().toString().padStart(2, '0');
+  const formattedTime = `${hours}:${minutes}:${seconds}`;
+  console.log('Before - ' , formattedTime);
+
+  setTimeout(() => {
+    playButtonClickSound();
+  }, 4000); // 5000 milliseconds (5 seconds) delay
+
+  const currentTime1 = new Date();
+  const hours1 = currentTime1.getHours().toString().padStart(2, '0');
+  const minutes1 = currentTime1.getMinutes().toString().padStart(2, '0');
+  const seconds1 = currentTime1.getSeconds().toString().padStart(2, '0');
+  const formattedTime1 = `${hours1}:${minutes1}:${seconds1}`;
+  console.log('After - ' , formattedTime1);
   
   console.log('handleIconClick', transcript);
   setTranscript('');
   setIsActive(true);
   startListening();
-  
 };
 }
 
@@ -467,18 +486,18 @@ const handleIconClick = () => {
             }}
             maxRows={5}
           />
-             
           <button className={`microphone-icon ${isActive ? 'active' : ''}`}>
           {isActive && (
           <img
           src="https://media.giphy.com/media/sSgvbe1m3n93G/giphy.gif" // Updated URL
           alt="Microphone Animation"
-          style={{ width: "30px", height: "30px" }} // Adjust the width and height as needed
+          style={{ width: "34px", height: "34px" }} // Adjust the width and height as needed
               />
           )}
             <FontAwesomeIcon icon={isActive ? faMicrophoneLines : micIcon} onClick={handleIconClick} />
             </button>
           </div>
+          <div style={{ margin: '10px 0', width : '8px' }}></div>
           <div className="flash-refresh send">
             <span className="send-span" onClick={handleSubmit}>  
               <svg className="send-svg-container" xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 30 30" fill="none" 
