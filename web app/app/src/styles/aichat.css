@@ -14,14 +14,15 @@
 }
 
 .flash-refresh {
-  height: 40px;
-  width: 40px;
-  padding-top: 5px;
-  /* padding-left: 10px; */
+  height: 44px;
+  width: 44px;
+  padding-top: 7px;
+  padding-left: 5px;
   /* background: #F7F7F7; */
   opacity: 1;
   border-radius: 50%;
   display: inline-block;
+  margin-top:3px;
 }
 
 .flash-refresh .svg-container {
@@ -92,10 +93,10 @@
   position: absolute;
   /* bottom: 16px;  */
   right: 5px; 
-  font-size: 1.5rem;
+  font-size: 1.0rem;
   font-weight: bold;
-  width: 30px;
-  height: 30px;
+  width: 33px;
+  height: 33px;
   color: #1389fd;
   border-radius: 50%;
   background-color:#f2f2f2;
@@ -155,15 +156,18 @@
 
 .chat-message.chatgpt {
   width: auto;
-  /* width: 5000px; */
-  /* width: fit-content; */
   background-color: white; 
   background:0% 0% 0% no-repeat padding-box;
   box-shadow: 0px 3px 3px white;
-  border-radius: 0px 0px 0px 0px;
+  /* border-radius: 0px 0px 0px 0px; */
   opacity: 1;
   overflow-x: auto;
-  /* height: 400px; */
+  
+  /* border-radius: 5px;
+  background: #ffffff;
+  border-color: #e2e2e2;
+  border-width: 1px;
+  border-style: solid; */
 }
 
 
