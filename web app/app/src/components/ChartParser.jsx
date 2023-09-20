@@ -73,7 +73,17 @@ const ChartParser = ({ message, chatType }) => {
               floating: false,
               labels: {
                 // formatter: function(val) {return val.toFixed(0);},
-                formatter: formatYAxisLabels,
+                //formatter: formatYAxisLabels,
+                formatter: function(value) {
+                  var val = Math.abs(value)
+                  if (val >= 1000000) {
+                    val = (val / 1000000).toFixed(1) + " M";
+                  }
+                  else if (val >= 1000) {
+                    val = (val / 1000).toFixed(0) + ' K'
+                  }
+                  return val
+                },
                 style: {
                   fontSize: fontSize,
                   fontWeight: "bold",
@@ -90,10 +100,18 @@ const ChartParser = ({ message, chatType }) => {
         toolbar: { show: true },
       };
       updatedOptions.dataLabels = {
-        enabled: true,
+        enabled: false,
         formatter: function (val) {
           // Customize the formatting of data labels as needed
-          return val.toFixed(0); // Format the value to display two decimal places
+          //return val.toFixed(0); // Format the value to display two decimal places
+          var val1 = Math.abs(val)
+          if (val1 >= 1000000) {
+            val1 = (val1 / 1000000).toFixed(1) + " M";
+          }
+          else if (val1 >= 1000) {
+            val1 = (val1 / 1000).toFixed(0) + ' K'
+          }
+          return val1
         },
         style: {
           fontSize: "15px", 
@@ -101,7 +119,7 @@ const ChartParser = ({ message, chatType }) => {
           colors: ["#121212"], // Set the color of data labels here
         },
       };
-      updatedOptions.colors = ["#1389fd","#FF9800","#064687","#340b7c89","#09b40989","#b409a389",];
+      updatedOptions.colors = ["#1389fd","#FF9800","#20855e","#340b7c89","#09b40989","#b409a389",];
 
     }
 
