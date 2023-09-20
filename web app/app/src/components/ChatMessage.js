@@ -5,7 +5,7 @@ import Table from "./Table";
 import "../styles/table.css";
 import ChartParser from "./ChartParser";
 import ChartWidthCalculator from "../utils/ChartWidthCalculator";
-import gptAvatar from "../assets/Images/K_in blue_with white BG.png";
+import gptAvatar from "../assets/Images/KaiLogo.png";
 
 const ICON_SIZE = 20;
 
@@ -28,6 +28,7 @@ const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
 
   return (
     <div className={`chat-message ${message.user === "gpt" && "chatgpt"}`}>
+      {/* <div style={{ margin: '10px 0', width : '8px' }}></div> */}
       <div className="chat-message-allign">
         <div className={`avatar ${message.user === "gpt" && "chatgpt"}`}>
           {/* user input human logo */}
@@ -36,6 +37,7 @@ const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
           {message.user === "gpt" && (
             <img src={gptAvatar} alt="GPT Avatar" width="35" height="35" />)}
         </div>
+       
         <div className={`message ${message.user === "gpt" && "chatgpt"}`}>
             <ChartWidthCalculator
               chatType={chatType}
@@ -91,6 +93,7 @@ const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
             <p className={!visible ? "text-container" : "text-container-with-sidebar"}>{message.message}</p>)}
         </div>
       </div>
+      
       {message.user === "gpt" && metadata && chartType !== "graph" && (
         <div className="metadata">
           {Array.isArray(metadata.locations) ? (
@@ -106,6 +109,7 @@ const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
           <p>Timeframe: {metadata.timeframe}</p>
         </div>
       )}
+      {/* <div style={{ margin: '10px 0', width : '8px' }}></div> */}
     </div>
   );
 });
