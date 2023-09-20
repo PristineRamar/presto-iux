@@ -59,8 +59,12 @@ const RenderRow = (props) => {
       if (typeof columnValue === 'number') {
         const isNumber = true
         const hasDecimalPart = columnValue % 1 !== 0;
+
         if (hasDecimalPart) {
-          if (key.includes('Income') || (key.includes('Sales') || key.includes('Margin'))) {
+          if ((key.includes('Margin%')))
+          {
+            cellContent = (columnValue * 100).toFixed(0) + '%'; 
+          } else if (key.includes('Income') || (key.includes('Sales') || key.includes('Margin'))) {
             cellContent = '$' + columnValue.toFixed(0); // Display up to 2 decimal places
             cellContent = numeral(columnValue).format('$0,0');
           }
@@ -71,7 +75,10 @@ const RenderRow = (props) => {
           } else 
             cellContent = columnValue.toFixed(2); // Display up to 2 decimal places
         } else {
-          if (key.includes('Income') || (key.includes('Sales') || key.includes('Margin'))) {
+          if ((key.includes('Margin%')))
+          {
+            cellContent = (columnValue * 100).toFixed(0) + '%'; 
+          } else if (key.includes('Income') || (key.includes('Sales') || key.includes('Margin'))) {
             cellContent = '$' + columnValue.toFixed(0); // Display up to 2 decimal places
             cellContent = numeral(columnValue).format('$0,0');
           }
