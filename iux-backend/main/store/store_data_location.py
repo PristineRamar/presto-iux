@@ -5,7 +5,7 @@ Created on Wed Aug 23 12:56:47 2023
 @author: Chavi
 """
 
-root_dir = 'E:/PrestoIUX/App/KAISetup/01-KAIDevBackendAPIs/iux-backend/main/store/'
+root_dir = 'E:\\PrestoIUX\\Test\\iux-backend\\main\\store\\'
 '''import os
 
 # Get the current working directory

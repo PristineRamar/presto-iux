@@ -1,9 +1,9 @@
 agent:
     #llm-model: gpt-3.5-turbo-0613
     llm-model: gpt-4-0613
-    api_url: http://localhost:9511/
+    api_url: http://localhost:2500/
     user_id: ejack
-    port: 9511
+    port: 2500
 
 database:
     # username: READONLY_RA
@@ -16,16 +16,16 @@ database:
 
 general:
     client_name: "RA"
-    data_url: 'http://secure1.pristineinfotech.com:7200/presto-data-services'
+    data_url: 'http://secure2.pristineinfotech.com:7800/presto-data-services'
     authentication_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/Common.asmx/AuthenticateUser'
     recommendation_service_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/Common.asmx/ExecutePriceRecommendationQR'
     completeRevieweview_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/QuarterlyPriceReview.asmx/CompleteReviewIUX'
-    chain_id: 52
+    chain_id: 53
     global_zone_id: 483
     all_prod_id: 9491
     n_responses: 1
     cache: False
-    port: 9511
+    port: 2500
     log_filename: 'dev-log'    
 open-ai:
     open_ai_key: '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'
@@ -35,14 +35,14 @@ kvi:
 
 router:
   llm-model: gpt-4-0613
-  store: http://localhost:9511/query_store_llm
-  kvi: http://localhost:9511/getKVI
+  store: http://localhost:2500/query_store_llm
+  kvi: http://localhost:2500/getKVI
   ### for the time being, the financials-agent is hosted on the same server of router
-  sales: http://localhost:9502/query
-  affinity: http://localhost:9502/getAffinity
-  price_index: http://localhost:9502/priceindexllm
-  recommend-review-approve: http://localhost:9502/recommend-review-approve-service
-  bpr: http://localhost:9502/query-bpr
-  port: 9502
+  sales: http://localhost:2500/query
+  affinity: http://localhost:2500/getAffinity
+  price_index: http://localhost:2500/priceindexllm
+  recommend-review-approve: http://localhost:2500/recommend-review-approve-service
+  bpr: http://localhost:2500/query-bpr
+  port: 2500
   timeout: 30
   
