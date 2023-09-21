@@ -69,11 +69,23 @@ def get_data_by_api(**kwargs):
     logger.debug("writing meta file is completed")
     return json.dumps(res)
 
+
+
+def transform_output_columns(df):
+    column_name_mapping = {"item-code": "Item Code", "item-name" : "Item Name", 
+                           "week-no" : "Week", "start-date" : "Start Date", 
+                           "reg-price": "Reg Price", "list-cost": "List Cost",
+                           "sales": "Sales", "margin": "Margin", 
+                           "movement" : "Units", "margin-rate": "Margin %"}
+    for old_name, new_name in column_name_mapping.items():
+        if old_name in df.columns:
+            df.rename(columns={old_name: new_name}, inplace=True)
+
 # =============================================================================
 # 
 # =============================================================================
 
-def post_process_data(data_file, action = 'mean', cols = 'sales'):
+def post_process_data(data_file, action = 'min', cols = 'sales'):
     
 # =============================================================================
 #     kwargs = {'data_file':data_file, 'action':action, 'cols':cols}
@@ -81,41 +93,62 @@ def post_process_data(data_file, action = 'mean', cols = 'sales'):
 #         logfile.write(pd.to_datetime(datetime.now()).strftime('%Y-%m-%d %I:%M:%S %p')
 #                       + '\n    Tool: Post-Process\n    Args: ' + json.dumps(kwargs) + '\n\n')
 # =============================================================================
-
+    
     with open(data_file, 'r') as file:
         data = json.load(file)
     df = pd.DataFrame(data['data'])
-
+    
     if isinstance(cols, str):
         cols = [word.strip() for word in cols.split(',')]
 
+    columns_to_output = ["item-code", "item-name", "week-no", "start-date"]
+    columns_to_output.extend(cols)
+
+    add_cols = False
     if action == 'list':
         ## TODO: this is a hack to limit the number of items selected
         if len(df) >= 25:
             df = df.head(25)
+            res = df
         #json_data = json.dumps(df[cols].to_json())
     elif action == 'max' or action == 'min':
-        numerical_cols = df[cols].select_dtypes(include=['number']).columns
+        #numerical_cols = df[cols].select_dtypes(include=['number']).columns
         ### TODO: need more valiation here
-        num_col = numerical_cols[0]
+        #num_col = numerical_cols[0]
         if action == 'max':
-            res = df.loc[df[num_col].idxmax()]
+            res = df.loc[df[cols].idxmax()]
         else:
-            res = df.loc[df[num_col].idxmin()]
+            non_zero_df = df.loc[df[cols[0]] != 0]
+            logger.debug(f"non zero values {non_zero_df}")
+            res = df.loc[non_zero_df[cols].idxmin()]
+            
         #json_data = json.dumps(res.to_json())
     else:
         res =  df[cols].apply(action)
+        add_cols = True
     
-    res_df = pd.DataFrame(res)
-    res_df.columns = cols
-    #tableData1 = res.to_dict(orient='records')
-    logger.debug(f"res_df = {res_df}, type = {type(res_df)}")
-    res = {'type': 'table',  'tableData1' : res_df.to_dict(orient='records')}
-    print('Res')
+    
+    
+    res_df = res
+    if add_cols:
+        res_df = pd.DataFrame(res).T
+        #res_df.columns = cols
+
+    df_cols = list(res_df.columns.values)
+    present_columns = [col for col in columns_to_output if col in df_cols]
+    
+    
+    out_df = res_df.loc[:, present_columns]
+
+    transform_output_columns(out_df)
+    
+    logger.debug(f"res_df = {out_df}, type = {type(out_df)}")
+    res = {'type': 'table',  'tableData1' : out_df.to_dict(orient='records')}
     logger.debug(f"response after post processing: {res}")
         #json_data = json.dumps(res)
 
     return res
+
 
 # =============================================================================
 # 

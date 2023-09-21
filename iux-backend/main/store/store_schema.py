@@ -75,8 +75,8 @@ def get_data_by_api(**kwargs):
         else:
              distance_within=5
            
-        if 'no_of_groups' in converted_dict:
-               no_of_groups_value = converted_dict['no_of_groups'][0]
+        if 'no-of-groups' in converted_dict:
+               no_of_groups_value = converted_dict['no-of-groups'][0]
                #no_of_groups_value = no_of_groups_value.strip('[]')
               # no_of_groups_value = int(no_of_groups_value)
         else:

@@ -27,30 +27,14 @@ def add_endpoint():
     user_id = data['user-id']
     print('prompt', data['prompt'])
     print('user id ',data['user-id'])
-    print(f'The user id is {user_id}')
     result = agent.run(data['prompt'] + f'The user id is {user_id}')
     print('result ',result)
    # response_data = json.dumps({'result' : result})
     final_res = {'summary': result}
-    return final_res
+    print(final_res)
+    return json.dumps({'result' : final_res})
+        
                    
-'''
-    with open('meta-data.json', 'r') as file:
-        meta_data = json.load(file)
-
-    keywords = ["sorry", "apologize", "error"]
-    for keyword in range(len(keywords)):
-       if keywords[keyword] in result:
-           with open('error-message.json', 'r') as file:
-               final_res = json.load(file)
-                      
-           print(final_res)
-           break      
-    
-    else:
-        final_res = {'summary': result, 'meta_data': meta_data}
-        print(final_res)
-'''
    
 
 

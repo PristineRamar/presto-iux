@@ -1,17 +1,19 @@
 import cx_Oracle
 from recommendation.util import connectionString
 
-def getProducts():
+
+
+def getProducts(category_id):
     ##get the connection string 
     connection_string =connectionString()
     try:
+        query="SELECT UPPER(NAME),PRODUCT_ID FROM PRODUCT_GROUP WHERE ACTIVE_INDICATOR='Y' AND PRODUCT_LEVEL_ID=:1"
         # Attempt to establish a connection
         connection = cx_Oracle.connect(connection_string)
         cursor = connection.cursor()
-    
+        cursor.execute(query, (category_id,))
     # Execute an SQL query to fetch data
-        #cursor.execute("SELECT UPPER(NAME),PRODUCT_ID FROM PRODUCT_GROUP WHERE ACTIVE_INDICATOR='Y'")
-        cursor.execute("SELECT UPPER(NAME),PRODUCT_ID FROM PRODUCT_GROUP WHERE  PRODUCT_ID IN(SELECT  PRODUCT_ID  FROM PR_QUARTER_REC_HEADER WHERE product_level_id=4 and run_status='S'AND  START_CALENDAR_ID IN(9187,9186))")
+  
         rows = cursor.fetchall()
         data_list = {}
         for row in rows:
@@ -26,8 +28,7 @@ def getProducts():
     except cx_Oracle.DatabaseError as e:
         error, = e.args
         print(f"Oracle Error: {error.code} - {error.message}")
-  
-      
+     
 
 def getZonesByName():
     

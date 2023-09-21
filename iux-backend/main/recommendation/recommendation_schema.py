@@ -38,9 +38,11 @@ def get_data (**kwargs):
     zoneName_List=kwargs.get('location_name')
     zoneNumber_List=kwargs.get('location_id')
     user_id=kwargs.get('user_id')
-
-    productDictionary=getProducts()
+   
     category_id=getCategoryLevelId()
+    print('category_id',category_id)
+    productDictionary=getProducts(category_id)
+
     
     if zoneName_List :
         zoneList=zoneName_List
@@ -52,7 +54,9 @@ def get_data (**kwargs):
     for name in product_list:
       
         categoryName = getDetailsUsingFuzzySearch(productDictionary, name, 1)
+      
         product_id = productDictionary.get(categoryName)
+        print('categoryName',categoryName ,'product_id ',product_id)
             
         for zone in zoneList:
             zoneName = getDetailsUsingFuzzySearch(zoneDictionary, zone, 1)
@@ -69,12 +73,13 @@ def get_data (**kwargs):
         if api_name =='recommend':
            print ('calling recommendation service ...')
            response=trigger_recommendation(product_location_info)
-           print('response from ',response)
+           
            if response is not None:
                if response.status_code == 200:
                    response_data = response.json()
                    message = json.loads(response_data["d"])["message"]
                    finalmessage= messageInterpretor(message,categoryName,zoneName)
+                 
                    return finalmessage
                else:
                    return 'There was error processing request for  '+ categoryName +'  for zone '+ zoneName 
@@ -86,25 +91,23 @@ def get_data (**kwargs):
             response= callCompleteReviewAPI(product_location_info)
             response_data = response.json()
             if response_data is not None:
-                message = json.loads(response_data["d"])["StatusMessage"]
-                print('message',message)
+                message = json.loads(response_data["d"])
+             # message={'StatusCode': 2, 'StatusMessage': '0020 (BM 20)-FROZEN G ROCERY:- Already review completed by !', 'Messages': [], 'Result': None, 'ResultData': None}
+                print('message  from api',message)
+                result = message["Result"]
+                if result is not None:
+                    if result["StatusCode"] == 3:
+                        message = result["StatusMessage"]
+                else:
+                    message = json.loads(response_data["d"])["StatusMessage"]
+                 
+                print('message from complete review',message)
                 finalmessage= messageInterpretor(message,categoryName,zoneName)
                 return finalmessage
             else:
                return 'There was error processing request for  '+ categoryName +'  for zone '+ zoneName 
             
             
-       
-         
-'''
-    product_location_info = {
-          "productId": 60,
-          "productLevelId": '4',
-          "locationId": 2,
-          "locationLevelId":'6',
-          "userId":'prestolive'
-      }  
-  '''
 
 def trigger_recommendation(kwargs):
     
@@ -141,34 +144,35 @@ def trigger_recommendation(kwargs):
         print(f"Error in Request to ExecutePriceRecommendationQR: {e}")
         return None
         
-             
-'''
-    kwargs = {
-          "productId": 82,
-          "productLevelId": '4',
-          "locationId": 121,
-          "locationLevelId":'6',
-          "predictedUserId":'prestolive'
-      } 
- '''          
+       
 
 def messageInterpretor(message,categoryName,zoneName):
      
     if "Recommendation is already queued for selected Zone and Category" in message:
-       return'Recommendation is already queued for  ' + categoryName + ' and  zone '+ zoneName + ' .Please Check status on Presto by clickling Show Running Recs'
+       return'Recommendation is already queued for ' + categoryName + ' and zone '+ zoneName + ' .Please check the status on Presto by clicking Show Running Recs'
           
     elif "Recommendation added to Queue" in message:
-        return'Recommendation is  queued for ' + categoryName + 'and  zone '+ zoneName + ' .Please Check status on Presto by clickling Show Running Recs'
+        return'Recommendation is  queued for ' + categoryName + ' and  zone '+ zoneName + ' .Please check the status on Presto by clicking Show Running Recs'
     
     elif "Review Completed" in message:
-           return'Review completed for  ' + categoryName + 'and  zone '+ zoneName
+           return'Review completed for  ' + categoryName + ' and  zone '+ zoneName
    
     elif " Already review completed " in message:
-            return'Review is already  complete for ' + categoryName + 'and zone '+ zoneName 
+            return'Review is already completed for ' + categoryName + ' and zone '+ zoneName 
      
     elif "Recommedation data not found" in message :
-          return '"Recommedation data not found for '+ categoryName + 'and zone '+ zoneName +' Please run recommendation for this combination'
+          return 'Recommedation data not found for '+ categoryName + ' and zone '+ zoneName +' Please run recommendation for this combination'
+    
+    elif "No permission to do Price Recommendation" in message :
+           return 'No permission to do Price Recommendation for selected category  ' + categoryName
+   
+    elif "REVIEW COMPLETED" in message:
+           return'Review completed for  ' + categoryName + ' and zone '+ zoneName
+    else: 
+           return message
       
+
+
 def callCompleteReviewAPI(kwargs):
      print('kwargs',kwargs)
      product_id= kwargs.get('productId')
