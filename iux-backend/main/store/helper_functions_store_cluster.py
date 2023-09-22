@@ -9,6 +9,7 @@ import pandas as pd
 import time
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+from sklearn.decomposition import SparsePCA
 import dask.dataframe as dd
 import requests
 import os
@@ -285,9 +286,9 @@ def calculate_cluster_summary(clustered_data, merged_cluster_data, within, cat_c
 #=============================================================================================
 
 
-import pandas as pd
-from sklearn.decomposition import SparsePCA
-from sklearn.cluster import KMeans
+
+
+
 
 def cluster_data(filtered_data, num_cols, cat_cols, no_of_groups, min_store, max_store, num_components=20):
     filtered_data = filtered_data.reset_index(drop=True)
@@ -661,7 +662,7 @@ def func_group_stores_cluster(file_path, store_name, no_of_groups, distance_stor
     #creating distance files 
     filtered_data_new=return_data_from_pickle(file_path, store_name, distance_stores)
     original_data=filtered_data_new
-    within=within[0]
+    #within=within[0]
     filtered_data_new = filtered_data_new.apply(lambda col: col.apply(lambda x: x if pd.isna(x) or x <=within else np.nan) if col.name.startswith("Distance_") else col)
     # Count values greater than 0 and not NaN in columns starting with "Distance_"
     #counts = filtered_data_new.filter(like="Distance_").gt(0).notna().sum()

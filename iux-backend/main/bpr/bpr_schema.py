@@ -107,7 +107,7 @@ def plot_data(data_file, type = 'table'):
     #df=df.drop(['file_name'], axis=1)
     df.columns = [col.replace('_', ' ').title() for col in df.columns]
     print(df.columns )
-    fixed_column_order = ['Category Name','Product Level Id','Ret Lir Name', 'Item Name','Retailer Item Code','Start Date', 'End Date']
+    fixed_column_order = ['Category Name', 'Item Name','Item Code','Week Start Date', 'Week End Date']
     # Slice the DataFrame to keep the first three columns fixed and reorder the remaining columns
     new_column_order = fixed_column_order + [col for col in df.columns if col not in fixed_column_order]
     df = df[new_column_order]    

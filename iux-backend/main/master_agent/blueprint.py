@@ -16,6 +16,11 @@ import json
 import cx_Oracle
 import pandas as pd
 from app_logger.logger import logger
+from cache.api_cache import APICache
+
+
+# Create an instance of APICache
+api_cache = APICache("cache.json")
 
 controller_blueprint = Blueprint('controller', __name__)
 
@@ -65,15 +70,23 @@ def add_endpoint():
         raise HTTPException(status_code=404, detail="API not found")
     
     logger.debug(f"Calling API... URL:{api_url}")
-    response = requests.post(url = api_url,
+    
+    cached_response = api_cache.get_cached_response(api_name, prompt)
+    
+    if cached_response is None:
+        response = requests.post(url = api_url,
                              json = data,
-                             timeout = 30)
+                             timeout = 180)
+        logger.debug(f"API call completed, status code:{response.status_code}")
+        res = response.json()
+        api_cache.cache_response(api_name, prompt, res)
+    else:
+        logger.debug(f"cache is used, output from cache:{cached_response}")
+        res = cached_response
     
     #response['result']['detail'] = {'detail' : api_name}
     
-    logger.debug(f"API call completed, status code:{response.status_code}")
     
-    res = response.json()
         
 # =============================================================================
 #     with httpx.AsyncClient(timeout = 30) as client:

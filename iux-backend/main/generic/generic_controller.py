@@ -54,8 +54,9 @@ def extract_product_name(current_prompt):
     # Look for the first noun (NN) after a keyword
     for i, (word, tag) in enumerate(tags):
         if tag == 'NN' and any(keyword in current_prompt.lower() for keyword in keywords):
-            product_name = word
-            break
+            if len(word) >= 3:  # Check if the length is at least 3 characters
+                product_name = word
+                break
 
     return product_name
 
@@ -125,7 +126,7 @@ def add_endpoint():
     if intent_from_data == "sales" or curr_intent == "sales":
         if intent_from_data:
             prompt1 = get_prev_response(data)
-            prompt = f"lastprompt: {prompt1}, current: {current_prompt}"
+            prompt = f"current: {current_prompt}, lastprompt: {prompt1} "
         else:
           prompt = f"current: {current_prompt}"
 
