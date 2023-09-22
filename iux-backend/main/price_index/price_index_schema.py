@@ -147,13 +147,6 @@ class APICallParameters(BaseModel):
         description="Used to specify the any product level under a product name or specifying any product levels only like 'All departments','All categories' . the user wants data pertaining to. For example,'Department','Major Category', 'Category' or 'Sub category' or 'Segment' or 'Item' would be valid ways of using this argument."
        
     )
-    cal_type:  Optional[List[str]] = Field(
-        None,
-       
-        description="Used to specify the calendar types. the user wants data pertaining to. For example, 'Q' is valid for 'Quarter',  'W' is valid for Weeks, 'P' is valid for 'Periods'. for instance, if user is asking 'Last quarter' this argument Should be 'Q', or 'Last 2 weeks' this argument Should be 'W' "
-        
-    )
-    
     product_name: Optional[List[str]] = Field(
         None,
         description="Used to specify which product group the user wants data pertaining to. For example, 'Upper Respiratory', 'OTC internal',  or 'grocery' would be valid ways of using this argument.Product levels like 'Departments', 'Category', 'All'..etc are not valid for this argument"
@@ -179,7 +172,13 @@ class APICallParameters(BaseModel):
        None,
        description= "Used to specify The address of the Competitor the user wants data pertaining to. For example, '5190 Library Rd ', '1801 York Rd' would be valid ways of using this argument"
        
-     )
+    )
+    cal_type:  Optional[List[str]] = Field(
+        None,
+       
+        description="Used to specify the calendar types. the user wants data pertaining to. For example, 'Q' is valid for 'Quarter',  'W' is valid for Weeks, 'P' is valid for 'Periods'. for instance, if user is asking 'Last quarter' this argument Should be 'Q', or 'Last 2 weeks' this argument Should be 'W' "
+        
+    )
     product_agg: Optional[List[str]] = Field(
         None,
         description= "do this if you are 100% sure: A flag to indicate if the query is about aggregation or summarization or averaging at product level. This flag only applies when user says about aggregation levels. if aggregation at product level the flag should be 'Y' else if they need such as  'aggregate at calendar level'  or 'aggregate at week level' or 'aggregatd at zone level' or 'aggregatd at quarter level' the should be 'N' ",

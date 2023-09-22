@@ -13,10 +13,10 @@ import time
 
 from rapidfuzz.process import extractOne
 from rapidfuzz.fuzz import QRatio
-from price_index.price_index_data_functions_common import (cal_lookup, sanitize_cal_input,
+from generic.generic_data_functions_common import (cal_lookup, sanitize_cal_input,
                                    parse_prod_request, parse_loc_request,
                                    prod_hier, product_data)
-from price_index.price_index_data_config import (data_url, username, password, dbname, n_responses)
+from generic.generic_data_config import (data_url, username, password, dbname, n_responses)
 
 from datetime import datetime
 from fuzzywuzzy import fuzz
