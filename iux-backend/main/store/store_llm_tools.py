@@ -19,6 +19,7 @@ from store.store_schema import get_data_by_api, plot_data #post_process_data
 from store.store_schema import APICallParameters, PlotDataParameters #PostProcessParameters
 
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
+from app_logger.logger import logger
 
 class StoreClusterTool(BaseTool):
     name="get_data_by_api"
@@ -30,7 +31,9 @@ class StoreClusterTool(BaseTool):
     args_schema: Type[BaseModel] = APICallParameters
 
     def _run(self, **kwargs):
+        logger.debug("get_data_by_api starts...")
         response = get_data_by_api(**kwargs)
+        logger.debug("get_data_by_api ends.")
         return response
 
     def _arun(self, **kwargs):
@@ -60,7 +63,9 @@ class PlotDataTool(BaseTool):
     args_schema: Type[BaseModel] = PlotDataParameters
     
     def _run(self, **kwargs):
+        logger.debug("plot_data starts...")
         response = plot_data(**kwargs)
+        logger.debug("plot_data ends.")
         return response
 
     def _arun(self, **kwargs):

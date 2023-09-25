@@ -1,0 +1,9 @@
+Title: price_index
+
+Description: Useful for getting price index bar chart by product, location , time frame and price index type.
+
+Example questions:
+
+1. Create a bar graph of Price Index for categories under grocery for the last 1 quarter.
+2. Plot a bar graph of Price Index for upper respiratory for the last 1 quarter at location level.
+3. Plot a Blended index PI bar graph of all categories under grocery

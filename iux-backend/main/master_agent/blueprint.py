@@ -15,6 +15,12 @@ import httpx
 import json
 import cx_Oracle
 import pandas as pd
+from app_logger.logger import logger
+from cache.api_cache import APICache
+
+
+# Create an instance of APICache
+api_cache = APICache("cache.json")
 
 controller_blueprint = Blueprint('controller', __name__)
 
@@ -39,28 +45,48 @@ def prompt2api(message, retriever):
 def add_endpoint():
     data = request.get_json()
     
+    # May need to modify prompt using context + prior prompts + prior api_name
     prompt = data['prompt']
+    logger.debug(f"router is called with data: {data}")
     try:
         api_name = prompt2api(prompt, list_retriever)
+        logger.debug(f"Retriever returns api_name as {api_name}")
     except Exception as e1:
         try:
             api_name = prompt2api(prompt, bm25_retriever)
+            logger.debug(f"E1: Retriever returns api_name as {api_name}")
         except Exception as e2:
             try:
                 api_name = prompt2api(prompt, retriever)
+                logger.debug(f"E2: Retriever returns api_name as {api_name}")
             except Exception as e3:
                 api_name = 'sales'
+                logger.debug(f"E3: Retriever returns api_name as {api_name}")
                 
     api_url = router.get(api_name)
+    
     
     if not api_url:
         raise HTTPException(status_code=404, detail="API not found")
     
-    response = requests.post(url = api_url,
-                             json = data,
-                             timeout = 30)
+    logger.debug(f"Calling API... URL:{api_url}")
     
-    res = response.json()
+    cached_response = api_cache.get_cached_response(api_name, prompt)
+    
+    if cached_response is None:
+        response = requests.post(url = api_url,
+                             json = data,
+                             timeout = 180)
+        logger.debug(f"API call completed, status code:{response.status_code}")
+        res = response.json()
+        api_cache.cache_response(api_name, prompt, res)
+    else:
+        logger.debug(f"cache is used, output from cache:{cached_response}")
+        res = cached_response
+    
+    #response['result']['detail'] = {'detail' : api_name}
+    
+    
         
 # =============================================================================
 #     with httpx.AsyncClient(timeout = 30) as client:

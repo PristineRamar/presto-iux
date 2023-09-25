@@ -9,12 +9,11 @@ from langchain.tools import BaseTool, StructuredTool, Tool, tool
 from langchain.cache import InMemoryCache
 sys.path.insert(0, './')
 from kvi.kvi_llm_tools import GetKVIDataTool #GetDataTool, PostProcessTool
+from config.app_config import config
 
 langchain.llm_cache = InMemoryCache()
-api_key= "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"
-#api_key = os.environ.get("OPEN_AI_API")
-GPT_MODEL = "gpt-3.5-turbo-0613"
-#GPT_MODEL = "gpt-4-0613"
+api_key = config['open-ai']['open_ai_key']
+GPT_MODEL = config['agent']['llm-model']
 
 llm = ChatOpenAI(
     openai_api_key = api_key,
@@ -24,35 +23,14 @@ llm = ChatOpenAI(
 
 tools = [
     GetKVIDataTool()
-    #GetDataTool(),
-    #PostProcessTool(),
 ]
 
-func_agent_sys_msg = '''You are an awesome assistant in retail. Only make function call to answer questions. You will try your best to figure out four pieces of information:
+func_agent_sys_msg = '''You are an awesome assistant in retail. Only make function call to answer questions.Do NOT make any assumptions.
 
-1. Products
-2. Locations
-3. Time Frames
-4. filter
+If a season like Winter or Summer is mentioned, provide the start and end dates for the current year in the US region using the current timestamp.
 
-Leave Product/Location/Time Frame/filter fields blank if you are not sure do NOT make any assumptions.
+call API to get data and process the input to get result.
 
-Some Abbrevations you need to keep in mind:
-If any specific season is mentioned for example:Winter or Summer, give season start and end date for current year( to identify current year use timestamp) for US region.
-
-Interpretation  of some words for filter,
-visits : Transactions
-sales : Revenue
-household reach : Customer
-frequency : Purchase Frequency
-
-And you have to answer the question in one step:  call API to get data and process the input to get result. Return only API result. Do NOT make any assumption about the metrics asked. Report exactly what the tools returns.
-retail assistant should return three pieces of information:
-1. List of KVI Items 
-2. Stats 
-3. Factor used
-
-In case of error return only API result. Do NOT make any assumption.
 '''
 
 agent_kwargs = {

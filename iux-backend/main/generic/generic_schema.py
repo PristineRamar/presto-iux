@@ -7,7 +7,6 @@ import time
 import random
 import string
 import datetime
-
 from typing import Type
 from typing import Optional, List
 from pydantic import BaseModel, Field
@@ -15,6 +14,7 @@ from generic.generic_data_config import port
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
 from config.app_config import config
 from generic.generic_e_types import DataHTTPException
+from app_logger.logger import logger
 
 def get_data_by_api(**kwargs):
 
@@ -47,8 +47,10 @@ def get_data_by_api(**kwargs):
 #                 df[x] = 11 * df[x]
 # =============================================================================
         data['data'] = df.to_dict(orient = 'records')
+        logger.debug("writing file...")
         with open(file_name, 'w') as file:
             json.dump(data, file)    
+        logger.debug("writing file is completed")
     else:
         error_message = {"error_code": "data_error", "error_message": "Failed to call DATA API"}
         raise DataHTTPException(status_code=400, detail="Fail to fetch data.", error_message = error_message)
@@ -61,16 +63,29 @@ def get_data_by_api(**kwargs):
 
     meta_keys = ['timeframe', 'locations', 'products']
     meta_data = {key: data[key] for key in meta_keys if key in data}
+    logger.debug("writing meta file...")
     with open(f'meta-data_{message_id}.json', 'w') as file:
         json.dump(meta_data, file)
-
+    logger.debug("writing meta file is completed")
     return json.dumps(res)
+
+
+
+def transform_output_columns(df):
+    column_name_mapping = {"item-code": "Item Code", "item-name" : "Item Name", 
+                           "week-no" : "Week", "start-date" : "Start Date", 
+                           "reg-price": "Reg Price", "list-cost": "List Cost",
+                           "sales": "Sales", "margin": "Margin", 
+                           "movement" : "Units", "margin-rate": "Margin %"}
+    for old_name, new_name in column_name_mapping.items():
+        if old_name in df.columns:
+            df.rename(columns={old_name: new_name}, inplace=True)
 
 # =============================================================================
 # 
 # =============================================================================
 
-def post_process_data(data_file, action = 'mean', cols = 'sales'):
+def post_process_data(data_file, action = 'min', cols = 'sales'):
     
 # =============================================================================
 #     kwargs = {'data_file':data_file, 'action':action, 'cols':cols}
@@ -78,33 +93,62 @@ def post_process_data(data_file, action = 'mean', cols = 'sales'):
 #         logfile.write(pd.to_datetime(datetime.now()).strftime('%Y-%m-%d %I:%M:%S %p')
 #                       + '\n    Tool: Post-Process\n    Args: ' + json.dumps(kwargs) + '\n\n')
 # =============================================================================
-
+    
     with open(data_file, 'r') as file:
         data = json.load(file)
     df = pd.DataFrame(data['data'])
-
+    
     if isinstance(cols, str):
         cols = [word.strip() for word in cols.split(',')]
 
+    columns_to_output = ["item-code", "item-name", "week-no", "start-date"]
+    columns_to_output.extend(cols)
+
+    add_cols = False
     if action == 'list':
         ## TODO: this is a hack to limit the number of items selected
         if len(df) >= 25:
             df = df.head(25)
-        json_data = json.dumps(df[cols].to_json())
+            res = df
+        #json_data = json.dumps(df[cols].to_json())
     elif action == 'max' or action == 'min':
-        numerical_cols = df[cols].select_dtypes(include=['number']).columns
+        #numerical_cols = df[cols].select_dtypes(include=['number']).columns
         ### TODO: need more valiation here
-        num_col = numerical_cols[0]
+        #num_col = numerical_cols[0]
         if action == 'max':
-            res = df.loc[df[num_col].idxmax()]
+            res = df.loc[df[cols].idxmax()]
         else:
-            res = df.loc[df[num_col].idxmin()]
-        json_data = json.dumps(res.to_json())
+            non_zero_df = df.loc[df[cols[0]] != 0]
+            logger.debug(f"non zero values {non_zero_df}")
+            res = df.loc[non_zero_df[cols].idxmin()]
+            
+        #json_data = json.dumps(res.to_json())
     else:
-        res = df[cols].apply(action)
-        json_data = json.dumps(res.to_json())
+        res =  df[cols].apply(action)
+        add_cols = True
+    
+    
+    
+    res_df = res
+    if add_cols:
+        res_df = pd.DataFrame(res).T
+        #res_df.columns = cols
 
-    return json_data
+    df_cols = list(res_df.columns.values)
+    present_columns = [col for col in columns_to_output if col in df_cols]
+    
+    
+    out_df = res_df.loc[:, present_columns]
+
+    transform_output_columns(out_df)
+    
+    logger.debug(f"res_df = {out_df}, type = {type(out_df)}")
+    res = {'type': 'table',  'tableData1' : out_df.to_dict(orient='records')}
+    logger.debug(f"response after post processing: {res}")
+        #json_data = json.dumps(res)
+
+    return res
+
 
 # =============================================================================
 # 
@@ -125,25 +169,30 @@ def plot_data(data_file, type = 'line', metric_cols = 'sales',
     if isinstance(metric_cols, str):
         metric_cols = [word.strip() for word in metric_cols.split(',')]
     
-    url = config['agent']['api_url'] + 'plotting'
-
-    req_dict = {'data': data['data'],
+    if type == 'table':
+        tableData1 = data.to_dict(orient='records')
+        res = {'type': 'table',  'tableData1' : tableData1}
+        print('Res')
+        print(res)
+    else:
+        url = config['agent']['api_url'] + 'plotting'
+        req_dict = {'data': data['data'],
                 'type': type,
                 'product-col': product_col,
                 'metric-cols': metric_cols,
                 'location-col': location_col}
 
-    response = requests.post(url = url,
+        response = requests.post(url = url,
                         json = req_dict)
     
-    if response.status_code == 200:
-        res = response.json()
-    else:
-        error_message = {"error_code": "data_error", "error_message": "Failed to call Plotting API"}
-        raise DataHTTPException(status_code=400, detail="Fail to fetch data.", error_message = error_message)
+        if response.status_code == 200:
+            res = response.json()
+        else:
+            error_message = {"error_code": "data_error", "error_message": "Failed to call Plotting API"}
+            raise DataHTTPException(status_code=400, detail="Fail to fetch data.", error_message = error_message)
 
-    json_data = json.dumps(res)
-    return json_data
+    #json_data = json.dumps(res)
+    return res
 
 # =============================================================================
 # 

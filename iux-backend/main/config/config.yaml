@@ -1,28 +1,50 @@
 agent:
-    llm_model: gpt-3.5-turbo-0613
-    #llm-model: gpt-4-0613
-    api_url: http://localhost:8003/
+    #llm-model: gpt-3.5-turbo-0613
+    llm-model: gpt-4-0613
+    api_url: http://localhost:2500/
     user_id: ejack
-    port: 8003
+    port: 2500
 
 database:
-    username: READONLY_RA
-    password: 'RE1#AD2#RA3'
-    dbname: secure9.pristineinfotech.com:7784/RiteAid
+    # username: READONLY_RA
+    # password: 'RE1#AD2#RA3'
+    # dbname: secure9.pristineinfotech.com:7784/RiteAid
+    
+    username: PRESTO_IUX
+    password: 'PR#IUX#2023'
+    dbname: secure2.pristineinfotech.com:7781/IUX
 
 general:
     client_name: "RA"
-    data_url: 'http://secure1.pristineinfotech.com:7200/presto-data-services'
-    chain_id: 52
+    data_url: 'http://secure2.pristineinfotech.com:7800/presto-data-services'
+    authentication_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/Common.asmx/AuthenticateUser'
+    recommendation_service_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/Common.asmx/ExecutePriceRecommendationQR'
+    completeRevieweview_url: 'https://secure7.pristineinfotech.com/PrestoAnalyticsDemo/OfferManagement/Ajax/QuarterlyPriceReview.asmx/CompleteReviewIUX'
+    chain_id: 53
     global_zone_id: 483
     all_prod_id: 9491
     n_responses: 1
     cache: False
-    port: 8003
-    log_filename: 'RA_DEV'
-    
+    port: 2500
+    log_filename: 'dev-log'    
 open-ai:
-    open_ai_key: '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'
+    open_ai_key: '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'
    
 kvi:
-    kvi_url: 'http://127.0.0.1:6999/'    
+    kvi_url: 'http://127.0.0.1:6999/'  
+priceindex:
+    comp_days: 180    
+
+router:
+  llm-model: gpt-4-0613
+  store: http://localhost:2500/query_store_llm
+  kvi: http://localhost:2500/getKVI
+  ### for the time being, the financials-agent is hosted on the same server of router
+  sales: http://localhost:2500/query
+  affinity: http://localhost:2500/getAffinity
+  price_index: http://localhost:2500/priceindexllm
+  recommend-review-approve: http://localhost:2500/recommend-review-approve-service
+  bpr: http://localhost:2500/query-bpr
+  port: 2500
+  timeout: 30
+  

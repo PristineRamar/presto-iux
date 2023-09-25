@@ -27,7 +27,7 @@ cache = config["general"]["cache"]
 port = config["general"]["port"]
 open_ai_key = config["open-ai"]["open_ai_key"]
 log_filename = config["general"]["log_filename"]
-
+comp_days = config["priceindex"]["comp_days"]
 # =============================================================================
 # username = 'READONLY_CSWG'
 # password = 'RE1#AD2#CSWG'

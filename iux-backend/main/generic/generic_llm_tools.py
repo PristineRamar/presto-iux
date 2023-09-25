@@ -18,6 +18,7 @@ from generic.generic_schema import (get_data_by_api, post_process_data, plot_dat
                                                      PlotDataParameters)
 
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
+from app_logger.logger import logger
 
 class GetDataTool(BaseTool):
     name="get_data_by_api"
@@ -26,9 +27,10 @@ class GetDataTool(BaseTool):
         Output will be the name of the data file and the availabe columns in JSON.
         """
     args_schema: Type[BaseModel] = APICallParameters
-
+    #return_direct = True
     def _run(self, **kwargs):
         response = get_data_by_api(**kwargs)
+        logger.debug(f"response in get_data_by_api: {response}")
         return response
 
     def _arun(self, **kwargs):
@@ -40,10 +42,14 @@ class PostProcessTool(BaseTool):
         Useful when post processing the data retrieved.
         Output will be the either a numerical value or a list of strings in JSON.
         """
+    return_direct = True
     args_schema: Type[BaseModel] = PostProcessParameters
 
     def _run(self, **kwargs):
+        logger.debug("post_process_data starts...")
+        logger.debug(f"kwargs {kwargs}")
         response = post_process_data(**kwargs)
+        logger.debug(f"response in post: {response}")
         return response
 
     def _arun(self, **kwargs):
@@ -58,7 +64,9 @@ class PlotDataTool(BaseTool):
     args_schema: Type[BaseModel] = PlotDataParameters
 
     def _run(self, **kwargs):
+        logger.debug("plot_data starts...")
         response = plot_data(**kwargs)
+        logger.debug(f"response in plot_data: {response}")
         return response
 
     def _arun(self, **kwargs):

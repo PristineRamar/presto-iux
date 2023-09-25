@@ -9,12 +9,12 @@ import pandas as pd
 import time
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+from sklearn.decomposition import SparsePCA
 import dask.dataframe as dd
 import requests
 import os
-from store.store_data_location import root_dir
+from store.store_data_location import root_dir 
 #common functions
-
 def fuzzy_logic(df, name, n=1):
     # Create a new column 'alias' with lowercase store names
    # df['alias'] = df['Store_Name'].str.lower()
@@ -55,7 +55,7 @@ def fuzzy_logic2(df, store_name, n=1):
            
            
           # dictionary = np.unique(df['STORE_NAME'].values)
-           threshold =80   # Set your desired threshold value here
+           threshold =70   # Set your desired threshold value here
            best_match = process.extractOne(store_name, dictionary, score_cutoff=threshold)
            if best_match:
                 best_match = best_match[0].strip()
@@ -78,8 +78,28 @@ def fuzzy_logic2(df, store_name, n=1):
    except:
           filtered_df = fuzzy_logic(df, store_name, n=1)
           return filtered_df
-      
-      
+#=======================================================================================      
+def fuzzy_logic_loc(loc, df, column_name, keywords=None, score_cutoff=0):
+    
+    if column_name not in df.columns:
+        raise ValueError(f"'{column_name}' is not a valid column name in the DataFrame.")
+        
+    exact_match = df[df[column_name].str.lower() == loc.lower()]
+    if not exact_match.empty:
+        return exact_match  # Return the filtered subset DataFrame
+
+    df['ALIAS_loc']=df[column_name].str.lower()
+    # Apply fuzzy logic and find the closest match
+    sim = process.extractOne(
+    re.sub(r'[^a-zA-Z0-9]', ' ', loc).lower(), df['ALIAS_loc'], score_cutoff=65)
+
+   # sim = difflib.get_close_matches(
+       # re.sub(r'[^a-zA-Z0-9]', ' ', name).lower(), list(df['ALIAS'].values), n=n)
+    if sim:
+        closest_match = df[df['ALIAS_loc'] == sim[0]]
+        return closest_match  # Return the filtered subset DataFrame
+    else:
+        return None     
 
 #==========================================================================================
 def calculate_distances(store_data, dist_row, earth_radius_miles):
@@ -114,7 +134,7 @@ def add_distances(filtered_data, dist_store_data_all):
     for i, dist_row in enumerate(dist_store_data_all['NAME']):
         col_name = f'Distance_{dist_row}'
         store_data[col_name] = distances_list[i]
-
+    
     return store_data
 
 # =============================================================================================================
@@ -136,7 +156,7 @@ def save_to_pickle(filename, data):
 #=============================================================================================
 #this function creates a mapping of distances of store name and competitior and store the result as pickle file.
 #It uses functions calculate distances and add_distances
-def return_data_from_pickle(file_path, store_name, distance_stores):
+def return_data_from_pickle(file_path, store_name, distance_stores, city='US', state='US', geography=None):
    
     with open(file_path, 'rb') as file:
         data = pickle.load(file)
@@ -150,30 +170,36 @@ def return_data_from_pickle(file_path, store_name, distance_stores):
     original_store_data=filtered_data
 
     result=pd.DataFrame()
-    folder_path='store-distances/'
-    
+    folder_path='store-distances\\'
+  
     base_path = root_dir + folder_path
     
     if type(distance_stores) == str:
         distance_stores = [distance_stores]
   
-
+    print("filtered_data", filtered_data.shape)
     for distance_store in distance_stores:
        filtered_data_new=original_store_data.copy()
        dist_store_data = fuzzy_logic2(data, distance_store, n=1)
        combined_store_name = filtered_data['STORE_NAME'].iloc[0] +'_'+ dist_store_data['STORE_NAME'].iloc[0]
-       filename = os.path.join(base_path, f"{combined_store_name}.pkl")
-
-       pickle_data = load_pickle_file(filename)
-       if pickle_data is None:
+       
+       if city != 'US' or state != 'US' or geography is not None:
            filtered_data_new= add_distances(filtered_data_new, dist_store_data)
-           save_to_pickle(filename, filtered_data_new)
-          # Reset index for both DataFrames
-           filtered_data_new.reset_index(drop=True, inplace=True)
-           
        else:
-            filtered_data_new=pickle_data
-            
+           
+           filename = os.path.join(base_path, f"{combined_store_name}.pkl")
+    
+           pickle_data = load_pickle_file(filename)
+           if pickle_data is None:
+               filtered_data_new= add_distances(filtered_data_new, dist_store_data)
+               save_to_pickle(filename, filtered_data_new)
+              # Reset index for both DataFrames
+               filtered_data_new.reset_index(drop=True, inplace=True)
+               
+           else:
+                filtered_data_new=pickle_data
+       print("filtered_data_new", filtered_data_new.shape)
+         
        # Reset index for both DataFrames
        filtered_data_new.reset_index(drop=True, inplace=True)
        result.reset_index(drop=True, inplace=True)
@@ -191,11 +217,13 @@ def mode_with_multiple(data):
    mode_data = data.mode()
    return mode_data[0] if not mode_data.empty else ''
 
-def calculate_cluster_summary(clustered_data, merged_cluster_data, within):
+def calculate_cluster_summary(clustered_data, merged_cluster_data, within, cat_cols):
     
     cluster_summaries = []
     store_cluster_mapping = []
-
+    if 'URBANICITY' not in cat_cols:
+        clustered_data=clustered_data.drop(columns=['URBANICITY'])
+        
     factor_columns = ['POPULATION_DENSITY', 'MEDIAN_INCOME', 'HOUSING_UNITS', 'URBANICITY']
  
     for cluster in clustered_data['Cluster'].unique():
@@ -216,28 +244,29 @@ def calculate_cluster_summary(clustered_data, merged_cluster_data, within):
 
             
     
-        #print("'cluster", cluster)
-       # print("avg dis", avg_distance_miles)
-    
+       
               
         # Calculate average of factor columns if present
-        avg_factors = {col: round(group[col].mean(), 2) for col in factor_columns if col in group and col != 'URBANICITY'}
+        avg_factors = {col: int(group[col].mean()) for col in factor_columns if col in group and col != 'URBANICITY'}
         
         # Calculate mode of Urbanicity only if it's present in the factor columns
-        mode_urbanicity = mode_with_multiple(group['URBANICITY']) if 'URBANICITY' in factor_columns else None
-        
+        if 'URBANICITY' in group.columns :
+            mode_urbanicity = mode_with_multiple(group['URBANICITY']) if 'URBANICITY' in factor_columns else None
+        else:
+            mode_urbanicity=None
         # List of up to 5 names in the cluster
         cluster_names = group['NAME'].head(5).tolist()
         
         cluster_summary = {
             'Cluster': cluster + 1,
             'Store Count': len(group),
-            'Avg. Distance (Miles)': round(avg_distance_miles,1),
-           
-            'Urbanicity (Mode)': mode_urbanicity,
+            'Avg. Distance (Miles)': round(avg_distance_miles, 1),
             **avg_factors,
             'Store Names': ', '.join(cluster_names),
         }
+        
+        if mode_urbanicity is not None:
+            cluster_summary['Urbanicity (Mode)'] = mode_urbanicity
         cluster_summaries.append(cluster_summary)
         
         # Create name-cluster mapping for up to 5 names
@@ -251,18 +280,72 @@ def calculate_cluster_summary(clustered_data, merged_cluster_data, within):
    
     summary = summary.sort_values(by='Cluster', ascending=True)
    
-    ''' clustered_data =clustered_data.dropna(subset=clustered_data.filter(like="Distance_").columns, how="all")
-    columns_to_drop = clustered_data.filter(like="Distance_").columns[clustered_data.filter(like="Distance_").isna().all()]
-    clustered_data = clustered_data.drop(columns=columns_to_drop)
-
-    unique_clusters =   clustered_data["Cluster"].unique()
-    reindexed_clusters = {old_id: new_id for new_id, old_id in enumerate(unique_clusters)}
-    clustered_data["Cluster"] =clustered_data["Cluster"].map(reindexed_clusters)'''
-    
+     
     return summary
 
 #=============================================================================================
-def cluster_data(filtered_data, num_cols, cat_cols, no_of_groups, num_components=20):
+
+
+
+
+
+
+def cluster_data(filtered_data, num_cols, cat_cols, no_of_groups, min_store, max_store, num_components=20):
+    filtered_data = filtered_data.reset_index(drop=True)
+
+    # Apply one-hot encoding on categorical columns using sparse=True
+    encoded_data = pd.get_dummies(filtered_data[cat_cols], sparse=True)
+
+    # Use Sparse PCA to reduce dimensionality of numerical columns
+    numerical_data = filtered_data[num_cols]
+
+    if num_components is None:
+        num_components = min(numerical_data.shape[1])  # Use all components if not specified
+
+    # Use Sparse PCA for dimensionality reduction
+    sparse_pca = SparsePCA(n_components=num_components)
+
+    # Fit Sparse PCA on numerical data
+    pca_results = sparse_pca.fit_transform(numerical_data)
+
+    # Convert PCA results to DataFrame
+    pca_results_df = pd.DataFrame(pca_results, columns=[f'PC{i+1}' for i in range(num_components)])
+
+    # Truncate encoded_data to match the number of rows in pca_results_df
+    encoded_data = encoded_data.iloc[:len(pca_results_df)]
+
+    # Concatenate the numerical columns after PCA
+    encoded_data = pd.concat([encoded_data, pca_results_df], axis=1)
+
+    # Apply K-means clustering
+    kmeans = KMeans(n_clusters=no_of_groups, n_init=10, random_state=42)
+    kmeans.fit(encoded_data)
+
+    # Get the cluster labels
+    cluster_labels = kmeans.labels_
+
+    # Add the cluster labels to the filtered data
+    filtered_data['Cluster'] = cluster_labels
+
+    # Calculate the total number of stores in each cluster
+    cluster_sizes = filtered_data.groupby('Cluster').size().reset_index()
+    cluster_sizes = cluster_sizes.rename(columns={0: 'sizes'})
+
+    # Filter clusters based on store count range
+    valid_clusters = cluster_sizes[
+        (cluster_sizes['sizes'] >= min_store) & (cluster_sizes['sizes'] <= max_store)]
+
+    # Filter the data to keep only rows corresponding to valid clusters
+    filtered_data = filtered_data[filtered_data['Cluster'].isin(valid_clusters['Cluster'])]
+
+    # Drop duplicate names within each cluster
+    filtered_data = filtered_data.drop_duplicates(subset=['Cluster', 'NAME', 'LAT', 'LON'])
+
+    return filtered_data
+
+
+
+'''def cluster_data(filtered_data, num_cols, cat_cols, no_of_groups,min_store, max_store ,num_components=20 ):
     filtered_data = filtered_data.reset_index(drop=True)
 
     # Apply one-hot encoding on categorical columns using sparse=True
@@ -273,7 +356,7 @@ def cluster_data(filtered_data, num_cols, cat_cols, no_of_groups, num_components
     # Determine the maximum valid number of components based on data dimensions
     max_components = min(numerical_data.shape)
     if num_components is None or num_components > max_components:
-       num_components = max_components
+        num_components = max_components
 
     pca = PCA(n_components=num_components)
 
@@ -299,11 +382,30 @@ def cluster_data(filtered_data, num_cols, cat_cols, no_of_groups, num_components
 
     # Add the cluster labels to the filtered data
     filtered_data['Cluster'] = cluster_labels
-
+    
+    # Calculate the total number of stores in each cluster
+    
+    cluster_sizes = filtered_data.groupby('Cluster').size().reset_index()
+    cluster_sizes = cluster_sizes.rename(columns={0: 'sizes'})
+    #print("cluster_size", cluster_sizes)
+    #print("2", filtered_data.shape)
+    # Filter clusters based on store count range
+    valid_clusters = cluster_sizes[
+        (cluster_sizes['sizes'] >= min_store) & (cluster_sizes['sizes'] <= max_store)].index
+    valid_clusters = pd.DataFrame(valid_clusters, columns=['Cluster'])
+    #print("min-max", min_store, max_store)
+   # print("3", filtered_data.shape)
+    #print(valid_clusters)
+    # Filter the data to keep only rows corresponding to valid clusters
+    filtered_data = filtered_data[filtered_data['Cluster'].isin(valid_clusters['Cluster'])]
+   # print("4", filtered_data1.shape)
+    #print("unique cluster",filtered_data['Cluster'].unique())
     # Drop duplicate names within each cluster
-    filtered_data = filtered_data.drop_duplicates(subset=['Cluster', 'NAME','LAT','LON'])
-
+    filtered_data = filtered_data.drop_duplicates(subset=['Cluster', 'NAME', 'LAT', 'LON'])
+   # print("5", filtered_data2.shape)
     return filtered_data
+'''
+#=============================================================================================
 
 # ====================================================================================================
 def fix_urbanicity(factors):
@@ -444,13 +546,18 @@ def get_store_info(store_name, api_key, cx):
 #===================================================================================
 # returning count of stores from stored pickle file
 
-def func_find_no_of_stores(file_path, banner_name, country='US'):
+def func_find_no_of_stores(file_path, banner_name, city, state):
     try:
        
         with open(file_path, 'rb') as file:
             df = pickle.load(file)
         banner_name_match = fuzzy_logic(df, banner_name)
-
+        if city!='US':
+            city_name_match=fuzzy_logic_loc(city, df, 'CITY')
+            df=city_name_match
+        if state!='US':
+            state_name_match=fuzzy_logic_loc(state, df, 'STATE_NAME')
+            df=state_name_match
         # Check if banner_name_match is not None before using it
         if banner_name_match is not None:
             # Retrieve the 'alias' value from the matched row
@@ -470,11 +577,24 @@ def func_find_no_of_stores(file_path, banner_name, country='US'):
 ###########################################################################################################
 # 2nd use case  : Find no of csv stores in 1,3,5 files of walgreens. 
 # It uses common functions return_data_from_pickle
-def func_no_of_competing_stores(file_path, banner_name, competition, distance_within): #pass distance_within as list like [3,5]
+def func_no_of_competing_stores(file_path, banner_name, competition, distance_within, city, state, nostore, geography): #pass distance_within as list like [3,5]
   
         stores_with_distances=pd.DataFrame()
         stores_with_distances = return_data_from_pickle(file_path, banner_name, competition)
         # Shortlist columns starting with 'Distance_'
+     
+        if city!='US':
+            city_name_match=fuzzy_logic_loc(city, stores_with_distances, 'CITY')
+            stores_with_distances=city_name_match
+        if state!='US':
+            state_name_match=fuzzy_logic_loc(state, stores_with_distances, 'STATE_NAME')
+            stores_with_distances=state_name_match
+            
+        if geography != None:
+            geo_name_match=fuzzy_logic_loc(geography, stores_with_distances, 'GEOGRAPHY')
+            stores_with_distances=geo_name_match
+        
+            
         distance_columns = [
             col for col in stores_with_distances.columns if col.startswith('Distance_')]
 
@@ -492,26 +612,57 @@ def func_no_of_competing_stores(file_path, banner_name, competition, distance_wi
             lengths=True).compute()
 
         # Step 4: Calculate the counts within each distance range using NumPy
+       
         counts_within_ranges = {}
-        for dist in distance_within:
-            dist_float = float(dist)
-            counts = np.sum(stores_distances_np <= dist_float, axis=0)
-            counts_within_ranges[dist] = int(np.sum(counts))
+
+        if len(distance_within) == 1:
+            dist = distance_within[0]
+            if nostore==True:
+                 count_sum = np.sum(np.all(stores_distances_np > dist, axis=1))
+                 count_sum = stores_distances_np.shape[0] - count_sum
+                 count_sum=int(np.int32(count_sum))
+                 
+            else:
+                counts = np.sum(stores_distances_np <= dist, axis=0)
+                count_sum=int(np.sum(counts))
+          
+            counts_within_ranges[f'0-{dist} miles'] = count_sum
+        else:
+            for i in range(len(distance_within)):
+                lower_limit = 0 if i == 0 else distance_within[i-1]
+                upper_limit = distance_within[i]
+                
+                if nostore==True:
+                    # Count the number of rows where no value falls within the distance range
+                    counts = np.sum((stores_distances_np < lower_limit) | (stores_distances_np > upper_limit), axis=1)
+                    count_sum = int(np.sum(counts))
+                    count_sum = stores_distances_np.shape[0] - count_sum
+                    count_sum=int(np.int32(count_sum))
+                   
+                 
+                else:
+                   counts = np.sum((stores_distances_np >= lower_limit) & (stores_distances_np <= upper_limit), axis=0)
+                   count_sum = int(np.sum(counts))
+                   key = f'{lower_limit}-{upper_limit} miles'
+                   counts_within_ranges[key] = count_sum
+
+        return counts_within_ranges
 
        
-        return counts_within_ranges
-   
+       
 ############################################################################################
 ############################################################################################
 
 #============================================================================================    
  
 
-def func_group_stores_cluster(file_path, store_name, no_of_groups, distance_stores, factors, within=5):
+def func_group_stores_cluster(file_path, store_name, no_of_groups, distance_stores, factors, within, city, state, min_store, max_store):
+    start1 = time.time()
     filtered_data_new=pd.DataFrame()
     #creating distance files 
     filtered_data_new=return_data_from_pickle(file_path, store_name, distance_stores)
     original_data=filtered_data_new
+    #within=within[0]
     filtered_data_new = filtered_data_new.apply(lambda col: col.apply(lambda x: x if pd.isna(x) or x <=within else np.nan) if col.name.startswith("Distance_") else col)
     # Count values greater than 0 and not NaN in columns starting with "Distance_"
     #counts = filtered_data_new.filter(like="Distance_").gt(0).notna().sum()
@@ -542,13 +693,18 @@ def func_group_stores_cluster(file_path, store_name, no_of_groups, distance_stor
         print("Insufficient data to form the desired number of clusters.")
         return
 
-    start1 = time.time()
+   
     cat_cols=list(set(cat_cols))
     # Extract only the categorical columns mentioned in cat_cols
     categorical_data = filtered_data_new[cat_cols]
+    if city!='US':
+        city_name_match=fuzzy_logic_loc(city, filtered_data_new, 'CITY')
+        filtered_data_new=city_name_match
+    if state!='US':
+        state_name_match=fuzzy_logic_loc(state, filtered_data_new, 'STATE_NAME')
+        filtered_data_new=state_name_match
     
-    
-  
+   
    # Combine NAME with the provided categorical factors for accurate uniqueness check
     filtered_data_new['COMBINED_NAME'] = filtered_data_new['NAME'] + \
         '_' + categorical_data.astype(str).agg('_'.join, axis=1)+ '_'+filtered_data_new['LAT'].astype(str)
@@ -560,105 +716,34 @@ def func_group_stores_cluster(file_path, store_name, no_of_groups, distance_stor
     
     # Replace NaN values with 0 in the numeric columns of filtered_data
     filtered_data_new[num_cols] = filtered_data_new[num_cols].fillna(0)
+    
+    
     # Apply K-means clustering
-    clustered_data = cluster_data(
-        filtered_data_new, num_cols, cat_cols, no_of_groups)
-    end1 = time.time()-start1
-    print("time taken for clustering :", round(end1, 2))
-    # Group the store names by cluster
-    ''' groups = clustered_data.groupby('Cluster')['NAME'].apply(list)
-
-     # Store the cluster information in a dictionary
-    cluster_info = {}
-    for cluster, stores in groups.items():
-        cluster_name = f'Cluster_{cluster+1}'
-        cluster_info[cluster_name] = stores
-        print(f"\n{cluster_name} ({len(stores)} stores):")'''
+    try :
+        clustered_data = cluster_data(
+            filtered_data_new, num_cols, cat_cols, no_of_groups, min_store, max_store)
+        end1 = time.time()-start1
+        print("time taken for clustering :", round(end1, 2))
+  
+    except Exception as e:
+    # Check if the error message suggests reducing the number of clusters
+        error_message = str(e)
+        if "smaller than n_clusters" in error_message:
+            raise ValueError("Please reduce the number of clusters.")
+        else:
+            # If it's a different exception, re-raise it
+            raise 
+    
         
     merged_cluster_data = pd.merge(original_data, clustered_data[['NAME', 'LAT', 'LON', 'Cluster']], on=['NAME', 'LAT', 'LON'], how='left')
     merged_cluster_data['Cluster']=merged_cluster_data['Cluster']+1
+    start2=time.time()
+    cluster_summary= calculate_cluster_summary(clustered_data, merged_cluster_data, within, cat_cols)
+    cluster_summary['Cluster'] = range(1, len(cluster_summary) + 1)
+    end2=time.time()-start2
+    print("time taken for cluster summary :", round(end2, 2))
 
-    cluster_summary= calculate_cluster_summary(clustered_data, merged_cluster_data, within)
-    
   
    
-    return cluster_summary, merged_cluster_data
+    return cluster_summary
 
-#================================================================================================
- # ADDITIONAL FUNCTIONS
-#=========================================
-'''def convert_column_to_numeric(column):
-    return pd.to_numeric(column, errors='coerce')'''
-# =======================================================================================================================
-#fetch data from uszipcodes  inlcuding pppppopulation density, median income and housing units
-
-'''from uszipcode import SearchEngine
-def fetch_uszipcode_data(output_file):
-    # Create a SearchEngine instance
-    search = SearchEngine()
-
-    # Define the chunk size
-    chunk_size = 1000
-
-    # Initialize min and max variables
-    min_zipcode = 501
-    max_zipcode = 99950
-
-    # Fetch data for ZIP codes within the specified range
-    data_list = []
-    for chunk_start in range(min_zipcode, max_zipcode + 1, chunk_size):
-        chunk_end = min(chunk_start + chunk_size, max_zipcode + 1)
-        for zip_code in range(chunk_start, chunk_end):
-            zipcode_data = search.by_zipcode(str(zip_code))
-            if zipcode_data:
-                city = zipcode_data.major_city
-                state = zipcode_data.state
-                population_density = zipcode_data.population_density
-                median_income = zipcode_data.median_household_income
-                housing_units = zipcode_data.housing_units
-                
-                print(f"Data retrieved for ZIP code: {zip_code}")
-                print(f"City: {city}, State: {state}")
-                print(f"Population Density: {population_density}")
-                print(f"Median Income: {median_income}")
-                print(f"Housing Units: {housing_units}")
-
-                data = {
-                    'Zipcodes': zip_code,
-                    'City': city,
-                    'State': state,
-                    'Population_Density': population_density,
-                    'Median_Income': median_income,
-                    'Housing_Units': housing_units
-                }
-                data_list.append(data)
-
-    # Store the data as a pickle file
-    with open(output_file, 'wb') as f:
-        pickle.dump(data_list, f)
-
-    print(f"Data for ZIP codes {min_zipcode} to {max_zipcode} has been stored as '{output_file}'")
-
-
-# Call the function and specify the output file name
-#output_file = 'E:/Users/Chavi/zipcodes_data_all.pkl'
-#fetch_uszipcode_data(output_file)'''
-
-#============================================================================================
-'''start= time.time()
-file_path = 'E:/Users/Chavi/Competitor_Store.pkl'
-store_name = 'aldi'
-no_of_groups = 10
-distance_stores = [ 'walmart', 'giant eagle']
-factors = ['State', 'Urbanicity', 'Housing Units']
-
-x=group_stores_cluster(file_path, store_name, no_of_groups, distance_stores, factors)
-print(x)
-end=time.time()-start
-print("time_taken : ", round(end, 2), "sec")'''
-#=======================================================================================
-'''file_path = 'E:/Users/Chavi/Competitor_Store.pkl'
-banner_name = 'cvs'
-competition = 'walgreens'
-distance_within = [1,3]
-x=no_of_competing_stores(file_path, banner_name, competition, distance_within)'''

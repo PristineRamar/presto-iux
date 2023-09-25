@@ -27,6 +27,7 @@ from llama_index.node_parser.extractors import MetadataExtractor, TitleExtractor
 from llama_index.indices.vector_store import VectorIndexRetriever
 from llama_index.retrievers import BM25Retriever
 from llama_index.indices.list import ListIndexLLMRetriever
+from config.app_config import config
 
 def extract_tile(input_str):
     match = re.search(r'Title: (\w+)', input_str)
@@ -35,8 +36,9 @@ def extract_tile(input_str):
     else:
         title = None
     return title
-
-llm = OpenAI(model='gpt-4-0613', temperature=0, api_key = open_ai_key)
+#TODO.. change it to config in future
+gpt_model="gpt-3.5-turbo-0613"
+llm = OpenAI(model=gpt_model, temperature=0, api_key = open_ai_key)
 embed_model = OpenAIEmbedding(api_key = open_ai_key)
 
 service_context = ServiceContext.from_defaults(llm =llm, embed_model = embed_model )
