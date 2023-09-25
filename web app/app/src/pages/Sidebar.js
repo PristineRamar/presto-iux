@@ -34,7 +34,7 @@ function Sidebar({visible, show}) {
 				<div>
 					<div className="links side-top">
 						{/* <button className="side-link"> + New Chat </button> */}
-						<NavLink to="/aichat" className="side-link" onClick={handleReloadPage}>
+						<NavLink to={process.env.REACT_APP_AI_REDIRECT} className="side-link" onClick={handleReloadPage}>
 							<FaPlus size={ICON_SIZE} />
 							<span className='spanSidebar'>New Chat</span>
 						</NavLink>

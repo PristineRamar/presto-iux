@@ -2,14 +2,12 @@ import { useRef } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import "../styles/navbar.css";
 import { Link, useNavigate } from "react-router-dom";
-// import jwt from "jsonwebtoken";
+import logo from '../assets/Images/Kai_Black_Red_2.0.png';
 
-function Navbar() {
+function Navbar({prestURL}) {
+  console.log("prestURL: ", prestURL);
   const auth = localStorage.getItem("user");
-  // console.log(auth);
-  // const decodedJwt = jwt.decode(auth);
-  // console.log(decodedJwt);
-	const navRef = useRef();
+ 	const navRef = useRef();
   const navigate = useNavigate();
 
 	const showNavbar = () => {
@@ -20,12 +18,19 @@ function Navbar() {
 
   const logout = () => {
     localStorage.clear();
-    navigate('/login')
+    navigate(process.env.PUBLIC_URL) // navigate('/KAIStage')
 }
 
 	return (
     <header>
-      <h3 className="tittle">KAI</h3>
+      <h3 className="tittle">
+      <img
+          src={logo}
+          alt="Kai"
+          className="logo"
+          width="30px"
+          height="30px"
+        /></h3>
       <button className="nav-btn" onClick={showNavbar}>
         <FaBars />
       </button>
@@ -34,14 +39,12 @@ function Navbar() {
           <FaTimes />
         </button>
         <ul className="nav-right">
-          {auth ? (
-          <li><Link onClick={logout} to="/login">Logout{" ("} {JSON.parse(auth).FIRST_NAME} {" "} {JSON.parse(auth).LAST_NAME}{" )"}</Link></li>
+          {!prestURL ? null :(auth ? (
+          <li><Link onClick={logout} to={process.env.PUBLIC_URL}>Logout{" ("} {JSON.parse(auth).FIRST_NAME} {" "} {JSON.parse(auth).LAST_NAME}{" )"}</Link></li>
           ):(
-          <li><Link to="/login">Login</Link></li>)}
+          <li><Link to={process.env.PUBLIC_URL}>Login</Link></li>))}
         </ul>
-
       </nav>
-
     </header>
   );
 }
