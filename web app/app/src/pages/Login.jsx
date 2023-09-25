@@ -21,7 +21,9 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
   useEffect(() => {
     const auth = localStorage.getItem('auth');
     if (auth) {
-      navigate(process.env.REACT_APP_AI_REDIRECT);    // navigate("/KAIProd/aichat");
+      navigate(process.env.REACT_APP_AI_REDIRECT);  
+      //run on localhost  
+      // navigate("/aichat");
     }
   });
 
@@ -47,22 +49,12 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
     //check for the user details from prestopage along with validate form
     if (validateForm()) {
       const { username, password } = values;
-      console.log("username: " + username);
-      console.log("password: " + password);
-      // const { data } = await axios.post(loginRoute, {username, password,});
+      // console.log("username: " + username);
+      // console.log("password: " + password);
 
-      //local testing URL
-      console.log("REACTAPP_APIURL: " + REACTAPP_APIURL);
       let response = await fetch(REACTAPP_APIURL, {
+      //run on localhost
       // let response = await fetch("http://localhost:1514/login", {
-      //dev testing URL/ RA
-      // let response = await fetch("http://secure.pristineinfotech.com:4026/login", {
-      //Synthectic data testing URL
-      // let response = await fetch("http://secure.pristineinfotech.com:1514/login", {
-      //C&S testing URL
-      // let response = await fetch("http://secure.pristineinfotech.com:4028/login", {
-      //let response 
-      // let response = await fetch("https://secure1.pristineinfotech.com:1514/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -99,8 +91,7 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
   // useEffect hook to log the updated value of status
   useEffect(() => {
     if (status === true) {
-
-      console.log('status is true', data[0].USER_ID);
+      // console.log('status is true', data[0].USER_ID);
       localStorage.setItem("user",JSON.stringify(data[0]));
       localStorage.setItem("auth",JSON.stringify(data[1]));
       localStorage.setItem("refreshToken",JSON.stringify(data[2]));
@@ -110,7 +101,8 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
 
   const navigateToAiChat = (userId) => {
     navigate(`/KAIProd/aichat?userId=${userId}`);
-    //navigate(process.env.REACT_APP_AI_REDIRECT`?userId=${userId}`);
+    // run on localhost
+    // navigate(`/aichat?userId=${userId}`);
   };
 
   return (

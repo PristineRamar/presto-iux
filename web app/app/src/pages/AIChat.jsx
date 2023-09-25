@@ -45,7 +45,6 @@ const AIChat = (props) => {
   const [transcript, setTranscript] = useState('');
   const [user, setUser] = useState(null);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const [speechRecognitionLoading, setSpeechRecognitionLoading] = useState(false);
   const [micIcon, setIcon] = useState(faMicrophone);
   const [chatLog, setChatLog] = useState([
@@ -119,7 +118,7 @@ const AIChat = (props) => {
 
   useEffect(() => {
     if(!listening && transcript !== ''){
-      console.log("true")
+      // console.log("true")
       simulateEnterKey();
       setTranscript('');
     }
@@ -194,11 +193,11 @@ const AIChat = (props) => {
       const currentDate = new Date();
       if (decodedToken.exp * 1000 < currentDate.getTime()) {
         const data = await refreshToken();
-        console.log("access token: " );
-        console.log("refresh token: " );
+        // console.log("access token: " );
+        // console.log("refresh token: " );
         options.headers["Authorization"] = `Bearer ${data.refreshToken}`;
       }
-      console.log(url);
+      // console.log(url);
       return fetch(url, options)
       .then((response) => {
         if (response.status === 403) {
@@ -252,7 +251,7 @@ const AIChat = (props) => {
       //console.log("data.message.detail: " + data.message.detail);
 
       if(responseType === "line" || responseType === "bar" || responseType === "table" || responseType === "pie"){
-        console.log("chatLog is a chart");
+        // console.log("chatLog is a chart");
         setChatLog([...chatLogNew,
           {user: "gpt",message: `${responseSummary}`,metadata: responseMetadata,chatType: responseType, intent:intent},]);
            // Pass the chart/graph data to speech synthesis
@@ -278,18 +277,9 @@ const AIChat = (props) => {
     }
 
     trackPromise(
-      //local testing URL
       fetch(REACTAPP_CHATURL, {
-      // fetchWithTokenRefresh("http://localhost:1514/", {
-      //dev testing URL/ RA
-      // fetch("http://secure.pristineinfotech.com:4026/", {
-      //Synthectic data testing URL
-      // fetch("http://secure.pristineinfotech.com:1514/", {
-      //C&S testing URL
-      // fetch("http://secure.pristineinfotech.com:4028/", {
-      //let response 
-      //  fetch("https://secure1.pristineinfotech.com:1514/", {
-        
+      //run on localhost
+      // fetchWithTokenRefresh("http://localhost:1514/", {        
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -302,14 +292,13 @@ const AIChat = (props) => {
         }),
       })
         .then((response) => {
-          // {console.log("response: " + response.json())}
           return new Promise((resolve) => {resolve(response.json());});})
         .then((data) => handleMessageResponse(data)
   ))
 }
 
 const startListening = () => {
-  console.log('startListening');
+  // console.log('startListening');
   const subscriptionKey = '42124f5a4bbd4b24946a867022a9b1c0';
   const serviceRegion = 'eastus';
   const speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
@@ -473,7 +462,7 @@ const handleIconClick = () => {
   const formattedTime1 = `${hours1}:${minutes1}:${seconds1}`;
   console.log('After - ' , formattedTime1);
   
-  console.log('handleIconClick', transcript);
+  // console.log('handleIconClick', transcript);
   setTranscript('');
   setIsActive(true);
   startListening();

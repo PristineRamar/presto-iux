@@ -45,6 +45,8 @@ function App() {
       <Route path="/presto/:tokentoPrestoPage" element={<PrestoPage />} />
       <Route
         path={process.env.REACT_APP_AI_REDIRECT}
+        //run on localhost
+        // path="/aichat"
         element={
           <div className="App" style={{ display: "flex", height: "100vh" }}>
             {/* {isNavBar && <Navbar />} */}
