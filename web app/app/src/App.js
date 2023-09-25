@@ -48,7 +48,8 @@ function App() {
         element={
           <div className="App" style={{ display: "flex", height: "100vh" }}>
             {/* {isNavBar && <Navbar />} */}
-            <Navbar prestURL={isNavBar}/>
+            {/* <Navbar prestURL={isNavBar}/> */}
+            {isNavBar && <Navbar prestURL={isNavBar}/>}
             <Sidebar className="sideCSS" visible={sideNavVisible} show={showSidebar}/>
             <div className={!sideNavVisible ? "page" : "page page-with-sidenavbar"}>
               <AIChat visible={sideNavVisible} prestURL={isNavBar}/>
