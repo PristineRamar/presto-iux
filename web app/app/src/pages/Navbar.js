@@ -18,7 +18,9 @@ function Navbar({prestURL}) {
 
   const logout = () => {
     localStorage.clear();
-    navigate(process.env.PUBLIC_URL) // navigate('/KAIStage')
+    navigate(process.env.PUBLIC_URL) 
+    // run on localhost
+    // navigate('/')
 }
 
 	return (
