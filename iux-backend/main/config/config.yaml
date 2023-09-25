@@ -31,7 +31,9 @@ open-ai:
     open_ai_key: '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'
    
 kvi:
-    kvi_url: 'http://127.0.0.1:6999/'    
+    kvi_url: 'http://127.0.0.1:6999/'  
+priceindex:
+    comp_days: 180    
 
 router:
   llm-model: gpt-4-0613

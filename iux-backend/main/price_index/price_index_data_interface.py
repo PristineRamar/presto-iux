@@ -16,11 +16,13 @@ from rapidfuzz.fuzz import QRatio
 from generic.generic_data_functions_common import (cal_lookup, sanitize_cal_input,
                                    parse_prod_request, parse_loc_request,
                                    prod_hier, product_data)
-from generic.generic_data_config import (data_url, username, password, dbname, n_responses)
+from generic.generic_data_config import (data_url, username, password, dbname, n_responses,comp_days)
 
 from datetime import datetime
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
+import time
+import xml.etree.ElementTree as ET
 
 # =============================================================================
 # 
@@ -461,7 +463,7 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
     query = ''
     if child_prod_id_cat != 'ITEM_CODE': 
   
-        query = '''WITH PI_TABLE AS (SELECT pid.product_id,
+        query = '''WITH PI_TABLE AS (SELECT pid.product_id,ps.full_selection_xml,
                                         pid.product_level_id,
                                         PS.BASE_LOCATION_LEVEL_ID, 
                                         PS.BASE_LOCATION_ID,
@@ -502,20 +504,20 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
                             WHERE SECONDARY_COMP_STR_ID_1 IS NOT NULL AND  RPZ.ACTIVE_INDICATOR = 'Y' )
 
 
-            SELECT   {groupby_para},round(AVG({measure_para}),1) price_index
+            SELECT  full_selection_xml,{groupby_para},round(AVG({measure_para}),1) price_index
                     FROM PI_TABLE PI LEFT JOIN PROD_DATA PD
                     ON
                     PI.PRODUCT_ID = PD.{child_prod_id_cat}
                     LEFT JOIN COMP_DATA CD
                    ON PI.COMP_STR_ID  = CD.COMP_STR_ID
                   AND PI.BASE_LOCATION_ID = CD.LOCATION_ID
-                  GROUP BY  {groupby_para} {loc_sp}  {prod_sp}
+                  GROUP BY full_selection_xml, {groupby_para} {loc_sp}  {prod_sp}
                   '''.format(prod_fil = prod_fil,start_date = start_date,end_date = end_date, 
                   loc_fil = loc_fil,comp_fil = comp_fil,child_prod_id_cat=child_prod_id_cat,child_prod_level=child_prod_level,
                   child_prod_cat_name= child_prod_cat_name, measure_para = measure_para,groupby_para = groupby_para, loc_sp = loc_sp,prod_sp = prod_sp)
     else:
         query = ''' WITH PI_TABLE AS (SELECT
-        PID.ITEM_CODE AS PRODUCT_ID,
+        PID.ITEM_CODE AS PRODUCT_ID,full_selection_xml,
         1 AS product_level_id,
         PS.BASE_LOCATION_LEVEL_ID,
         PS.BASE_LOCATION_ID,PS.COMP_LOCATION_ID COMP_STR_ID,
@@ -561,14 +563,14 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
                             WHERE SECONDARY_COMP_STR_ID_1 IS NOT NULL AND  RPZ.ACTIVE_INDICATOR = 'Y' )
 
 
-            SELECT   {groupby_para},round(AVG({measure_para}),1) price_index
+            SELECT  full_selection_xml, {groupby_para},round(AVG({measure_para}),1) price_index
                     FROM PI_TABLE PI LEFT JOIN PROD_DATA PD
                     ON
                     PI.PRODUCT_ID = PD.{child_prod_id_cat}
                     LEFT JOIN COMP_DATA CD
                    ON PI.COMP_STR_ID  = CD.COMP_STR_ID
                   AND PI.BASE_LOCATION_ID = CD.LOCATION_ID
-                  GROUP BY  {groupby_para} {loc_sp} {prod_sp}
+                  GROUP BY full_selection_xml, {groupby_para} {loc_sp} {prod_sp}
                   '''.format(prod_fil = prod_fil,start_date = start_date,end_date = end_date, 
                   loc_fil = loc_fil,comp_fil = comp_fil,child_prod_id_cat=child_prod_id_cat,child_prod_level=child_prod_level,
                   child_prod_cat_name= child_prod_cat_name, measure_para = measure_para,groupby_para = groupby_para,
@@ -583,13 +585,26 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
     cursor.close()
     connection.close()
     result = result.drop_duplicates(subset=[0, 1])
-    result.columns = [groupby_para, measure_para]
+    result.columns = ["XML",groupby_para, measure_para]
+    result = comp_date_parser(result,groupby_para, measure_para)
+    
     if comp_tier is not None and len(com_name_act) > 1:
         com_name_act = [comp_tier]
     if comp_name is not None and len(com_name_act) > 1:
         com_name_act = [comp_name]
     return result,com_name_act,measure_para
 
+def comp_date_parser(result,groupby_para, measure_para):
+    
+    start_date_fn = lambda x:ET.fromstring(x).find('compStoreFromDate').text
+    end_date_fn = lambda x:ET.fromstring(x).find('compStoreToDate').text
+    result["COMP_START_DATE" ] = list(map(start_date_fn,list(result.iloc[:,0])))
+    result["COMP_END_DATE" ] = list(map(end_date_fn,list(result.iloc[:,0])))
+    result["COMP_END_DATE"] = pd.to_datetime(result["COMP_END_DATE" ] )
+    result["COMP_START_DATE"] = pd.to_datetime(result["COMP_START_DATE" ] )
+    result["PRIOR_DAYS"] = (result["COMP_END_DATE" ] - result["COMP_START_DATE"]).dt.days
+    ret = result.loc[result["PRIOR_DAYS"] == comp_days,[groupby_para, measure_para]]
+    return ret
 
 def product_level_identifier(child_prod_level):
     
