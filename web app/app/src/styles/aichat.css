@@ -14,15 +14,15 @@
 }
 
 .flash-refresh {
-  height: 44px;
-  width: 44px;
+  height: 40px;
+  width: 40px;
   padding-top: 7px;
   padding-left: 5px;
   /* background: #F7F7F7; */
   opacity: 1;
   border-radius: 50%;
   display: inline-block;
-  margin-top:3px;
+  margin-top:6px;
 }
 
 .flash-refresh .svg-container {
@@ -159,31 +159,44 @@
   background-color: white; 
   background:0% 0% 0% no-repeat padding-box;
   box-shadow: 0px 3px 3px white;
-  /* border-radius: 0px 0px 0px 0px; */
   opacity: 1;
   overflow-x: auto;
-  
-  /* border-radius: 5px;
-  background: #ffffff;
   border-color: #e2e2e2;
   border-width: 1px;
-  border-style: solid; */
+  border-style: solid;
 }
 
-
 .chat-message-allign {
-  /* max-width: 480px; */
   margin-right: auto;
   margin-left: auto;
   display: flex;
-  /* padding: 12px; */
   padding-left: 5px;
   padding-right: 5px;
   padding-top: 5px;
   padding-bottom: 8px;
-  /* padding-left: 40px; */
-  /* padding-right: 240px; */
 }
+
+/* .chat-message.chatgpt {
+  width: auto;
+  background-color: white;
+  background:0% 0% 0% no-repeat padding-box;
+  box-shadow: 0px 3px 3px white;
+  opacity: 1;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: #ffffff;
+  border-color: #e2e2e2;
+  border-width: 1px;
+  border-style: solid;
+} */
+
+/* .chat-message-allign {
+  margin-right: auto;
+  margin-left: auto;
+  display: flex;
+  padding: 5px;
+  padding-left: 10px;
+} */
 
 .metadata {
   padding-left: 50px;
@@ -383,5 +396,31 @@
   .chat-message{
     width: 100%;
   }
-  
+
+  /* You can place this CSS in your stylesheet or within a <style> tag in your HTML/JSX file */
+.volume-button {
+  background-color: #0f56b5;
+  border: none;
+  border-radius: 21px;
+  color: #fff;
+  width: 35px;
+  cursor: pointer;
+  height: 35px;
+  position: absolute;
+  font-size: 1rem;
+  font-weight: 700;
+  right: -4px;
+  height: 35px;
+  text-transform: uppercase;
+  /* Add any additional styling you want for your button here */
+}
+
+/* You can customize the appearance of the icons as needed */
+.volume-button .svg-inline--fa {
+  font-size: 18px; /* Adjust the icon size if needed */
+  color: #f2f2f2; /* Change the icon color if needed */
+  height: 0.8em;
+  overflow: visible;
+  vertical-align: 0.8em;
+}
 }

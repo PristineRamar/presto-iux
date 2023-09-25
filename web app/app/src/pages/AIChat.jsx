@@ -9,12 +9,15 @@ import {useNavigate } from "react-router-dom";
 // import axios from "axios";
 import jwt_decode from "jwt-decode";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
+import { faMicrophone, faVolumeXmark, faVolumeUp } from '@fortawesome/free-solid-svg-icons';
 //import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 // import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
 import { faMicrophoneLines } from "@fortawesome/free-solid-svg-icons";
+
+// Import the Web Speech API
+const SpeechSynthesisUtterance = window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance; //TextToSpeech
 
 const generateSessionId = () => {
   return uuidv4();
@@ -30,6 +33,7 @@ const AIChat = (props) => {
   const recognition = new SpeechRecognition();
   // const startListening = () => SpeechRecognition.startListening({ continuous: true, language: 'en-IN' });
   // const { transcript, browserSupportsSpeechRecognition , resetTranscript, listening} = useSpeechRecognition();
+  const [aiResponse, setAiResponse] = useState(""); //TextToSpeech
 
   const REACTAPP_CHATURL = process.env.REACT_APP_CHAT_URL;
   const REACT_APPHOST = process.env.REACT_APP_HOST;
@@ -56,6 +60,15 @@ const AIChat = (props) => {
   const { promiseInProgress } = usePromiseTracker();
   const messageEl = useRef(null);
   const [sessionId, setSessionId] = useState("");
+
+  const [voiceEnabled, setVoiceEnabled] = useState(false); // Initialize as disabled//TextToSpeech
+  const toggleVoice = () => {
+    setVoiceEnabled(!voiceEnabled);
+    // Stop the voice response if it's currently speaking
+    if (voiceEnabled) {
+      window.speechSynthesis.cancel();
+    }//TextToSpeech
+  };
 
     // Function to create and play a button click sound
     function playButtonClickSound() {
@@ -201,6 +214,23 @@ const AIChat = (props) => {
       });
     };
 
+   // Create a function for reading AI responses aloud //TextToSpeech
+   const readAiResponse = (text) => {
+   const utterance = new SpeechSynthesisUtterance(text);
+   // Set the rate (speed) of speech (default is 1)
+   utterance.rate = 1.0; // Adjust as needed, e.g., 0.5 for slower speech
+   // Set the pitch of speech (1 is the default, higher values make the voice sound higher)
+   utterance.pitch = 1.0; // Adjust as needed, e.g., 2.0 for a higher pitch
+   // Set the volume of speech (0 to 1, where 0 is mute and 1 is full volume)
+   utterance.volume = 1.0; // Adjust as needed, e.g., 0.5 for quieter speech
+    if (voiceEnabled) {
+      utterance.volume = 1; // If enabled, set volume to 1 (full volume)//TextToSpeech
+    } else {
+      utterance.volume = 0; // If disabled, set volume to 0//TextToSpeech
+    }
+    speechSynthesis.speak(utterance);//TextToSpeech
+  };
+
     const handleMessageResponse = (data) => {
       console.log("data: " + JSON.stringify(data));
       let responseType ;
@@ -224,6 +254,9 @@ const AIChat = (props) => {
         console.log("chatLog is a chart");
         setChatLog([...chatLogNew,
           {user: "gpt",message: `${responseSummary}`,metadata: responseMetadata,chatType: responseType, intent:intent},]);
+           // Pass the chart/graph data to speech synthesis
+          readAiResponse(responseSummary); //TextToSpeech
+          readAiResponse(JSON.stringify(responseMetadata)); // TextToSpeech
       }
       else if (Array.isArray(responseSummary)) {
         setChatLog([...chatLogNew,
@@ -233,6 +266,11 @@ const AIChat = (props) => {
         setChatLog([...chatLogNew,
           {user: "gpt", message: `${responseSummary}`, metadata: responseMetadata, chatType: hasNewLine ? "newLine" : "string",},
         ]);
+         //Set the AI's response to the state//TextToSpeech
+         setAiResponse(responseSummary);
+         // Use the Web Speech API to read the response aloud//TextToSpeech
+         readAiResponse(responseSummary); // TextToSpeech
+         readAiResponse(JSON.stringify(responseMetadata)); // TextToSpeech
       } else {
         console.log("chatLog is neither an array nor a string");
       }
@@ -293,7 +331,7 @@ const startListening = () => {
         setIsActive(false);
         setSpeechRecognitionLoading(false);
         playButtonClickSound();
-      }, 2000));
+      }, 3000));
     } else if (result.reason === sdk.ResultReason.NoMatch) {
       // Handle no speech recognized or pause.
       console.log('No speech or pause.');
@@ -416,10 +454,6 @@ const handleIconClick = () => {
  
   setSpeechRecognitionLoading(true);
   setIcon(faMicrophone);
-
-  // Play button click sound
-  //playButtonClickSound();
-
   const currentTime = new Date();
   const hours = currentTime.getHours().toString().padStart(2, '0');
   const minutes = currentTime.getMinutes().toString().padStart(2, '0');
@@ -427,10 +461,12 @@ const handleIconClick = () => {
   const formattedTime = `${hours}:${minutes}:${seconds}`;
   console.log('Before - ' , formattedTime);
 
-  setTimeout(() => {
-    playButtonClickSound();
-  }, 4000); // 5000 milliseconds (5 seconds) delay
+  // setTimeout(() => {
+  //   playButtonClickSound();
+  // }, 4000);
 
+  playButtonClickSound();
+  
   const currentTime1 = new Date();
   const hours1 = currentTime1.getHours().toString().padStart(2, '0');
   const minutes1 = currentTime1.getMinutes().toString().padStart(2, '0');
@@ -448,7 +484,7 @@ const handleIconClick = () => {
   return (
     <>
       <div className="chat-container">
-        {/* <div className="chat-log" ref={messageEl}> */}
+      {/* <div className="chat-log" ref={messageEl}> */}
       <div className={!props.prestoURL ? 'chat-log' : 'chat-log-presto'} ref={messageEl}>  
           {chatLog.map((message, index) => (
             <ChatMessage
@@ -507,6 +543,14 @@ const handleIconClick = () => {
               </svg>
             </span>
           </div>
+          <div style={{ margin: '10px 0', width : '8px' }}></div>
+          <button onClick={toggleVoice} className="volume-button">
+            {voiceEnabled ? (
+               <FontAwesomeIcon icon={faVolumeUp} /> //TextToSpeech
+               ) : (
+              <FontAwesomeIcon icon={faVolumeXmark} /> //TextToSpeech
+            )}
+          </button>
         </div>
       </div>
     </>

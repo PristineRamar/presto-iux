@@ -109,7 +109,7 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
   }, [data, status]);
 
   const navigateToAiChat = (userId) => {
-    navigate(`/KAIStage/aichat?userId=${userId}`);
+    navigate(`/KAIProd/aichat?userId=${userId}`);
     //navigate(process.env.REACT_APP_AI_REDIRECT`?userId=${userId}`);
   };
 

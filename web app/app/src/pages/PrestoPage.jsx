@@ -90,8 +90,9 @@ function PrestoPage() {
   }, [data1, status]);
 
   const navigateToAiChat = (userId) => {
-    navigate(`/KAIStage/aichat?userId=${userId}`);
-    //navigate(process.env.REACT_APP_AI_REDIRECT`?userId=${userId}`);
+    navigate(`/KAIProd/aichat?userId=${userId}`);
+    //navigate(process.env.REACT_APP_AI_REDIRECT + `?userId=${userId}`);
+    //navigate("`" + process.env.REACT_APP_AI_REDIRECT + `?userId=${userId}`);
   };
 
 //   return (

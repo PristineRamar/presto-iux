@@ -27,10 +27,21 @@ const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
   );
 
   return (
+    <>
     <div className={`chat-message ${message.user === "gpt" && "chatgpt"}`}>
-      {/* <div style={{ margin: '10px 0', width : '8px' }}></div> */}
-      <div className="chat-message-allign">
-        <div className={`avatar ${message.user === "gpt" && "chatgpt"}`}>
+
+    {/* {message.user === "gpt" && metadata && chartType !== "graph" && (
+        <div className="chartTitle">
+        <p>
+        <span className="chartlist"><b>Location:</b></span><span>{" "}</span><span className="chartlist">{metadata.locations.join(", ")}</span>
+        <span className="chartlist"><span>{" "}</span><b>Product:</b></span><span>{" "}</span><span className="chartlist">{metadata.products.join(", ")}</span>
+        <span className="chartlist"><span>{" "}</span><b>Time Frame:</b></span><span>{" "}</span><span className="chartlist">{metadata.timeframe}</span></p>
+        </div> 
+    )} */}
+      
+    <div className="chat-message-allign">
+
+     <div className={`avatar ${message.user === "gpt" && "chatgpt"}`}>
           {/* user input human logo */}
           {message.user === "me" && <FaUser size={ICON_SIZE} color="#2780dd" />}
           {/* ai response react logo */}
@@ -39,6 +50,16 @@ const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
         </div>
        
         <div className={`message ${message.user === "gpt" && "chatgpt"}`}>
+
+        {message.user === "gpt" && metadata && chartType !== "graph" && (
+        <div className="chartTitle">
+        <p>
+        <span className="chartlist"><b>Location:</b></span><span>{" "}</span><span className="chartlist">{metadata.locations.join(", ")}</span>
+        <span className="chartlist"><span>{" "}</span><b>Product:</b></span><span>{" "}</span><span className="chartlist">{metadata.products.join(", ")}</span>
+        <span className="chartlist"><span>{" "}</span><b>Time Frame:</b></span><span>{" "}</span><span className="chartlist">{metadata.timeframe}</span></p>
+        </div> 
+    )}
+    
             <ChartWidthCalculator
               chatType={chatType}
               updatedOptions={updatedOptions}
@@ -59,21 +80,21 @@ const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
              {metadata && (<div className = "chartTitle">
              {Array.isArray(metadata.locations) ? (
                <p>
-                   <span className="chartdetails">Zone(s):</span> 
+                   <span className="chartdetails">Location:</span><span>{" "}</span> 
                    <span className="chartlist">{metadata.locations.join(", ")}</span>
-                   <span>{"    "}</span>
-                   <span className="chartdetails">Product(s):</span> 
+                   <span>{" "}</span>
+                   <span className="chartdetails">Product:</span><span>{" "}</span>
                    <span className="chartlist">{metadata.products.join(", ")}</span>
-                   <span>{"    "}</span>
-                   <span className="chartdetails"> Time Period:</span> 
+                   <span>{" "}</span>
+                   <span className="chartdetails"> Time Period :</span><span>{" "}</span>
                    <span className="chartlist">{metadata.timeframe}</span>
-                   <span>{"    "}</span>
+                   <span>{" "}</span>
                    {metadata.competitor &&(<span>
-                   <span className="chartdetails"> Competitor(s):</span> 
+                   <span className="chartdetails"> Competitor(s):</span><span>{" "}</span> 
                    <span className="chartlist">{metadata.competitor.join(", ")}</span></span>)}
                    </p>) : (
-               <p><span className="chartlist">Zone(s):</span> <span className="chartlist">{metadata.locations}</span> <span>{"    "}</span>
-               <span className="chartdetails">, Product(s):</span> <span className="chartlist">{metadata.products}</span> <span>{"    "}</span>
+               <p><span className="chartlist">Location:</span> <span className="chartlist">{metadata.locations}</span> <span>{"    "}</span>
+               <span className="chartdetails">, Product:</span> <span className="chartlist">{metadata.products}</span> <span>{"    "}</span>
                <span className="chartdetails">, Time Period:</span>  <span className="chartlist">{metadata.timeframe}</span> <span>{"    "}</span>
                <span className="chartdetails"> Competitor(s):</span> <span className="chartlist">{metadata.competitor}</span></p>)}
                </div>)}
@@ -92,26 +113,26 @@ const ChatMessage = memo(({ message, metadata, chatType, visible, intent }) => {
           ) : (
             <p className={!visible ? "text-container" : "text-container-with-sidebar"}>{message.message}</p>)}
         </div>
-      </div>
+      </div> 
       
-      {message.user === "gpt" && metadata && chartType !== "graph" && (
-        <div className="metadata">
-          {Array.isArray(metadata.locations) ? (
-            <p>Location: {metadata.locations.join(", ")}</p>
-          ) : (
-            <p>Location: {metadata.locations}</p>
-          )}
-          {Array.isArray(metadata.products) ? (
-            <p>Product: {metadata.products.join(", ")}</p>
-          ) : (
-            <p>Product: {metadata.products}</p>
-          )}
-          <p>Timeframe: {metadata.timeframe}</p>
-        </div>
-      )}
-      {/* <div style={{ margin: '10px 0', width : '8px' }}></div> */}
-    </div>
-  );
+      {/* {message.user === "gpt" && metadata && chartType !== "graph" && (
+        // <div className="metadata">
+        //   {Array.isArray(metadata.locations) ? (
+        //     <p>Location: {metadata.locations.join(", ")}</p>
+        //   ) : (
+        //     <p>Location: {metadata.locations}</p>
+        //   )}
+        //   {Array.isArray(metadata.products) ? (
+        //     <p>Product: {metadata.products.join(", ")}</p>
+        //   ) : (
+        //     <p>Product: {metadata.products}</p>
+        //   )}
+        //   <p>Timeframe: {metadata.timeframe}</p>
+        // </div> 
+      )} */}
+    </div> 
+    <div style={{ margin: '8px 0', width : '8px' }}></div>
+    </> ); 
 });
 
 export default ChatMessage;
