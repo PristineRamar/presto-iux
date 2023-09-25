@@ -502,7 +502,7 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
                             WHERE SECONDARY_COMP_STR_ID_1 IS NOT NULL AND  RPZ.ACTIVE_INDICATOR = 'Y' )
 
 
-            SELECT   {groupby_para},round(AVG({measure_para}),2) price_index
+            SELECT   {groupby_para},round(AVG({measure_para}),1) price_index
                     FROM PI_TABLE PI LEFT JOIN PROD_DATA PD
                     ON
                     PI.PRODUCT_ID = PD.{child_prod_id_cat}
@@ -547,7 +547,8 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
                             ps.start_date >= to_date('{start_date}','YYYY-MM-DD')
                             and ps.start_date <= to_date('{end_date}','YYYY-MM-DD') {loc_fil} {comp_fil} ),
                 PROD_DATA AS (                
-                    select PRODUCT_ID {child_prod_id_cat}, NAME {child_prod_cat_name} FROM PRODUCT_GROUP WHERE ACTIVE_INDICATOR = 'Y' AND PRODUCT_LEVEL_ID = {child_prod_level}),
+                    SELECT ITEM_CODE,ITEM_NAME FROM
+                                               ITEM_DETAILS_VIEW WHERE ACTIVE_INDICATOR = 'Y' {prod_fil}),
                  
                 COMP_DATA AS (SELECT RPZ.PRICE_ZONE_ID LOCATION_ID,RPZ.ZONE_NUM LOCATION_NAME,PRIMARY_COMP_STR_ID COMP_STR_ID,'Primary' as COMP_TIER,CS.NAME COMP_NAME,CS.ADDR_LINE1,CS.CITY  FROM RETAIL_PRICE_ZONE RPZ LEFT JOIN COMPETITOR_STORE CS
                                 ON 
@@ -560,17 +561,18 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
                             WHERE SECONDARY_COMP_STR_ID_1 IS NOT NULL AND  RPZ.ACTIVE_INDICATOR = 'Y' )
 
 
-            SELECT   {groupby_para},round(AVG({measure_para}),2) price_index
+            SELECT   {groupby_para},round(AVG({measure_para}),1) price_index
                     FROM PI_TABLE PI LEFT JOIN PROD_DATA PD
                     ON
                     PI.PRODUCT_ID = PD.{child_prod_id_cat}
                     LEFT JOIN COMP_DATA CD
                    ON PI.COMP_STR_ID  = CD.COMP_STR_ID
                   AND PI.BASE_LOCATION_ID = CD.LOCATION_ID
-                  GROUP BY  {groupby_para} {loc_sp}
+                  GROUP BY  {groupby_para} {loc_sp} {prod_sp}
                   '''.format(prod_fil = prod_fil,start_date = start_date,end_date = end_date, 
                   loc_fil = loc_fil,comp_fil = comp_fil,child_prod_id_cat=child_prod_id_cat,child_prod_level=child_prod_level,
-                  child_prod_cat_name= child_prod_cat_name, measure_para = measure_para,groupby_para = groupby_para, loc_sp = loc_sp)
+                  child_prod_cat_name= child_prod_cat_name, measure_para = measure_para,groupby_para = groupby_para,
+                  loc_sp = loc_sp, prod_sp = prod_sp)
   
     print(query)
     connection = cx_Oracle.connect(username , password,dbname )
