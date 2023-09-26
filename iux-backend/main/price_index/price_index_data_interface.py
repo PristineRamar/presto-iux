@@ -262,9 +262,10 @@ def reportgen(product_name = None, product_id = None, product_level = None,
          comp_addr,comp_name,comp_tier, product_agg,loc_agg,cal_agg,pi_type,weighted_by)  
     
     # Aggregation levels
-
+    
     df = result.copy()
     df = pd.DataFrame(df)
+   
     df.set_index(df.columns[0], inplace=True)
     idx_dtype = pd.api.types.is_datetime64_any_dtype(df.index)
     if idx_dtype == True: 
@@ -283,7 +284,7 @@ def reportgen(product_name = None, product_id = None, product_level = None,
         "locations": loc_names,
         "products": [product_name],
         "competitor": com_name_act,
-        "index type" : [measure_para]
+        "index_type" : [measure_para]
       }
     print("function passed")
     return meta_data,json_data
@@ -587,6 +588,11 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
     result = result.drop_duplicates(subset=[0, 1])
     result.columns = ["XML",groupby_para, measure_para]
     result = comp_date_parser(result,groupby_para, measure_para)
+    result = round(result.groupby(groupby_para).mean(measure_para),1)
+    
+    result = pd.DataFrame(result)
+    result.reset_index(inplace=True)
+    result = result.sort_values(by=measure_para, ascending=False)
     
     if comp_tier is not None and len(com_name_act) > 1:
         com_name_act = [comp_tier]
