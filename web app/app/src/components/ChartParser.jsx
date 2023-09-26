@@ -45,7 +45,7 @@ const ChartParser = ({ message, chatType }) => {
 
           let rotate = 0;
           let maxHeight = 200;
-          if(maxKeyLength > 17 && numLabels > 10) {
+          if(maxKeyLength > 13 && numLabels > 10) {
             rotate = -90
           }
           if(maxKeyLength > 25) {

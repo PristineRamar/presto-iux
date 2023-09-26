@@ -43,8 +43,12 @@ function Navbar({prestURL}) {
         <ul className="nav-right">
           {!prestURL ? null :(auth ? (
           <li><Link onClick={logout} to={process.env.PUBLIC_URL}>Logout{" ("} {JSON.parse(auth).FIRST_NAME} {" "} {JSON.parse(auth).LAST_NAME}{" )"}</Link></li>
+          // run on localhost
+          // <li><Link onClick={logout} to="/">Logout{" ("} {JSON.parse(auth).FIRST_NAME} {" "} {JSON.parse(auth).LAST_NAME}{" )"}</Link></li>
           ):(
           <li><Link to={process.env.PUBLIC_URL}>Login</Link></li>))}
+          // run on localhost
+           {/* <li><Link to="/">Login</Link></li>))} */}
         </ul>
       </nav>
     </header>

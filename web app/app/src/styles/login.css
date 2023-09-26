@@ -82,6 +82,29 @@
     }
   }
 
+  .volume-button {
+    background-color: #f2f2f2;
+    color: #1389fd;
+    /* font-size: 1.5rem; */
+    height: 40px;
+    justify-content: center;
+    margin-left: auto;
+    margin-top: 6px;
+    padding-top: 11px;
+    position: absolute;
+    right: -40px;
+    width: 40px;
+    font-weight: bold;
+}
+
+.volume-button .svg-inline--fa {
+  color: #1389fd;
+  font-size: 16px;
+  height: 1.1em;
+  overflow: visible;
+  vertical-align: 1em;
+}
+
   .spanlogin {
     color: #131314;
     text-transform: uppercase;

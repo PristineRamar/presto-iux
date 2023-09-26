@@ -16,7 +16,7 @@
 .flash-refresh {
   height: 40px;
   width: 40px;
-  padding-top: 7px;
+  /* padding-top: 7px; */
   padding-left: 5px;
   /* background: #F7F7F7; */
   opacity: 1;
@@ -24,6 +24,11 @@
   display: inline-block;
   margin-top:6px;
 }
+
+.icon-large {
+  font-size: 18px; /* Adjust the font-size to the desired size */
+}
+
 
 .flash-refresh .svg-container {
   background-color: #f2f2f2;
@@ -52,7 +57,7 @@
 .flash-refresh.send {
   font-size: 1.5rem;
   font-weight: bold;
-  /* padding-top: 15px; */
+  padding-top: 7px;
   /* padding-left: 5px; */
   border-radius: 50%;
   background-color: #f2f2f2;
@@ -205,7 +210,7 @@
 }
 
 .chat-log {
-  height: 550px;
+  height: 700px;
   padding-bottom: 20px;
   width: 98%;
   overflow-x: hidden;
@@ -218,7 +223,6 @@
 .chat-log-presto{
   height: 480px;
 }
-
 
 .chat-container {
   padding-top: 8px;
@@ -303,6 +307,19 @@
   }
   
 }
+
+@media (resolution: 1.25dppx) {
+
+  .chat-log{
+    height: 550px;
+  }
+  
+  .chat-log-presto{
+    height: 380px;
+  }
+  
+}
+
 
 @media only screen and (max-width: 480px) {
   .page{

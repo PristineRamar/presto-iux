@@ -518,7 +518,7 @@ const handleIconClick = () => {
           style={{ width: "34px", height: "34px" }} // Adjust the width and height as needed
               />
           )}
-            <FontAwesomeIcon icon={isActive ? faMicrophoneLines : micIcon} onClick={handleIconClick} />
+            <FontAwesomeIcon icon={isActive ? faMicrophoneLines : micIcon} onClick={handleIconClick} className="icon-large"/>
             </button>
           </div>
           <div style={{ margin: '10px 0', width : '8px' }}></div>
@@ -534,9 +534,9 @@ const handleIconClick = () => {
           <div style={{ margin: '10px 0', width : '8px' }}></div>
           <button onClick={toggleVoice} className="volume-button">
             {voiceEnabled ? (
-               <FontAwesomeIcon icon={faVolumeUp} /> //TextToSpeech
+               <FontAwesomeIcon icon={faVolumeUp} className="icon-large"/> //TextToSpeech
                ) : (
-              <FontAwesomeIcon icon={faVolumeXmark} /> //TextToSpeech
+              <FontAwesomeIcon icon={faVolumeXmark} className="icon-large"/> //TextToSpeech
             )}
           </button>
         </div>
