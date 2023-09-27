@@ -142,11 +142,13 @@ class APICallParameters(BaseModel):
         description="APIs to call: 1. Price Index API: it returns the price index the user wants api name pertain to. For example if the query is like create a table or graph of 'price index' or 'PI' for grocery for the last 2 quarters return the string as priceindex",
         enum=["priceindex"]
     )
+    
     child_prod_level: Optional[List[str]] = Field( None,
        
         description="Used to specify the any product level under a product name or specifying any product levels only like 'All departments','All categories' . the user wants data pertaining to. For example,'Department','Major Category', 'Category' or 'Sub category' or 'Segment' or 'Item' would be valid ways of using this argument."
        
     )
+    
     product_name: Optional[List[str]] = Field(
         None,
         description="Used to specify which product group the user wants data pertaining to. For example, 'Upper Respiratory', 'OTC internal',  or 'grocery' would be valid ways of using this argument.Product levels like 'Departments', 'Category', 'All'..etc are not valid for this argument"
@@ -173,6 +175,7 @@ class APICallParameters(BaseModel):
        description= "Used to specify The address of the Competitor the user wants data pertaining to. For example, '5190 Library Rd ', '1801 York Rd' would be valid ways of using this argument"
        
     )
+   
     cal_type:  Optional[List[str]] = Field(
         None,
        
@@ -193,7 +196,11 @@ class APICallParameters(BaseModel):
         description= "do this if you are 100% sure: A flag to indicate if the query is about aggregation or summarization or averaging at location level. This flag only applies when user says about aggregation levels. if aggregation at location level or zone level the flag should be 'Y' else 'N'for example 'aggregate at location level' the flag is 'Y'. for the context 'aggregate at week level' or 'aggregatd at product level' the should be 'N' ",
         enum=[ "Y", "N"]
     )
-   
+    order_para: Optional[List[str]] = Field( None,
+       
+        description=" Used to specify the order by parameter the user wants data pertaining to. for example. if the user is Specified to sorted by 'Price index' 'category','Product name' are valid for this parameter"
+       
+    )
    
     week: Optional[List[str]] = Field(
         None,

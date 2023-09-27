@@ -41,7 +41,8 @@ def generate_report():
                         comp_city =input_json['comp-city'] if 'comp-city' in input_json else None,
                         comp_addr =input_json['comp-addr'] if 'comp-addr' in input_json else None,
                         comp_name = input_json['comp-name'] if 'comp-name' in input_json else None,
-                        comp_tier = input_json['comp-tier'] if 'comp-tier' in input_json else None
+                        comp_tier = input_json['comp-tier'] if 'comp-tier' in input_json else None,
+                        order_para = input_json['order-para'] if 'order-para' in input_json else None
                         ) 
    
     output_json['data'] = json.loads( result.replace('\\', '')) 

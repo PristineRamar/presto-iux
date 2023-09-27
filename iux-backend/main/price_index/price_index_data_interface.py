@@ -14,8 +14,8 @@ import time
 from rapidfuzz.process import extractOne
 from rapidfuzz.fuzz import QRatio
 from generic.generic_data_functions_common import (cal_lookup, sanitize_cal_input,
-                                   parse_prod_request, parse_loc_request,
-                                   prod_hier, product_data)
+                                   parse_prod_request, parse_loc_request)
+                                   
 from generic.generic_data_config import (data_url, username, password, dbname, n_responses,comp_days)
 
 from datetime import datetime
@@ -103,14 +103,14 @@ def reportgen(product_name = None, product_id = None, product_level = None,
              comp_city = None,
              comp_addr = None,
              comp_name = None,
-             comp_tier = None): 
+             comp_tier = None, order_para = None): 
     # if (comp_city is not None) or (comp_addr is not None) or  (comp_name is not None) or (comp_tier is not None):
     #     comp_df = comp_parser(location_name  , comp_city,
     #                                comp_addr , comp_name, comp_tier)
     #     location_id = comp_df['LOCATION_ID'].unique()
     #     location_level = 6
     #     comp_str_id = comp_df['COMP_STR_ID'].unique()
-    
+    order_para = process_variable(order_para)
     cal_type = process_variable(cal_type)
     
     quarter = process_variable (quarter)
@@ -143,7 +143,16 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     comp_city = process_variable(comp_city)             
     comp_addr = process_variable(comp_addr) 
     comp_name = process_variable(comp_name) 
-    comp_tier = process_variable(comp_tier) 
+    comp_tier = process_variable(comp_tier)
+    if order_para is not None:
+        order_para = order_para.lower()
+        if order_para in ["pi","priceindex","price index","index"]:
+            order_para = "Y"
+        else:
+            order_para = 'N'
+    else:
+        order_para = 'Y'
+            
     if product_agg is None:
         product_agg = 'N'
     if active is None:
@@ -259,7 +268,7 @@ def reportgen(product_name = None, product_id = None, product_level = None,
     if  (product_level is not None and child_prod_level is None) or  (product_level is not None and child_prod_level is not None) or (product_level is None and child_prod_level is not None):
         prod_id_cat, child_prod_cat_name, child_prod_id_cat,prod_all= child_prod_query_string(child_prod_level,product_level)
         result,com_name_act,measure_para = prod_level_query(product_id,prod_id_cat, child_prod_cat_name,child_prod_level, child_prod_id_cat,start_date,end_date,location_id, comp_city,
-         comp_addr,comp_name,comp_tier, product_agg,loc_agg,cal_agg,pi_type,weighted_by)  
+         comp_addr,comp_name,comp_tier, product_agg,loc_agg,cal_agg,pi_type,weighted_by, order_para)  
     
     # Aggregation levels
     
@@ -398,7 +407,7 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
                      child_prod_id_cat,start_date,end_date, location_id,  comp_city,
                       comp_addr,
                       comp_name,
-                      comp_tier,product_agg,loc_agg,cal_agg,pi_type,weighted_by):
+                      comp_tier,product_agg,loc_agg,cal_agg,pi_type,weighted_by, order_para):
     comp_fil = ''
     loc_fil = ''
     prod_fil = ''
@@ -592,7 +601,10 @@ def prod_level_query(product_id,prod_id_cat, child_prod_cat_name, child_prod_lev
     
     result = pd.DataFrame(result)
     result.reset_index(inplace=True)
-    result = result.sort_values(by=measure_para, ascending=False)
+    if order_para == 'Y':
+        result = result.sort_values(by=measure_para, ascending=False)
+    else:
+        result = result.sort_values(by=groupby_para)
     
     if comp_tier is not None and len(com_name_act) > 1:
         com_name_act = [comp_tier]

@@ -30,7 +30,7 @@ tools = [
 ]
 
 func_agent_sys_msg = '''You are an awesome assistant in retail. Only 
-make function call to answer questions. You will try your best to figure out 10 pieces of information:
+make function call to answer questions. You will try your best to figure out 11 pieces of information:
 
 1. API to use
 2.  Calendar type
@@ -42,6 +42,7 @@ make function call to answer questions. You will try your best to figure out 10 
 8. aggregation flags 
 9. price index type
 10. weighted by parameters 
+11. order flag
 
 
  You must not return the blank field or field with empty list . return the values those are 100% sure for you
