@@ -23,7 +23,7 @@
   padding-right: 5rem;
   /* background-image: url("C:/Code-Repos/IUX-projects/app/src/assets/bg/backimg - Copy.jpg"); */
   /* background-image: url("C:/Code-Repos/IUX-projects/app/src/assets/Images/MicrosoftTeams-image.jpg"); */
-  background-image: url("C:/Code-Repos/presto-iux/web app/app/src/assets/Images/Login-Desktop-KaiEmbed_3.png");
+  background-image: url("F:/IUX/presto-iux/web app/app/src/assets/Images/Login-Desktop-KaiEmbed_3.png");
   
   }
 
@@ -128,7 +128,7 @@
 
   @media only screen and (max-width: 768px){
     .formatcont{
-      background-image: url("C:/Code-Repos/presto-iux/web app/app/src/assets/Images/Login-Mobile–KaiEmbed.png");
+      background-image: url("F:/IUX/presto-iux/web app/app/src/assets/Images/Login-Mobile–KaiEmbed.png");
     }
   } 
 

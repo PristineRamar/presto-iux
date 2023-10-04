@@ -31,17 +31,17 @@ async function fun() {
 
   //move this as config
   try {
-    connection = await oracledb.getConnection({
-      user: "DEV_FOODLION",
-      password: "F#oDLioN#DEV",
-      connectString: "secure.pristineinfotech.com:3541/DEVFL",
-    });
+    // connection = await oracledb.getConnection({
+    //   user: "DEV_FOODLION",
+    //   password: "F#oDLioN#DEV",
+    //   connectString: "secure.pristineinfotech.com:3541/DEVFL",
+    // });
 	
-	//connection = await oracledb.getConnection({
-    //  user: "DEV_HANNAFORD",
-    //  password: "H#AFord#DEV",
-    //  connectString: "secure.pristineinfotech.com:3540/DEVHF",
-    //});
+	connection = await oracledb.getConnection({
+     user: "DEV_HANNAFORD",
+     password: "H#AFord#DEV",
+     connectString: "secure.pristineinfotech.com:3540/DEVHF",
+    });
 
     // connection = await oracledb.getConnection({
     //   user: "PRESTO_IUX",

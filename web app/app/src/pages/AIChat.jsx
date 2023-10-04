@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+
 import "../styles/aichat.css";
 import ChatMessage from "../components/ChatMessage";
 import { usePromiseTracker, trackPromise } from "react-promise-tracker";
@@ -15,6 +16,13 @@ import { v4 as uuidv4 } from 'uuid';
 // import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
 import { faMicrophoneLines } from "@fortawesome/free-solid-svg-icons";
+import { usePorcupine } from "@picovoice/porcupine-react"; // Import Porcupine
+
+import HellokaiKeywordModel from "./Hello_kai";
+import modelParams from "./porcupine_params";
+
+const ACCESS_KEY = "fARWOuX2Nf6E8FupSEzTVI0RtgrbkXaeXnPihGgx6jEPVlfnoJik1A==";
+
 
 // Import the Web Speech API
 const SpeechSynthesisUtterance = window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance; //TextToSpeech
@@ -34,7 +42,7 @@ const AIChat = (props) => {
   // const startListening = () => SpeechRecognition.startListening({ continuous: true, language: 'en-IN' });
   // const { transcript, browserSupportsSpeechRecognition , resetTranscript, listening} = useSpeechRecognition();
   const [aiResponse, setAiResponse] = useState(""); //TextToSpeech
-
+  
   const REACTAPP_CHATURL = process.env.REACT_APP_CHAT_URL;
   const REACT_APPHOST = process.env.REACT_APP_HOST;
   const [isTyping, setIsTyping] = useState(false);
@@ -46,7 +54,12 @@ const AIChat = (props) => {
   const [user, setUser] = useState(null);
   const [input, setInput] = useState("");
   const [speechRecognitionLoading, setSpeechRecognitionLoading] = useState(false);
-  const [micIcon, setIcon] = useState(faMicrophone);
+  
+  const [isListening, setIsListening] = useState(false); 
+  const [micIcon, setMicIcon] = useState(faMicrophone); // Define setMicIcon
+  const [icon, setIcon] = useState(faMicrophone); // Define setIcon here
+
+  
   const [chatLog, setChatLog] = useState([
     {
       user: "gpt",
@@ -54,7 +67,25 @@ const AIChat = (props) => {
       metadata: "",
     },
   ]);
-  
+
+  const {
+    keywordDetection,
+    init,
+    start,
+    stop,
+    release,
+  } = usePorcupine();
+  const initEngine = async () => {
+    await init(
+      ACCESS_KEY,
+      {
+        base64: HellokaiKeywordModel,
+        label: "Hello kai",
+      },
+      { base64: modelParams }
+    );
+    start();
+  };
   const [selectedMessageIndex, setSelectedMessageIndex] = useState(-1);
   const inputRef = useRef(null);
   const { promiseInProgress } = usePromiseTracker();
@@ -143,6 +174,28 @@ const AIChat = (props) => {
     }
   }, [input, navigate]);
 
+
+  useEffect(() => {
+    // Initialize Porcupine when the component mounts
+    initEngine();
+
+    // Clean up Porcupine resources when the component unmounts
+    return () => {
+      stop();
+      release();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (keywordDetection !== null) {
+      const detectedKeyword = keywordDetection.label.toLowerCase();
+      if (detectedKeyword === "Hello kai") {
+        // Automatically activate the microphone when "Hello kai" is detected
+        handleIconClick();
+      }
+    }
+  }, [keywordDetection]);
+  
   async function handleSubmit(e) {
     // Play button click sound
     
@@ -277,9 +330,9 @@ const AIChat = (props) => {
     }
 
     trackPromise(
-      fetch(REACTAPP_CHATURL, {
+      //fetch(REACTAPP_CHATURL, {
       //run on localhost
-      // fetchWithTokenRefresh("http://localhost:1514/", {        
+       fetchWithTokenRefresh("http://localhost:1514/", {        
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -296,7 +349,11 @@ const AIChat = (props) => {
         .then((data) => handleMessageResponse(data)
   ))
 }
-
+const handleMicrophoneActivation = () => {
+  setIsListening(true);
+  setMicIcon(faMicrophone);
+  startListening();
+};
 const startListening = () => {
   // console.log('startListening');
   const subscriptionKey = '42124f5a4bbd4b24946a867022a9b1c0';
@@ -510,6 +567,8 @@ const handleIconClick = () => {
             }}
             maxRows={5}
           />
+          
+
           <button className={`microphone-icon ${isActive ? 'active' : ''}`}>
           {isActive && (
           <img
@@ -541,6 +600,7 @@ const handleIconClick = () => {
           </button>
         </div>
       </div>
+      
     </>
   );
 };

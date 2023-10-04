@@ -21,9 +21,9 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
   useEffect(() => {
     const auth = localStorage.getItem('auth');
     if (auth) {
-      navigate(process.env.REACT_APP_AI_REDIRECT);  
+      //navigate(process.env.REACT_APP_AI_REDIRECT);  
       //run on localhost  
-      // navigate("/aichat");
+       navigate("/aichat");
     }
   });
 
@@ -52,9 +52,9 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
       // console.log("username: " + username);
       // console.log("password: " + password);
 
-      let response = await fetch(REACTAPP_APIURL, {
+      //let response = await fetch(REACTAPP_APIURL, {
       //run on localhost
-      // let response = await fetch("http://localhost:1514/login", {
+       let response = await fetch("http://localhost:1514/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -100,9 +100,9 @@ const REACT_APPHOST = process.env.REACT_APP_HOST;
   }, [data, status]);
 
   const navigateToAiChat = (userId) => {
-    navigate(`/KAIProd/aichat?userId=${userId}`);
+    //navigate(`/KAIProd/aichat?userId=${userId}`);
     // run on localhost
-    // navigate(`/aichat?userId=${userId}`);
+     navigate(`/aichat?userId=${userId}`);
   };
 
   return (

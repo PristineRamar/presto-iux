@@ -7,6 +7,9 @@ import Navbar from "./pages/Navbar";
 import LoginPage from "./pages/Login";
 import PrestoPage from "./pages/PrestoPage";
 
+
+
+
 function App() {
   const [sideNavVisible, showSidebar] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
@@ -44,9 +47,9 @@ function App() {
       <Route path={process.env.PUBLIC_URL} element={<LoginPage />} />
       <Route path="/presto/:tokentoPrestoPage" element={<PrestoPage />} />
       <Route
-        path={process.env.REACT_APP_AI_REDIRECT}
+        //path={process.env.REACT_APP_AI_REDIRECT}
         //run on localhost
-        // path="/aichat"
+         path="/aichat"
         element={
           <div className="App" style={{ display: "flex", height: "100vh" }}>
             {/* {isNavBar && <Navbar />} */}
@@ -55,6 +58,8 @@ function App() {
             <Sidebar className="sideCSS" visible={sideNavVisible} show={showSidebar}/>
             <div className={!sideNavVisible ? "page" : "page page-with-sidenavbar"}>
               <AIChat visible={sideNavVisible} prestURL={isNavBar}/>
+              
+              
             </div>
           </div>
         }
